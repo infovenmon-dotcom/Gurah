@@ -1,0 +1,14 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[functions]
+  node_bundler = "esbuild"
+
+# Sincronización iCal periódica (channel manager) — placeholder heredado de Kirana.
+# [functions."sync-ical"]
+#   schedule = "@hourly"
+
+[dev]
+  command = "npm run dev"
+  framework = "astro"

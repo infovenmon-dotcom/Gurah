@@ -1,0 +1,216 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getActiveApartments } from '../lib/apartmentsStore';
+import { getBlockedDates } from '../lib/bookings';
+import { webPrice } from '../lib/pricing';
+import { servicioLabel } from '../lib/apartments';
+import { isDemoMode } from '../lib/persist';
+
+const apartments = await getActiveApartments();
+const demo = await isDemoMode();
+
+// Inyección tipo window.GURAH_AVAIL (equivalente a KIRANA_AVAIL):
+// apartamentos activos + precio web (−10%) + fechas bloqueadas.
+const avail = await Promise.all(
+  apartments.map(async (a) => ({
+    id: a.id,
+    nombre: a.nombre,
+    slug: a.slug,
+    concepto: a.concepto,
+    storytelling: a.storytelling,
+    ubicacion: a.ubicacion,
+    m2: a.m2,
+    dormitorios: a.dormitorios,
+    banos: a.banos,
+    capacidad: a.capacidad,
+    camas: a.camas,
+    servicios: a.servicios,
+    precio_base: a.precio_base,
+    precio_base_web: webPrice(a.precio_base),
+    estancia_minima: a.estancia_minima,
+    tarifas_temporada: a.tarifas_temporada,
+    fotos: a.fotos,
+    blocked: await getBlockedDates(a.id),
+  })),
+);
+---
+
+<BaseLayout>
+  {demo && (
+    <div class="sans" style="background:#ffd257;color:#5b4a00;text-align:center;padding:8px;font-size:13px;font-weight:600">
+      MODO DEMO — reservas y pagos simulados. Configura las variables de entorno para activar el modo real.
+    </div>
+  )}
+
+  <!-- HERO -->
+  <section style="position:relative;padding:90px 0 70px;background:linear-gradient(135deg,#0e5c4a 0%,#127a63 100%);color:#fff">
+    <div class="container">
+      <p class="sans" style="letter-spacing:.22em;text-transform:uppercase;font-size:13px;opacity:.85;margin:0 0 12px">Bakio · Bizkaia · Costa Vasca</p>
+      <h1 style="font-size:clamp(34px,6vw,58px);margin:0 0 16px;line-height:1.05">Apartamentos boutique<br />frente al Cantábrico</h1>
+      <p style="font-size:19px;max-width:560px;opacity:.95">Casa de campo con piscina, apartamentos pet-friendly y refugios junto a la playa. A 3 km de San Juan de Gaztelugatxe. Reserva directa, con el mejor precio.</p>
+      <div style="margin-top:26px;display:flex;gap:12px;flex-wrap:wrap">
+        <a class="btn" href="#apartamentos" style="background:#fff;color:var(--verde)">Elige tu apartamento</a>
+        <a class="btn ghost" href="#experiencia" style="border-color:#fff;color:#fff">El entorno</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- SELECCIÓN DE APARTAMENTO -->
+  <section id="apartamentos" class="container" style="padding:56px 0 20px">
+    <h2 style="font-size:32px;margin:0 0 6px">Elige tu apartamento</h2>
+    <p class="sans" style="color:var(--gris);margin:0 0 22px">{apartments.length} alojamientos · precio web con −10% frente a plataformas.</p>
+
+    <!-- FILTROS diferenciadores -->
+    <div class="sans" id="filtros" style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:26px">
+      <button class="chip" data-filter="all" data-active="1">Todos</button>
+      <button class="chip" data-filter="mascotas">🐾 Admite mascotas</button>
+      <button class="chip" data-filter="piscina">🏊 Piscina</button>
+      <button class="chip" data-filter="campo">🌳 Campo</button>
+      <button class="chip" data-filter="playa">🏖️ Playa</button>
+    </div>
+
+    <div id="grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:22px"></div>
+  </section>
+
+  <!-- EXPERIENCIA / ENTORNO -->
+  <section id="experiencia" style="background:var(--arena);padding:56px 0;margin-top:40px">
+    <div class="container" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:24px">
+      <div><h3 style="margin:0 0 6px">🏖️ Playa de Bakio</h3><p class="sans" style="color:var(--gris)">Uno de los mejores arenales de Bizkaia para surf y paseo.</p></div>
+      <div><h3 style="margin:0 0 6px">⛪ Gaztelugatxe</h3><p class="sans" style="color:var(--gris)">El icónico islote de San Juan, a solo 3 km.</p></div>
+      <div><h3 style="margin:0 0 6px">🐾 Pet-friendly</h3><p class="sans" style="color:var(--gris)">Alojamientos que admiten mascotas. Ven con tu perro.</p></div>
+      <div><h3 style="margin:0 0 6px">🏊 Piscina</h3><p class="sans" style="color:var(--gris)">Casa de campo con piscina privada y jardín.</p></div>
+    </div>
+  </section>
+
+  <!-- MODAL DE RESERVA -->
+  <div id="modal" style="display:none;position:fixed;inset:0;background:rgba(20,30,26,.55);z-index:50;align-items:center;justify-content:center;padding:16px">
+    <div class="sans" style="background:#fff;max-width:460px;width:100%;border-radius:16px;padding:24px;max-height:92vh;overflow:auto">
+      <div style="display:flex;justify-content:space-between;align-items:start">
+        <h3 id="m-title" style="margin:0"></h3>
+        <button id="m-close" style="border:0;background:none;font-size:24px;cursor:pointer;line-height:1">×</button>
+      </div>
+      <p id="m-sub" style="color:var(--gris);font-size:14px;margin:4px 0 16px"></p>
+      <div style="display:flex;gap:10px">
+        <div style="flex:1"><label style="font-size:12px;color:var(--gris)">Entrada</label><input id="m-in" type="date" style="width:100%;padding:9px;border:1px solid var(--linea);border-radius:8px"></div>
+        <div style="flex:1"><label style="font-size:12px;color:var(--gris)">Salida</label><input id="m-out" type="date" style="width:100%;padding:9px;border:1px solid var(--linea);border-radius:8px"></div>
+      </div>
+      <div style="margin-top:10px"><label style="font-size:12px;color:var(--gris)">Personas</label><input id="m-pax" type="number" min="1" value="2" style="width:100%;padding:9px;border:1px solid var(--linea);border-radius:8px"></div>
+      <div id="m-quote" style="margin:14px 0;padding:12px;background:var(--arena);border-radius:10px;font-size:14px;display:none"></div>
+      <div id="m-msg" style="color:#b4462f;font-size:13px;min-height:18px"></div>
+      <hr style="border:0;border-top:1px solid var(--linea);margin:14px 0">
+      <div style="display:flex;gap:10px"><input id="m-nombre" placeholder="Nombre" style="flex:1;padding:9px;border:1px solid var(--linea);border-radius:8px"><input id="m-email" type="email" placeholder="Email" style="flex:1;padding:9px;border:1px solid var(--linea);border-radius:8px"></div>
+      <input id="m-tel" placeholder="Teléfono (opcional)" style="width:100%;margin-top:10px;padding:9px;border:1px solid var(--linea);border-radius:8px">
+      <button id="m-book" class="btn" style="width:100%;margin-top:16px">Reservar y pagar</button>
+      <p style="font-size:12px;color:var(--gris);text-align:center;margin:10px 0 0">Pago seguro. Precio directo con −10%.</p>
+    </div>
+  </div>
+
+  <style>
+    .chip { border:1px solid var(--linea); background:#fff; padding:8px 14px; border-radius:22px; cursor:pointer; font-size:14px; }
+    .chip[data-active="1"] { background:var(--verde); color:#fff; border-color:var(--verde); }
+    .apt { border:1px solid var(--linea); border-radius:16px; overflow:hidden; background:#fff; display:flex; flex-direction:column; }
+    .apt .photo { height:180px; background:linear-gradient(135deg,#cfe3dc,#a7c8bd); display:flex; align-items:center; justify-content:center; color:#0e5c4a; position:relative; }
+    .apt .body { padding:16px; display:flex; flex-direction:column; gap:8px; flex:1; }
+    .apt .specs { display:flex; flex-wrap:wrap; gap:8px; color:var(--gris); font-size:13px; }
+    .apt .serv { display:flex; flex-wrap:wrap; gap:6px; }
+    .apt .serv span { background:var(--arena); border-radius:14px; padding:3px 9px; font-size:12px; }
+    .apt .price { display:flex; align-items:baseline; gap:8px; margin-top:auto; }
+    .apt .price s { color:var(--gris); font-size:14px; }
+    .apt .price b { color:var(--verde); font-size:22px; }
+    .loc { position:absolute; top:10px; left:10px; background:rgba(255,255,255,.9); border-radius:20px; padding:3px 10px; font-size:12px; }
+  </style>
+
+  <script is:inline set:html={`window.GURAH_AVAIL = ${JSON.stringify(avail)};`}></script>
+  <script is:inline>
+    (function () {
+      var A = window.GURAH_AVAIL || [];
+      var grid = document.getElementById('grid');
+      var LABELS = {piscina:'Piscina',jardin:'Jardín',mascotas:'Admite mascotas',parking:'Parking',wifi:'WiFi',cocina_equipada:'Cocina equipada',chimenea:'Chimenea',barbacoa:'Barbacoa',terraza:'Terraza',vistas_mar:'Vistas al mar'};
+      var filter = 'all';
+
+      function money(n){ return (Math.round(n*100)/100).toFixed(0); }
+
+      function card(a){
+        var pending = (a.fotos && a.fotos[0] && String(a.fotos[0]).indexOf('PENDIENTE')>-1);
+        var serv = a.servicios.slice(0,5).map(function(s){ return '<span>'+(LABELS[s]||s)+'</span>'; }).join('');
+        var loc = a.ubicacion.tipo==='playa'?'🏖️ Playa':'🌳 Campo';
+        return '<article class="apt" data-serv="'+a.servicios.join(',')+'" data-tipo="'+a.ubicacion.tipo+'">'+
+          '<div class="photo"><span class="loc">'+loc+' · '+a.ubicacion.texto+'</span>'+(pending?'📷 Foto pendiente':'🏡 '+a.nombre)+'</div>'+
+          '<div class="body">'+
+            '<h3 style="margin:0;font-size:19px">'+a.nombre+'</h3>'+
+            '<div class="specs sans"><span>📐 '+a.m2+' m²</span><span>🛏️ '+a.dormitorios+' dorm.</span><span>🚿 '+a.banos+' baños</span><span>👥 hasta '+a.capacidad+'</span></div>'+
+            '<p class="sans" style="color:var(--gris);font-size:14px;margin:2px 0">'+a.storytelling.replace('[PENDIENTE CLIENTE] ','')+'</p>'+
+            '<div class="serv sans">'+serv+'</div>'+
+            '<div class="sans" style="font-size:13px;color:var(--gris)">Estancia mínima '+a.estancia_minima+' noches · '+(a.ubicacion.lat?('<a href="https://www.openstreetmap.org/?mlat='+a.ubicacion.lat+'&mlon='+a.ubicacion.lng+'#map=15/'+a.ubicacion.lat+'/'+a.ubicacion.lng+'" target="_blank" rel="noopener">ver mapa</a>'):'')+'</div>'+
+            '<div class="price sans"><s>'+money(a.precio_base)+' €</s><b>'+money(a.precio_base_web)+' €</b><span style="color:var(--gris);font-size:13px">/noche · −10%</span></div>'+
+            '<button class="btn book" data-id="'+a.id+'" style="width:100%;margin-top:6px">Ver fechas y reservar</button>'+
+          '</div></article>';
+      }
+
+      function render(){
+        grid.innerHTML = A.filter(function(a){
+          if(filter==='all') return true;
+          if(filter==='campo'||filter==='playa') return a.ubicacion.tipo===filter;
+          return a.servicios.indexOf(filter)>-1;
+        }).map(card).join('') || '<p class="sans" style="color:var(--gris)">No hay apartamentos con ese filtro.</p>';
+        grid.querySelectorAll('.book').forEach(function(b){ b.onclick=function(){ openModal(b.getAttribute('data-id')); }; });
+      }
+
+      document.querySelectorAll('.chip').forEach(function(c){
+        c.onclick=function(){
+          document.querySelectorAll('.chip').forEach(function(x){ x.removeAttribute('data-active'); });
+          c.setAttribute('data-active','1'); filter=c.getAttribute('data-filter'); render();
+        };
+      });
+
+      // --- Modal ---
+      var modal=document.getElementById('modal'), cur=null;
+      function openModal(id){
+        cur=A.find(function(x){return x.id===id;}); if(!cur) return;
+        document.getElementById('m-title').textContent=cur.nombre;
+        document.getElementById('m-sub').textContent=cur.concepto+' · estancia mínima '+cur.estancia_minima+' noches';
+        document.getElementById('m-pax').max=cur.capacidad;
+        document.getElementById('m-quote').style.display='none';
+        document.getElementById('m-msg').textContent='';
+        var today=new Date().toISOString().slice(0,10);
+        document.getElementById('m-in').min=today; document.getElementById('m-out').min=today;
+        modal.style.display='flex';
+      }
+      document.getElementById('m-close').onclick=function(){ modal.style.display='none'; };
+      modal.onclick=function(e){ if(e.target===modal) modal.style.display='none'; };
+
+      function quote(){
+        var i=document.getElementById('m-in').value, o=document.getElementById('m-out').value;
+        var q=document.getElementById('m-quote'), msg=document.getElementById('m-msg');
+        msg.textContent=''; q.style.display='none';
+        if(!i||!o||!cur) return;
+        fetch('/api/availability?apartment='+cur.id+'&entrada='+i+'&salida='+o).then(function(r){return r.json();}).then(function(d){
+          if(!d.disponible){ msg.textContent=d.motivo||'No disponible en esas fechas.'; return; }
+          var p=d.precios;
+          q.style.display='block';
+          q.innerHTML='<div style="display:flex;justify-content:space-between"><span>'+p.noches+' noches</span><span><s style="color:#999">'+money(p.total)+' €</s> <b style="color:var(--verde)">'+money(p.totalWeb)+' €</b></span></div>'+
+            '<div style="color:var(--gris);font-size:12px;margin-top:4px">Ahorras '+money(p.ahorro)+' € con la reserva directa.</div>';
+        });
+      }
+      document.getElementById('m-in').onchange=quote;
+      document.getElementById('m-out').onchange=quote;
+
+      document.getElementById('m-book').onclick=function(){
+        var msg=document.getElementById('m-msg');
+        var body={ apartmentId:cur.id, entrada:document.getElementById('m-in').value, salida:document.getElementById('m-out').value,
+          personas:+document.getElementById('m-pax').value, nombre:document.getElementById('m-nombre').value.trim(),
+          email:document.getElementById('m-email').value.trim(), telefono:document.getElementById('m-tel').value.trim() };
+        if(!body.entrada||!body.salida||!body.nombre||!body.email){ msg.textContent='Completa fechas, nombre y email.'; return; }
+        var btn=this; btn.disabled=true; btn.textContent='Procesando…';
+        fetch('/api/checkout',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)})
+          .then(function(r){return r.json();}).then(function(d){
+            if(!d.ok){ msg.textContent=d.error||'No se pudo completar.'; btn.disabled=false; btn.textContent='Reservar y pagar'; return; }
+            if(d.mode==='stripe' && d.url){ window.location.href=d.url; return; }
+            window.location.href=d.redirect||('/reserva-ok?id='+(d.booking&&d.booking.id));
+          }).catch(function(){ msg.textContent='Error de red.'; btn.disabled=false; btn.textContent='Reservar y pagar'; });
+      };
+
+      render();
+    })();
+  </script>
+</BaseLayout>
