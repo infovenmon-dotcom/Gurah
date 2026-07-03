@@ -17,6 +17,7 @@ const PANEL_PUBLIC = new Set(['/panel/login', '/panel/logout', '/panel/reset']);
 const PUBLIC_API = [
   '/api/availability',
   '/api/checkout',
+  '/api/concierge',
   '/api/apartments',
   '/api/stripe-webhook',
   '/api/whatsapp',

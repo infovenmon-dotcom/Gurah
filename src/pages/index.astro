@@ -4,32 +4,21 @@ import { getActiveApartments } from '../lib/apartmentsStore';
 import { getBlockedDates } from '../lib/bookings';
 import { webPrice } from '../lib/pricing';
 import { servicioLabel } from '../lib/apartments';
-import { isDemoMode } from '../lib/persist';
+import { isDemoMode, readJson } from '../lib/persist';
+import { activeTheme as t } from '../lib/theme';
 
 const apartments = await getActiveApartments();
 const demo = await isDemoMode();
+const reviews = (await readJson<any[]>('reviews', [])).slice(0, 3);
 
-// Inyección tipo window.GURAH_AVAIL (equivalente a KIRANA_AVAIL):
-// apartamentos activos + precio web (−10%) + fechas bloqueadas.
+// Inyección para el motor de reserva en cliente (precio web + bloqueos).
 const avail = await Promise.all(
   apartments.map(async (a) => ({
-    id: a.id,
-    nombre: a.nombre,
-    slug: a.slug,
-    concepto: a.concepto,
-    storytelling: a.storytelling,
-    ubicacion: a.ubicacion,
-    m2: a.m2,
-    dormitorios: a.dormitorios,
-    banos: a.banos,
-    capacidad: a.capacidad,
-    camas: a.camas,
-    servicios: a.servicios,
-    precio_base: a.precio_base,
-    precio_base_web: webPrice(a.precio_base),
-    estancia_minima: a.estancia_minima,
-    tarifas_temporada: a.tarifas_temporada,
-    fotos: a.fotos,
+    id: a.id, nombre: a.nombre, concepto: a.concepto, storytelling: a.storytelling,
+    ubicacion: a.ubicacion, m2: a.m2, dormitorios: a.dormitorios, banos: a.banos,
+    capacidad: a.capacidad, camas: a.camas, servicios: a.servicios,
+    precio_base: a.precio_base, precio_base_web: webPrice(a.precio_base),
+    estancia_minima: a.estancia_minima, fotos: a.fotos,
     blocked: await getBlockedDates(a.id),
   })),
 );
@@ -37,236 +26,285 @@ const avail = await Promise.all(
 
 <BaseLayout>
   {demo && (
-    <div class="sans" style="background:#ffd257;color:#5b4a00;text-align:center;padding:8px;font-size:13px;font-weight:600">
-      MODO DEMO — reservas y pagos simulados. Configura las variables de entorno para activar el modo real.
-    </div>
+    <div class="sans demo-bar">MODO DEMO — reservas y pagos simulados.</div>
   )}
 
-  <!-- HERO inmersivo (estilo editorial, foto a pantalla completa) -->
+  <!-- ===================== HERO CINEMATOGRÁFICO ===================== -->
   <section class="hero">
-    <!-- Fondo: [PENDIENTE CLIENTE] sustituir por fotografía propia sin marca de agua.
-         Placeholder: degradado que evoca la costa verde de Bakio. -->
-    <div class="hero-bg" aria-hidden="true"></div>
-    <div class="hero-overlay" aria-hidden="true"></div>
-    <div class="hero-inner">
-      <p class="hero-eyebrow sans">Bakio · Bizkaia · Costa Vasca</p>
-      <h1 class="hero-title">Donde el campo<br /><em>encuentra el mar</em></h1>
-      <p class="hero-tagline sans"><span></span>Mar · Diseño · Calma<span></span></p>
-      <p class="hero-sub">Apartamentos boutique a 3&nbsp;km de San Juan de Gaztelugatxe. Casa de campo con piscina, refugios junto a la playa, pet-friendly.</p>
-      <div class="hero-cta">
-        <a class="btn" href="#apartamentos" style="background:#fff;color:var(--verde)">Elige tu apartamento</a>
-        <a class="btn ghost" href="#experiencia" style="border-color:rgba(255,255,255,.8);color:#fff">Descubre el entorno</a>
+    {t.hero.videoUrl ? (
+      <video class="hero-media" autoplay muted loop playsinline poster={t.hero.images[0]}>
+        <source src={t.hero.videoUrl} type="video/mp4" />
+      </video>
+    ) : (
+      <div class="hero-slides" aria-hidden="true">
+        {t.hero.images.map((src, i) => (
+          <div class="hero-slide" style={`background-image:url('${src}');animation-delay:${i * 5}s`} />
+        ))}
       </div>
+    )}
+    <div class="hero-overlay" aria-hidden="true"></div>
+    <div class="hero-inner reveal in">
+      <p class="hero-eyebrow sans">{t.hero.eyebrow}</p>
+      <h1 class="hero-title">{t.hero.titleLines[0]}<br /><em>{t.hero.titleLines[1]}</em></h1>
+      <p class="hero-tagline sans"><span></span>{t.brand.tagline}<span></span></p>
+      <a class="btn hero-cta" href="#historia">{t.hero.ctaLabel}</a>
     </div>
-    <a href="#apartamentos" class="hero-scroll sans" aria-label="Bajar">
-      <span>Explora</span>
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M6 13l6 6 6-6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <a href="#historia" class="hero-scroll sans" aria-label="Bajar">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M6 13l6 6 6-6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </a>
   </section>
 
-  <style>
-    .hero { position:relative; min-height:92vh; display:flex; align-items:center; justify-content:center; text-align:center; color:#fff; overflow:hidden; }
-    .hero-bg {
-      position:absolute; inset:0;
-      /* Foto real de GURAH (baja resolución de Booking → sustituir por hi-res cuando esté) */
-      background:#0e5c4a url('/img/gurah/hero.jpg') center/cover no-repeat;
-      transform:scale(1.04);
-      animation:heroZoom 22s ease-in-out infinite alternate;
-    }
-    .hero-bg::after {
-      content:""; position:absolute; inset:0;
-      background:
-        radial-gradient(60% 40% at 20% 85%, rgba(201,162,75,.14), transparent 70%),
-        radial-gradient(50% 40% at 85% 20%, rgba(255,255,255,.08), transparent 70%);
-    }
-    @keyframes heroZoom { from{ transform:scale(1.04);} to{ transform:scale(1.12);} }
-    /* Overlay neutro (carbón cálido) — estética Japandi, no tinte verde */
-    .hero-overlay { position:absolute; inset:0; background:linear-gradient(180deg, rgba(35,34,30,.34) 0%, rgba(35,34,30,.12) 42%, rgba(35,34,30,.58) 100%); }
-    .hero-inner { position:relative; z-index:2; max-width:840px; padding:40px 22px; }
-    .hero-eyebrow { letter-spacing:.34em; text-transform:uppercase; font-size:12px; opacity:.92; margin:0 0 20px; font-weight:500; }
-    .hero-title { font-family:var(--serif); font-weight:400; font-size:clamp(42px,8.5vw,92px); line-height:1.02; margin:0 0 18px; letter-spacing:.01em; text-shadow:0 2px 40px rgba(0,0,0,.28); }
-    .hero-title em { font-style:italic; color:#e6d4ac; }
-    .hero-tagline { display:flex; align-items:center; justify-content:center; gap:14px; letter-spacing:.32em; text-transform:uppercase; font-size:12px; opacity:.9; margin:0 0 22px; font-weight:400; }
-    .hero-tagline span { width:34px; height:1px; background:rgba(230,212,172,.7); display:inline-block; }
-    .hero-sub { font-family:var(--sans); font-weight:300; font-size:clamp(16px,2vw,19px); line-height:1.7; max-width:540px; margin:0 auto; opacity:.95; }
-    .hero-cta { margin-top:34px; display:flex; gap:14px; flex-wrap:wrap; justify-content:center; }
-    .hero-scroll { position:absolute; bottom:26px; left:50%; transform:translateX(-50%); z-index:2; display:flex; flex-direction:column; align-items:center; gap:6px; color:#fff; text-decoration:none; font-size:11px; letter-spacing:.24em; text-transform:uppercase; opacity:.85; }
-    .hero-scroll svg { animation:bob 1.8s ease-in-out infinite; }
-    @keyframes bob { 0%,100%{ transform:translateY(0);} 50%{ transform:translateY(6px);} }
-    @media (prefers-reduced-motion: reduce) { .hero-bg,.hero-scroll svg{ animation:none; } }
-  </style>
-
-  <!-- SELECCIÓN DE APARTAMENTO -->
-  <section id="apartamentos" class="container" style="padding:56px 0 20px">
-    <h2 style="font-size:32px;margin:0 0 6px">Elige tu apartamento</h2>
-    <p class="sans" style="color:var(--gris);margin:0 0 22px">{apartments.length} alojamientos · precio web con −10% frente a plataformas.</p>
-
-    <!-- FILTROS diferenciadores -->
-    <div class="sans" id="filtros" style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:26px">
-      <button class="chip" data-filter="all" data-active="1">Todos</button>
-      <button class="chip" data-filter="mascotas">🐾 Admite mascotas</button>
-      <button class="chip" data-filter="piscina">🏊 Piscina</button>
-      <button class="chip" data-filter="campo">🌳 Campo</button>
-      <button class="chip" data-filter="playa">🏖️ Playa</button>
+  <!-- ===================== STORYTELLING ===================== -->
+  <section id="historia" class="story">
+    <div class="story-text reveal">
+      <h2 class="story-title">{t.storytelling.title.split('\n').map((l) => (<span>{l}<br /></span>))}</h2>
+      {t.storytelling.paragraphs.map((p) => (<p class="sans">{p}</p>))}
+      <a class="link-underline sans" href="#apartamentos">Descubre los apartamentos →</a>
     </div>
-
-    <div id="grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:22px"></div>
+    <div class="story-img reveal" style={`background-image:url('${t.storytelling.image}')`}></div>
   </section>
 
-  <!-- EXPERIENCIA / ENTORNO -->
-  <section id="experiencia" style="background:var(--arena);padding:56px 0;margin-top:40px">
-    <div class="container">
-      <h2 style="font-size:30px;margin:0 0 6px">El entorno</h2>
-      <p class="sans" style="color:var(--gris);margin:0 0 26px">Costa, campo y uno de los rincones más icónicos de Euskadi.</p>
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:22px">
-        <article class="env-card"><img src="/img/gurah/env-playa.jpg" alt="Playa de Bakio" loading="lazy" /><div><h3>🏖️ Playa de Bakio</h3><p class="sans">Uno de los mejores arenales de Bizkaia para surf y paseo.</p></div></article>
-        <article class="env-card"><img src="/img/gurah/env-gaztelugatxe.jpg" alt="San Juan de Gaztelugatxe" loading="lazy" /><div><h3>⛪ Gaztelugatxe</h3><p class="sans">El icónico islote de San Juan, a solo 3 km.</p></div></article>
-        <article class="env-card"><img src="/img/gurah/env-jardin.jpg" alt="Jardín y terraza" loading="lazy" /><div><h3>🌿 Jardín & mascotas</h3><p class="sans">Jardín, terraza y alojamientos que admiten mascotas.</p></div></article>
-        <article class="env-card"><img src="/img/gurah/env-piscina.jpg" alt="Piscina" loading="lazy" /><div><h3>🏊 Piscina</h3><p class="sans">Casa de campo con piscina y vistas al valle.</p></div></article>
+  <!-- ===================== APARTAMENTOS (pantalla completa) ===================== -->
+  <section id="apartamentos" class="section-head reveal">
+    <p class="kicker sans">Alojamientos</p>
+    <h2>Elige tu apartamento</h2>
+    <p class="sans muted-lead">{apartments.length} espacios · reserva directa con el mejor precio.</p>
+  </section>
+
+  {avail.map((a, i) => (
+    <section class={`apt-full ${i % 2 === 1 ? 'rev' : ''}`}>
+      <div class="apt-full-img reveal" style={`background-image:url('${a.fotos && a.fotos[0] && String(a.fotos[0]).startsWith('/img/') ? a.fotos[0] : '/img/placeholder/apt-' + (a.ubicacion.tipo === 'playa' ? 'playa' : 'campo') + '.svg'}')`}>
+        <span class="apt-loc sans">{a.ubicacion.tipo === 'playa' ? '🏖 Playa' : '🌳 Campo'} · {a.ubicacion.texto}</span>
       </div>
+      <div class="apt-full-text reveal">
+        <p class="kicker sans">{a.concepto}</p>
+        <h3>{a.nombre}</h3>
+        <p class="apt-story sans">{a.storytelling.replace('[PENDIENTE CLIENTE] ', '')}</p>
+        <div class="apt-specs sans">
+          <span>{a.m2} m²</span><i></i><span>{a.dormitorios} dorm.</span><i></i>
+          <span>{a.banos} baños</span><i></i><span>hasta {a.capacidad}</span>
+        </div>
+        <div class="apt-serv sans">{a.servicios.slice(0, 5).map((s) => (<span>{servicioLabel(s)}</span>))}</div>
+        <div class="apt-foot">
+          <div class="apt-price sans"><s>{Math.round(a.precio_base)} €</s><b>{Math.round(a.precio_base_web)} €</b><small>/noche · −10%</small></div>
+          <button class="btn book" data-id={a.id}>Ver fechas y reservar</button>
+        </div>
+      </div>
+    </section>
+  ))}
+
+  <!-- ===================== UNA EXPERIENCIA ===================== -->
+  <section class="exp">
+    <div class="section-head reveal"><p class="kicker sans">{t.experience.kicker}</p><h2>{t.experience.title}</h2></div>
+    <div class="exp-grid">
+      {t.experience.items.map((it) => (
+        <figure class="exp-item reveal" style={`background-image:url('${it.foto}')`}>
+          <figcaption class="serif">{it.texto}</figcaption>
+        </figure>
+      ))}
     </div>
   </section>
 
-  <style>
-    .env-card { background:#fff; border:1px solid var(--linea); border-radius:14px; overflow:hidden; }
-    .env-card img { display:block; width:100%; height:150px; object-fit:cover; }
-    .env-card > div { padding:14px 16px; }
-    .env-card h3 { margin:0 0 4px; font-size:17px; }
-    .env-card p { margin:0; color:var(--gris); font-size:14px; }
-  </style>
+  <!-- ===================== EL LUGAR ===================== -->
+  <section id="entorno" class="place">
+    <div class="section-head reveal"><p class="kicker sans">{t.place.kicker}</p><h2>{t.place.title}</h2></div>
+    <div class="place-grid">
+      {t.place.items.map((it) => (
+        <article class="place-item reveal">
+          <div class="place-img" style={`background-image:url('${it.foto}')`}></div>
+          <h3>{it.titulo}</h3>
+          <p class="sans">{it.texto}</p>
+        </article>
+      ))}
+    </div>
+  </section>
 
-  <!-- MODAL DE RESERVA -->
-  <div id="modal" style="display:none;position:fixed;inset:0;background:rgba(20,30,26,.55);z-index:50;align-items:center;justify-content:center;padding:16px">
-    <div class="sans" style="background:#fff;max-width:460px;width:100%;border-radius:16px;padding:24px;max-height:92vh;overflow:auto">
-      <div style="display:flex;justify-content:space-between;align-items:start">
-        <h3 id="m-title" style="margin:0"></h3>
-        <button id="m-close" style="border:0;background:none;font-size:24px;cursor:pointer;line-height:1">×</button>
+  <!-- ===================== OPINIONES ===================== -->
+  {reviews.length > 0 && (
+    <section class="reviews">
+      <div class="section-head reveal"><p class="kicker sans">Opiniones</p><h2>Lo que cuentan</h2></div>
+      <div class="reviews-list">
+        {reviews.map((r) => (
+          <blockquote class="review reveal">
+            <p class="serif">“{r.texto}”</p>
+            <cite class="sans">— {r.autor}{r.puntuacion ? ` · ${'★'.repeat(r.puntuacion)}` : ''}</cite>
+          </blockquote>
+        ))}
       </div>
-      <p id="m-sub" style="color:var(--gris);font-size:14px;margin:4px 0 16px"></p>
-      <div style="display:flex;gap:10px">
-        <div style="flex:1"><label style="font-size:12px;color:var(--gris)">Entrada</label><input id="m-in" type="date" style="width:100%;padding:9px;border:1px solid var(--linea);border-radius:8px"></div>
-        <div style="flex:1"><label style="font-size:12px;color:var(--gris)">Salida</label><input id="m-out" type="date" style="width:100%;padding:9px;border:1px solid var(--linea);border-radius:8px"></div>
+    </section>
+  )}
+
+  <!-- ===================== RESERVA FINAL ===================== -->
+  <section class="cta-final reveal">
+    <h2>Tu escapada empieza aquí</h2>
+    <p class="sans">Reserva directa, sin comisiones, con el mejor precio garantizado.</p>
+    <a class="btn" href="#apartamentos">Elige tu apartamento</a>
+  </section>
+
+  <!-- ===================== MODAL DE RESERVA ===================== -->
+  <div id="modal" class="modal" style="display:none">
+    <div class="modal-box sans">
+      <div class="modal-top"><h3 id="m-title"></h3><button id="m-close" aria-label="Cerrar">×</button></div>
+      <p id="m-sub" class="muted"></p>
+      <div class="modal-row">
+        <label>Entrada<input id="m-in" type="date" /></label>
+        <label>Salida<input id="m-out" type="date" /></label>
       </div>
-      <div style="margin-top:10px"><label style="font-size:12px;color:var(--gris)">Personas</label><input id="m-pax" type="number" min="1" value="2" style="width:100%;padding:9px;border:1px solid var(--linea);border-radius:8px"></div>
-      <div id="m-quote" style="margin:14px 0;padding:12px;background:var(--arena);border-radius:10px;font-size:14px;display:none"></div>
-      <div id="m-msg" style="color:#b4462f;font-size:13px;min-height:18px"></div>
-      <hr style="border:0;border-top:1px solid var(--linea);margin:14px 0">
-      <div style="display:flex;gap:10px"><input id="m-nombre" placeholder="Nombre" style="flex:1;padding:9px;border:1px solid var(--linea);border-radius:8px"><input id="m-email" type="email" placeholder="Email" style="flex:1;padding:9px;border:1px solid var(--linea);border-radius:8px"></div>
-      <input id="m-tel" placeholder="Teléfono (opcional)" style="width:100%;margin-top:10px;padding:9px;border:1px solid var(--linea);border-radius:8px">
-      <button id="m-book" class="btn" style="width:100%;margin-top:16px">Reservar y pagar</button>
-      <p style="font-size:12px;color:var(--gris);text-align:center;margin:10px 0 0">Pago seguro. Precio directo con −10%.</p>
+      <label class="block">Personas<input id="m-pax" type="number" min="1" value="2" /></label>
+      <div id="m-quote" class="modal-quote" style="display:none"></div>
+      <div id="m-msg" class="modal-msg"></div>
+      <hr />
+      <div class="modal-row"><input id="m-nombre" placeholder="Nombre" /><input id="m-email" type="email" placeholder="Email" /></div>
+      <input id="m-tel" class="block" placeholder="Teléfono (opcional)" />
+      <button id="m-book" class="btn full">Reservar y pagar</button>
+      <p class="fineprint">Pago seguro · precio directo −10%.</p>
     </div>
   </div>
 
-  <!-- is:global: las fichas .apt se inyectan por JS y no llevan el atributo de scope de Astro -->
-  <style is:global>
-    .chip { border:1px solid var(--linea); background:#fff; padding:8px 14px; border-radius:22px; cursor:pointer; font-size:14px; }
-    .chip[data-active="1"] { background:var(--verde); color:#fff; border-color:var(--verde); }
-    .apt { border:1px solid var(--linea); border-radius:16px; overflow:hidden; background:#fff; display:flex; flex-direction:column; }
-    .apt .photo { flex:0 0 180px; height:180px; background:#cfe3dc center/cover no-repeat; display:block; color:#0e5c4a; position:relative; }
-    .apt .pend-tag { position:absolute; bottom:10px; right:10px; background:rgba(26,36,32,.72); color:#fff; font-size:11px; padding:3px 8px; border-radius:12px; }
-    .apt .body { padding:16px; display:flex; flex-direction:column; gap:8px; flex:1; }
-    .apt .specs { display:flex; flex-wrap:wrap; gap:8px; color:var(--gris); font-size:13px; }
-    .apt .serv { display:flex; flex-wrap:wrap; gap:6px; }
-    .apt .serv span { background:var(--arena); border-radius:14px; padding:3px 9px; font-size:12px; }
-    .apt .price { display:flex; align-items:baseline; gap:8px; margin-top:auto; }
-    .apt .price s { color:var(--gris); font-size:14px; }
-    .apt .price b { color:var(--verde); font-size:22px; }
-    .loc { position:absolute; top:10px; left:10px; background:rgba(255,255,255,.9); border-radius:20px; padding:3px 10px; font-size:12px; }
+  <!-- ===================== CONCIERGE IA ===================== -->
+  <button id="cc-launch" class="cc-launch sans" aria-label="Concierge">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M4 5h16v11H8l-4 4V5z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+    <span>{t.concierge.launcher}</span>
+  </button>
+  <div id="cc-panel" class="cc-panel sans" style="display:none">
+    <div class="cc-head"><b class="serif">Concierge {t.brand.name}</b><button id="cc-close" aria-label="Cerrar">×</button></div>
+    <div id="cc-log" class="cc-log"></div>
+    <form id="cc-form" class="cc-form"><input id="cc-input" placeholder="Escríbeme…" autocomplete="off" /><button type="submit" aria-label="Enviar">→</button></form>
+  </div>
+
+  <script is:inline set:html={`window.GURAH_AVAIL = ${JSON.stringify(avail)}; window.CC_GREETING = ${JSON.stringify(t.concierge.greeting)};`}></script>
+  <script is:inline src="/js/home.js"></script>
+
+  <style>
+    .demo-bar { background:#e8dcae; color:#5b4a00; text-align:center; padding:7px; font-size:12px; letter-spacing:.06em; }
+    .reveal { opacity:0; transform:translateY(24px); transition:opacity .9s ease, transform .9s ease; }
+    .reveal.in { opacity:1; transform:none; }
+    .kicker { letter-spacing:.28em; text-transform:uppercase; font-size:11px; color:var(--dorado); margin:0 0 12px; font-weight:500; }
+    .section-head { max-width:1120px; margin:0 auto; padding:100px 24px 30px; text-align:center; }
+    .section-head h2 { font-size:clamp(30px,5vw,50px); margin:0; }
+    .muted-lead { color:var(--gris); margin-top:12px; }
+
+    /* HERO */
+    .hero { position:relative; height:100vh; min-height:620px; display:flex; align-items:center; justify-content:center; text-align:center; color:#fff; overflow:hidden; }
+    .hero-media { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+    .hero-slides { position:absolute; inset:0; }
+    .hero-slide { position:absolute; inset:0; background-size:cover; background-position:center; opacity:0;
+      animation:heroCross 15s linear infinite; }
+    @keyframes heroCross {
+      0% { opacity:0; transform:scale(1.06); }
+      6% { opacity:1; } 28% { opacity:1; } 34% { opacity:0; }
+      100% { opacity:0; transform:scale(1.12); }
+    }
+    .hero-overlay { position:absolute; inset:0; background:linear-gradient(180deg, rgba(35,34,30,.36) 0%, rgba(35,34,30,.14) 40%, rgba(35,34,30,.6) 100%); }
+    .hero-inner { position:relative; z-index:2; max-width:860px; padding:40px 24px; }
+    .hero-eyebrow { letter-spacing:.36em; text-transform:uppercase; font-size:12px; opacity:.92; margin:0 0 22px; }
+    .hero-title { font-weight:400; font-size:clamp(44px,9vw,104px); line-height:1.0; margin:0 0 20px; text-shadow:0 2px 46px rgba(0,0,0,.3); }
+    .hero-title em { font-style:italic; color:#e6d4ac; }
+    .hero-tagline { display:flex; align-items:center; justify-content:center; gap:14px; letter-spacing:.34em; text-transform:uppercase; font-size:12px; opacity:.9; margin:0 0 34px; }
+    .hero-tagline span { width:36px; height:1px; background:rgba(230,212,172,.7); }
+    .hero-cta { background:#fff; color:var(--tinta); padding:15px 34px; }
+    .hero-cta:hover { background:#f0e9db; }
+    .hero-scroll { position:absolute; bottom:28px; left:50%; transform:translateX(-50%); z-index:2; color:#fff; opacity:.85; }
+    .hero-scroll svg { animation:bob 1.9s ease-in-out infinite; }
+    @keyframes bob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(7px)} }
+
+    /* STORYTELLING */
+    .story { max-width:1180px; margin:0 auto; padding:110px 24px; display:grid; grid-template-columns:1.05fr .95fr; gap:64px; align-items:center; }
+    .story-title { font-size:clamp(30px,4.6vw,54px); line-height:1.08; margin:0 0 26px; }
+    .story-text p.sans { color:#5c574c; font-size:17px; line-height:1.85; margin:0 0 18px; max-width:38ch; }
+    .link-underline { color:var(--verde); text-decoration:none; border-bottom:1px solid var(--verde); padding-bottom:2px; font-size:14px; letter-spacing:.02em; }
+    .story-img { min-height:480px; border-radius:6px; background-size:cover; background-position:center; }
+
+    /* APARTAMENTOS full */
+    .apt-full { display:grid; grid-template-columns:1.15fr 1fr; min-height:82vh; align-items:stretch; }
+    .apt-full.rev { grid-template-columns:1fr 1.15fr; }
+    .apt-full.rev .apt-full-img { order:2; }
+    .apt-full.rev .apt-full-text { order:1; }
+    .apt-full-img { position:relative; background-size:cover; background-position:center; min-height:56vh; }
+    .apt-loc { position:absolute; top:20px; left:20px; background:rgba(35,34,30,.6); color:#fff; padding:6px 13px; border-radius:20px; font-size:12px; letter-spacing:.04em; }
+    .apt-full-text { display:flex; flex-direction:column; justify-content:center; padding:6vh 6vw; background:var(--crema); }
+    .apt-full.rev .apt-full-text { background:var(--arena); }
+    .apt-full-text h3 { font-size:clamp(30px,4vw,46px); margin:0 0 18px; }
+    .apt-story { color:#5c574c; font-size:16px; line-height:1.8; max-width:44ch; margin:0 0 22px; }
+    .apt-specs { display:flex; align-items:center; gap:14px; color:var(--gris); font-size:14px; margin-bottom:18px; }
+    .apt-specs i { width:4px; height:4px; border-radius:50%; background:var(--dorado); display:inline-block; }
+    .apt-serv { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:30px; }
+    .apt-serv span { border:1px solid var(--linea); border-radius:20px; padding:5px 13px; font-size:12px; color:#6b665b; }
+    .apt-foot { display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap; }
+    .apt-price { display:flex; align-items:baseline; gap:8px; }
+    .apt-price s { color:var(--gris); font-size:15px; }
+    .apt-price b { font-family:var(--serif); color:var(--verde); font-size:30px; }
+    .apt-price small { color:var(--gris); font-size:13px; }
+
+    /* EXPERIENCIA */
+    .exp { background:var(--tinta); color:#f2ede2; padding:20px 0 90px; margin-top:40px; }
+    .exp .kicker { color:var(--dorado); }
+    .exp .section-head h2 { color:#f6f1e8; }
+    .exp-grid { max-width:1200px; margin:0 auto; padding:0 24px; display:grid; grid-template-columns:repeat(4,1fr); gap:14px; }
+    .exp-item { position:relative; height:360px; border-radius:6px; overflow:hidden; background-size:cover; background-position:center; display:flex; align-items:flex-end; }
+    .exp-item::after { content:""; position:absolute; inset:0; background:linear-gradient(180deg,rgba(20,19,16,0) 40%,rgba(20,19,16,.72) 100%); }
+    .exp-item figcaption { position:relative; z-index:2; color:#fff; padding:22px; font-size:22px; line-height:1.25; }
+
+    /* EL LUGAR */
+    .place { padding-bottom:90px; }
+    .place-grid { max-width:1180px; margin:0 auto; padding:0 24px; display:grid; grid-template-columns:repeat(3,1fr); gap:30px; }
+    .place-img { height:300px; border-radius:6px; background-size:cover; background-position:center; margin-bottom:18px; }
+    .place-item h3 { font-size:24px; margin:0 0 6px; }
+    .place-item p { color:var(--gris); font-size:15px; margin:0; }
+
+    /* OPINIONES */
+    .reviews { background:var(--arena); padding-bottom:100px; }
+    .reviews-list { max-width:1080px; margin:0 auto; padding:0 24px; display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:34px; }
+    .review { margin:0; }
+    .review p { font-size:20px; line-height:1.5; font-style:italic; color:var(--tinta); margin:0 0 14px; }
+    .review cite { color:var(--gris); font-style:normal; font-size:13px; letter-spacing:.04em; }
+
+    /* CTA FINAL */
+    .cta-final { text-align:center; padding:110px 24px; }
+    .cta-final h2 { font-size:clamp(32px,5vw,54px); margin:0 0 14px; }
+    .cta-final p { color:var(--gris); margin:0 0 28px; }
+
+    /* MODAL */
+    .modal { position:fixed; inset:0; background:rgba(20,19,16,.55); z-index:60; display:flex; align-items:center; justify-content:center; padding:16px; }
+    .modal-box { background:var(--crema); max-width:460px; width:100%; border-radius:14px; padding:26px; max-height:92vh; overflow:auto; }
+    .modal-top { display:flex; justify-content:space-between; align-items:flex-start; }
+    .modal-top h3 { margin:0; font-size:24px; }
+    .modal-top button { border:0; background:none; font-size:26px; cursor:pointer; color:var(--gris); line-height:1; }
+    .modal .muted { color:var(--gris); font-size:14px; margin:4px 0 16px; }
+    .modal-row { display:flex; gap:10px; }
+    .modal label { flex:1; font-size:12px; color:var(--gris); display:block; }
+    .modal input { width:100%; padding:10px; border:1px solid var(--linea); border-radius:8px; margin-top:4px; font-size:14px; background:#fff; font-family:var(--sans); }
+    .modal .block { display:block; margin-top:10px; }
+    .modal-quote { margin:14px 0; padding:13px; background:var(--arena); border-radius:9px; font-size:14px; }
+    .modal-msg { color:#b4462f; font-size:13px; min-height:18px; }
+    .modal hr { border:0; border-top:1px solid var(--linea); margin:14px 0; }
+    .btn.full { width:100%; margin-top:16px; }
+    .fineprint { font-size:12px; color:var(--gris); text-align:center; margin:10px 0 0; }
+
+    /* CONCIERGE */
+    .cc-launch { position:fixed; bottom:22px; right:22px; z-index:55; display:flex; align-items:center; gap:8px; background:var(--tinta); color:#fff; border:0; border-radius:30px; padding:12px 18px; cursor:pointer; font-size:14px; letter-spacing:.03em; box-shadow:0 8px 30px rgba(0,0,0,.25); }
+    .cc-panel { position:fixed; bottom:22px; right:22px; z-index:56; width:min(380px,92vw); height:min(560px,80vh); background:var(--crema); border-radius:16px; box-shadow:0 20px 60px rgba(0,0,0,.3); display:flex; flex-direction:column; overflow:hidden; }
+    .cc-head { display:flex; justify-content:space-between; align-items:center; padding:16px 18px; background:var(--tinta); color:#fff; }
+    .cc-head b { font-size:16px; letter-spacing:.06em; }
+    .cc-head button { border:0; background:none; color:#fff; font-size:22px; cursor:pointer; }
+    .cc-log { flex:1; overflow:auto; padding:16px; display:flex; flex-direction:column; gap:10px; }
+    .cc-msg { max-width:85%; padding:10px 13px; border-radius:14px; font-size:14px; line-height:1.5; }
+    .cc-msg.bot { background:#fff; border:1px solid var(--linea); align-self:flex-start; border-bottom-left-radius:4px; }
+    .cc-msg.me { background:var(--verde); color:#fff; align-self:flex-end; border-bottom-right-radius:4px; }
+    .cc-msg.typing { color:var(--gris); font-style:italic; }
+    .cc-form { display:flex; gap:8px; padding:12px; border-top:1px solid var(--linea); }
+    .cc-form input { flex:1; padding:11px 14px; border:1px solid var(--linea); border-radius:22px; font-size:14px; font-family:var(--sans); }
+    .cc-form button { border:0; background:var(--verde); color:#fff; width:42px; border-radius:50%; cursor:pointer; font-size:18px; }
+
+    @media (max-width:820px) {
+      .story { grid-template-columns:1fr; gap:36px; }
+      .story-img { min-height:320px; }
+      .apt-full, .apt-full.rev { grid-template-columns:1fr; }
+      .apt-full.rev .apt-full-img { order:1; } .apt-full.rev .apt-full-text { order:2; }
+      .exp-grid { grid-template-columns:repeat(2,1fr); }
+      .place-grid { grid-template-columns:1fr; }
+      .cc-launch span { display:none; }
+    }
+    @media (prefers-reduced-motion: reduce) { .hero-slide,.hero-scroll svg { animation:none; } .hero-slide:first-child{opacity:1} .reveal{transition:none;opacity:1;transform:none} }
   </style>
-
-  <script is:inline set:html={`window.GURAH_AVAIL = ${JSON.stringify(avail)};`}></script>
-  <script is:inline>
-    (function () {
-      var A = window.GURAH_AVAIL || [];
-      var grid = document.getElementById('grid');
-      var LABELS = {piscina:'Piscina',jardin:'Jardín',mascotas:'Admite mascotas',parking:'Parking',wifi:'WiFi',cocina_equipada:'Cocina equipada',chimenea:'Chimenea',barbacoa:'Barbacoa',terraza:'Terraza',vistas_mar:'Vistas al mar'};
-      var filter = 'all';
-
-      function money(n){ return (Math.round(n*100)/100).toFixed(0); }
-
-      function card(a){
-        var foto = (a.fotos && a.fotos[0] && String(a.fotos[0]).indexOf('/img/')===0) ? a.fotos[0] : null;
-        var serv = a.servicios.slice(0,5).map(function(s){ return '<span>'+(LABELS[s]||s)+'</span>'; }).join('');
-        var loc = a.ubicacion.tipo==='playa'?'🏖️ Playa':'🌳 Campo';
-        var img = foto || (a.ubicacion.tipo==='playa'?'/img/placeholder/apt-playa.svg':'/img/placeholder/apt-campo.svg');
-        return '<article class="apt" data-serv="'+a.servicios.join(',')+'" data-tipo="'+a.ubicacion.tipo+'">'+
-          '<div class="photo" style="background-image:url('+img+')"><span class="loc">'+loc+' · '+a.ubicacion.texto+'</span></div>'+
-          '<div class="body">'+
-            '<h3 style="margin:0;font-size:19px">'+a.nombre+'</h3>'+
-            '<div class="specs sans"><span>📐 '+a.m2+' m²</span><span>🛏️ '+a.dormitorios+' dorm.</span><span>🚿 '+a.banos+' baños</span><span>👥 hasta '+a.capacidad+'</span></div>'+
-            '<p class="sans" style="color:var(--gris);font-size:14px;margin:2px 0">'+a.storytelling.replace('[PENDIENTE CLIENTE] ','')+'</p>'+
-            '<div class="serv sans">'+serv+'</div>'+
-            '<div class="sans" style="font-size:13px;color:var(--gris)">Estancia mínima '+a.estancia_minima+' noches · '+(a.ubicacion.lat?('<a href="https://www.openstreetmap.org/?mlat='+a.ubicacion.lat+'&mlon='+a.ubicacion.lng+'#map=15/'+a.ubicacion.lat+'/'+a.ubicacion.lng+'" target="_blank" rel="noopener">ver mapa</a>'):'')+'</div>'+
-            '<div class="price sans"><s>'+money(a.precio_base)+' €</s><b>'+money(a.precio_base_web)+' €</b><span style="color:var(--gris);font-size:13px">/noche · −10%</span></div>'+
-            '<button class="btn book" data-id="'+a.id+'" style="width:100%;margin-top:6px">Ver fechas y reservar</button>'+
-          '</div></article>';
-      }
-
-      function render(){
-        grid.innerHTML = A.filter(function(a){
-          if(filter==='all') return true;
-          if(filter==='campo'||filter==='playa') return a.ubicacion.tipo===filter;
-          return a.servicios.indexOf(filter)>-1;
-        }).map(card).join('') || '<p class="sans" style="color:var(--gris)">No hay apartamentos con ese filtro.</p>';
-        grid.querySelectorAll('.book').forEach(function(b){ b.onclick=function(){ openModal(b.getAttribute('data-id')); }; });
-      }
-
-      document.querySelectorAll('.chip').forEach(function(c){
-        c.onclick=function(){
-          document.querySelectorAll('.chip').forEach(function(x){ x.removeAttribute('data-active'); });
-          c.setAttribute('data-active','1'); filter=c.getAttribute('data-filter'); render();
-        };
-      });
-
-      // --- Modal ---
-      var modal=document.getElementById('modal'), cur=null;
-      function openModal(id){
-        cur=A.find(function(x){return x.id===id;}); if(!cur) return;
-        document.getElementById('m-title').textContent=cur.nombre;
-        document.getElementById('m-sub').textContent=cur.concepto+' · estancia mínima '+cur.estancia_minima+' noches';
-        document.getElementById('m-pax').max=cur.capacidad;
-        document.getElementById('m-quote').style.display='none';
-        document.getElementById('m-msg').textContent='';
-        var today=new Date().toISOString().slice(0,10);
-        document.getElementById('m-in').min=today; document.getElementById('m-out').min=today;
-        modal.style.display='flex';
-      }
-      document.getElementById('m-close').onclick=function(){ modal.style.display='none'; };
-      modal.onclick=function(e){ if(e.target===modal) modal.style.display='none'; };
-
-      function quote(){
-        var i=document.getElementById('m-in').value, o=document.getElementById('m-out').value;
-        var q=document.getElementById('m-quote'), msg=document.getElementById('m-msg');
-        msg.textContent=''; q.style.display='none';
-        if(!i||!o||!cur) return;
-        fetch('/api/availability?apartment='+cur.id+'&entrada='+i+'&salida='+o).then(function(r){return r.json();}).then(function(d){
-          if(!d.disponible){ msg.textContent=d.motivo||'No disponible en esas fechas.'; return; }
-          var p=d.precios;
-          q.style.display='block';
-          q.innerHTML='<div style="display:flex;justify-content:space-between"><span>'+p.noches+' noches</span><span><s style="color:#999">'+money(p.total)+' €</s> <b style="color:var(--verde)">'+money(p.totalWeb)+' €</b></span></div>'+
-            '<div style="color:var(--gris);font-size:12px;margin-top:4px">Ahorras '+money(p.ahorro)+' € con la reserva directa.</div>';
-        });
-      }
-      document.getElementById('m-in').onchange=quote;
-      document.getElementById('m-out').onchange=quote;
-
-      document.getElementById('m-book').onclick=function(){
-        var msg=document.getElementById('m-msg');
-        var body={ apartmentId:cur.id, entrada:document.getElementById('m-in').value, salida:document.getElementById('m-out').value,
-          personas:+document.getElementById('m-pax').value, nombre:document.getElementById('m-nombre').value.trim(),
-          email:document.getElementById('m-email').value.trim(), telefono:document.getElementById('m-tel').value.trim() };
-        if(!body.entrada||!body.salida||!body.nombre||!body.email){ msg.textContent='Completa fechas, nombre y email.'; return; }
-        var btn=this; btn.disabled=true; btn.textContent='Procesando…';
-        fetch('/api/checkout',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)})
-          .then(function(r){return r.json();}).then(function(d){
-            if(!d.ok){ msg.textContent=d.error||'No se pudo completar.'; btn.disabled=false; btn.textContent='Reservar y pagar'; return; }
-            if(d.mode==='stripe' && d.url){ window.location.href=d.url; return; }
-            window.location.href=d.redirect||('/reserva-ok?id='+(d.booking&&d.booking.id));
-          }).catch(function(){ msg.textContent='Error de red.'; btn.disabled=false; btn.textContent='Reservar y pagar'; });
-      };
-
-      render();
-    })();
-  </script>
 </BaseLayout>

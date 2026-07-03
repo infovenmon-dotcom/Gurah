@@ -1,8 +1,10 @@
 ---
 /**
- * BaseLayout.astro — Shell común GURAH (branding, tipografía, tokens de color).
- * Colores/logo: [PENDIENTE CLIENTE] — placeholders coherentes con "rural boutique 5*".
+ * BaseLayout.astro — Shell común, tematizado por la capa de tema (src/lib/theme.ts).
+ * Paleta, tipografías y marca provienen del tema activo → framework re-tematizable.
  */
+import { activeTheme as t } from '../lib/theme';
+
 export interface Props {
   title?: string;
   description?: string;
@@ -13,6 +15,13 @@ const {
   description = 'Apartamentos boutique en Bakio, a 3 km de San Juan de Gaztelugatxe. Piscina, pet-friendly, reserva directa con el mejor precio.',
   lang = 'es',
 } = Astro.props;
+
+// Tokens de color + tipografías inyectados desde el tema activo.
+const rootVars = `:root{` +
+  `--verde:${t.palette.verde};--verde2:${t.palette.verde2};--salvia:${t.palette.salvia};` +
+  `--arena:${t.palette.arena};--crema:${t.palette.crema};--tinta:${t.palette.tinta};` +
+  `--gris:${t.palette.gris};--linea:${t.palette.linea};--dorado:${t.palette.dorado};` +
+  `--serif:${t.fonts.serif};--sans:${t.fonts.sans};}`;
 ---
 
 <!doctype html>
@@ -27,25 +36,10 @@ const {
          las carga el navegador; en el sandbox sin red se usan las fuentes de reserva. -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Poppins:wght@300;400;500;600&display=swap"
-      rel="stylesheet"
-    />
+    {t.fonts.googleHref && <link href={t.fonts.googleHref} rel="stylesheet" />}
+    <!-- Tokens de color + tipografías del tema activo -->
+    <style is:global set:html={rootVars}></style>
     <style is:global>
-      :root {
-        /* Paleta GURAH — Japandi: crema, arena, carbón cálido y verde salvia */
-        --verde: #46554a;   /* salvia profundo — botones / acento primario */
-        --verde2: #37433b;  /* hover */
-        --salvia: #8a9a8c;  /* salvia claro */
-        --arena: #efe8db;
-        --crema: #f6f1e8;
-        --tinta: #23221e;   /* carbón cálido (casi negro) */
-        --gris: #8a8478;
-        --linea: #e4dccd;
-        --dorado: #b7a488;  /* taupe / dorado suave */
-        --serif: 'DM Serif Display', 'Georgia', 'Times New Roman', serif;
-        --sans: 'Poppins', system-ui, -apple-system, 'Segoe UI', sans-serif;
-      }
       * { box-sizing: border-box; }
       html { scroll-behavior: smooth; }
       body {
@@ -91,7 +85,7 @@ const {
           <path d="M14.5 27.5 q4 -4 8 0 t 8 0" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
           <path d="M15.5 31.5 q4 -3.5 8 0 t 8 0" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" opacity="0.55" />
         </svg>
-        <span><b>GURAH</b><br /><small>Boutique Apartments</small></span>
+        <span><b>{t.brand.name}</b><br /><small>{t.brand.subtitle}</small></span>
       </a>
       <nav class="sans" style="display:flex;gap:18px;align-items:center">
         <a href="/#apartamentos" style="text-decoration:none;color:var(--tinta)">Apartamentos</a>
@@ -107,8 +101,8 @@ const {
     <footer class="site">
       <div class="container" style="display:flex;flex-wrap:wrap;gap:30px;justify-content:space-between">
         <div>
-          <b class="serif" style="font-size:22px;letter-spacing:.22em">GURAH</b>
-          <p style="letter-spacing:.18em;font-size:11px;text-transform:uppercase;color:#a49d8f;margin:4px 0 10px">Mar · Diseño · Calma</p>
+          <b class="serif" style="font-size:22px;letter-spacing:.22em">{t.brand.name}</b>
+          <p style="letter-spacing:.18em;font-size:11px;text-transform:uppercase;color:#a49d8f;margin:4px 0 10px">{t.brand.tagline}</p>
           <p>Apartamentos boutique · Bakio, Bizkaia<br />A 3 km de San Juan de Gaztelugatxe.</p>
         </div>
         <div>
