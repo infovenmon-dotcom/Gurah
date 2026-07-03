@@ -5,7 +5,8 @@ import { getBlockedDates } from '../lib/bookings';
 import { webPrice } from '../lib/pricing';
 import { servicioLabel } from '../lib/apartments';
 import { isDemoMode, readJson } from '../lib/persist';
-import { activeTheme as t } from '../lib/theme';
+import { getTheme } from '../lib/theme';
+const t = getTheme(Astro.url);
 
 const apartments = await getActiveApartments();
 const demo = await isDemoMode();
@@ -115,6 +116,16 @@ const avail = await Promise.all(
           <h3>{it.titulo}</h3>
           <p class="sans">{it.texto}</p>
         </article>
+      ))}
+    </div>
+  </section>
+
+  <!-- ===================== GALERÍA EDITORIAL ===================== -->
+  <section class="gallery">
+    <div class="section-head reveal"><p class="kicker sans">{t.gallery.kicker}</p><h2>{t.gallery.title}</h2></div>
+    <div class="gal-mosaic">
+      {t.gallery.images.map((src, i) => (
+        <figure class={`gal-cell g${i % 8} reveal`} style={`background-image:url('${src}')`}></figure>
       ))}
     </div>
   </section>
@@ -251,6 +262,20 @@ const avail = await Promise.all(
     .place-img { height:300px; border-radius:6px; background-size:cover; background-position:center; margin-bottom:18px; }
     .place-item h3 { font-size:24px; margin:0 0 6px; }
     .place-item p { color:var(--gris); font-size:15px; margin:0; }
+
+    /* GALERÍA EDITORIAL (mosaico asimétrico tipo revista) */
+    .gallery { padding-bottom:100px; }
+    .gal-mosaic { max-width:1180px; margin:0 auto; padding:0 24px; display:grid; grid-template-columns:repeat(4,1fr); grid-auto-rows:190px; gap:12px; }
+    .gal-cell { margin:0; background-size:cover; background-position:center; border-radius:6px; transition:opacity .9s ease, transform .9s ease, filter .6s ease; }
+    .gal-cell:hover { filter:brightness(1.05) saturate(1.05); }
+    .gal-cell.g0 { grid-column:span 2; grid-row:span 2; }
+    .gal-cell.g3 { grid-column:span 2; }
+    .gal-cell.g5 { grid-row:span 2; }
+    .gal-cell.g7 { grid-column:span 2; }
+    /* stagger suave del reveal en la galería */
+    .gal-cell.reveal { transition-delay:.05s; }
+    .gal-cell:nth-child(2n).reveal { transition-delay:.12s; }
+    .gal-cell:nth-child(3n).reveal { transition-delay:.2s; }
 
     /* OPINIONES */
     .reviews { background:var(--arena); padding-bottom:100px; }

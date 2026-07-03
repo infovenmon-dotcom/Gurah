@@ -58,6 +58,8 @@ export interface HotelTheme {
     title: string;
     items: { titulo: string; texto: string; foto: string }[];
   };
+  /** Galería editorial (mosaico tipo revista). */
+  gallery: { kicker: string; title: string; images: string[] };
   concierge: {
     launcher: string; // texto del botón flotante
     greeting: string; // primer mensaje del asistente
@@ -127,6 +129,14 @@ export const gurah: HotelTheme = {
       { titulo: 'Viñedos y valle', texto: 'Txakoli, verde y silencio a la puerta de casa.', foto: '/img/gurah/env-jardin.jpg' },
     ],
   },
+  gallery: {
+    kicker: 'Galería',
+    title: 'Un vistazo a GURAH',
+    images: [
+      '/img/gurah/gal-1.jpg', '/img/gurah/gal-2.jpg', '/img/gurah/gal-3.jpg', '/img/gurah/gal-4.jpg',
+      '/img/gurah/gal-5.jpg', '/img/gurah/gal-6.jpg', '/img/gurah/gal-7.jpg', '/img/gurah/gal-8.jpg',
+    ],
+  },
   concierge: {
     launcher: 'Concierge',
     greeting:
@@ -134,4 +144,53 @@ export const gurah: HotelTheme = {
   },
 };
 
+// ---------------------------------------------------------------------------
+// SEGUNDO TEMA (demo del framework) — misma estructura, otra identidad.
+// Prueba de que re-tematizar = cambiar este objeto, sin tocar la web.
+// ---------------------------------------------------------------------------
+export const costa: HotelTheme = {
+  ...gurah,
+  id: 'costa',
+  brand: { name: 'COSTA', subtitle: 'Seaside Suites', tagline: 'Sal · Luz · Horizonte' },
+  palette: {
+    verde: '#2f5d6b', // azul marino apagado
+    verde2: '#24485360',
+    salvia: '#8fb0b6',
+    arena: '#eef1ef',
+    crema: '#f8f9f7',
+    tinta: '#1c2b30',
+    gris: '#7c8a8e',
+    linea: '#dde4e3',
+    dorado: '#c08a5e', // terracota suave
+  },
+  fonts: {
+    serif: "'Cormorant Garamond', 'Georgia', serif",
+    sans: "'Jost', system-ui, -apple-system, 'Segoe UI', sans-serif",
+    googleHref:
+      'https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;1,400&family=Jost:wght@300;400;500&display=swap',
+  },
+  hero: {
+    ...gurah.hero,
+    eyebrow: 'Costa Vasca · Cantábrico',
+    titleLines: ['El mar', 'como forma de vida'],
+    ctaLabel: 'Descubrir COSTA',
+  },
+  storytelling: {
+    ...gurah.storytelling,
+    title: 'El horizonte\nno tiene prisa.',
+  },
+  concierge: {
+    launcher: 'Concierge',
+    greeting: '¡Hola! Soy el concierge de COSTA. ¿Buscas playa, surf o una escapada tranquila? Te ayudo a planear — y a elegir la suite perfecta.',
+  },
+};
+
+const THEMES: Record<string, HotelTheme> = { gurah, costa };
+
 export const activeTheme: HotelTheme = gurah;
+
+/** Resuelve el tema del framework. `?theme=<id>` permite previsualizar otros hoteles. */
+export function getTheme(url?: URL): HotelTheme {
+  const id = url?.searchParams?.get('theme') || '';
+  return THEMES[id] || activeTheme;
+}

@@ -2,6 +2,21 @@
 (function () {
   var A = window.GURAH_AVAIL || [];
   function money(n) { return (Math.round(n * 100) / 100).toFixed(0); }
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // --- Parallax suave del hero ---------------------------------------------
+  var slides = document.querySelector('.hero-slides') || document.querySelector('.hero-media');
+  if (slides && !reduce) {
+    var ticking = false;
+    window.addEventListener('scroll', function () {
+      if (ticking) return; ticking = true;
+      requestAnimationFrame(function () {
+        var y = window.scrollY || 0;
+        if (y < window.innerHeight) slides.style.transform = 'translateY(' + (y * 0.28) + 'px)';
+        ticking = false;
+      });
+    }, { passive: true });
+  }
 
   // --- Reveal on scroll -----------------------------------------------------
   if ('IntersectionObserver' in window) {

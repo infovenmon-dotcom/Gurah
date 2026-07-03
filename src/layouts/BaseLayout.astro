@@ -3,7 +3,8 @@
  * BaseLayout.astro — Shell común, tematizado por la capa de tema (src/lib/theme.ts).
  * Paleta, tipografías y marca provienen del tema activo → framework re-tematizable.
  */
-import { activeTheme as t } from '../lib/theme';
+import { getTheme } from '../lib/theme';
+const t = getTheme(Astro.url);
 
 export interface Props {
   title?: string;

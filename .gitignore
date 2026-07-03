@@ -8,3 +8,6 @@ src/generated/
 !.env.example
 *.log
 .DS_Store
+
+# preview snapshots (generados)
+preview/
