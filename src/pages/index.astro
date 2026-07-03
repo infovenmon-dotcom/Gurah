@@ -67,19 +67,16 @@ const avail = await Promise.all(
     .hero { position:relative; min-height:92vh; display:flex; align-items:center; justify-content:center; text-align:center; color:#fff; overflow:hidden; }
     .hero-bg {
       position:absolute; inset:0;
-      background:
-        radial-gradient(120% 80% at 50% 0%, rgba(18,122,99,.35), transparent 60%),
-        linear-gradient(180deg, #0b4a3c 0%, #0e5c4a 42%, #16775f 100%);
-      /* Textura sutil de relieve/olas mientras no hay foto real */
-      background-blend-mode:overlay;
+      /* [PENDIENTE CLIENTE] sustituir hero.svg por fotografía propia de Bakio/Gaztelugatxe */
+      background:#0e5c4a url('/img/placeholder/hero.svg') center/cover no-repeat;
       transform:scale(1.04);
       animation:heroZoom 22s ease-in-out infinite alternate;
     }
     .hero-bg::after {
       content:""; position:absolute; inset:0;
       background:
-        radial-gradient(60% 40% at 20% 85%, rgba(201,162,75,.22), transparent 70%),
-        radial-gradient(50% 40% at 85% 20%, rgba(255,255,255,.10), transparent 70%);
+        radial-gradient(60% 40% at 20% 85%, rgba(201,162,75,.14), transparent 70%),
+        radial-gradient(50% 40% at 85% 20%, rgba(255,255,255,.08), transparent 70%);
     }
     @keyframes heroZoom { from{ transform:scale(1.04);} to{ transform:scale(1.12);} }
     .hero-overlay { position:absolute; inset:0; background:linear-gradient(180deg, rgba(10,30,24,.28) 0%, rgba(10,30,24,.10) 40%, rgba(10,30,24,.55) 100%); }
@@ -114,13 +111,25 @@ const avail = await Promise.all(
 
   <!-- EXPERIENCIA / ENTORNO -->
   <section id="experiencia" style="background:var(--arena);padding:56px 0;margin-top:40px">
-    <div class="container" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:24px">
-      <div><h3 style="margin:0 0 6px">🏖️ Playa de Bakio</h3><p class="sans" style="color:var(--gris)">Uno de los mejores arenales de Bizkaia para surf y paseo.</p></div>
-      <div><h3 style="margin:0 0 6px">⛪ Gaztelugatxe</h3><p class="sans" style="color:var(--gris)">El icónico islote de San Juan, a solo 3 km.</p></div>
-      <div><h3 style="margin:0 0 6px">🐾 Pet-friendly</h3><p class="sans" style="color:var(--gris)">Alojamientos que admiten mascotas. Ven con tu perro.</p></div>
-      <div><h3 style="margin:0 0 6px">🏊 Piscina</h3><p class="sans" style="color:var(--gris)">Casa de campo con piscina privada y jardín.</p></div>
+    <div class="container">
+      <h2 style="font-size:30px;margin:0 0 6px">El entorno</h2>
+      <p class="sans" style="color:var(--gris);margin:0 0 26px">Costa, campo y uno de los rincones más icónicos de Euskadi. <span style="opacity:.7">(imágenes de muestra)</span></p>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:22px">
+        <article class="env-card"><img src="/img/placeholder/env-playa.svg" alt="Playa de Bakio" loading="lazy" /><div><h3>🏖️ Playa de Bakio</h3><p class="sans">Uno de los mejores arenales de Bizkaia para surf y paseo.</p></div></article>
+        <article class="env-card"><img src="/img/placeholder/env-gaztelugatxe.svg" alt="San Juan de Gaztelugatxe" loading="lazy" /><div><h3>⛪ Gaztelugatxe</h3><p class="sans">El icónico islote de San Juan, a solo 3 km.</p></div></article>
+        <article class="env-card"><img src="/img/placeholder/env-mascotas.svg" alt="Pet-friendly" loading="lazy" /><div><h3>🐾 Pet-friendly</h3><p class="sans">Alojamientos que admiten mascotas. Ven con tu perro.</p></div></article>
+        <article class="env-card"><img src="/img/placeholder/env-piscina.svg" alt="Piscina" loading="lazy" /><div><h3>🏊 Piscina</h3><p class="sans">Casa de campo con piscina privada y jardín.</p></div></article>
+      </div>
     </div>
   </section>
+
+  <style>
+    .env-card { background:#fff; border:1px solid var(--linea); border-radius:14px; overflow:hidden; }
+    .env-card img { display:block; width:100%; height:150px; object-fit:cover; }
+    .env-card > div { padding:14px 16px; }
+    .env-card h3 { margin:0 0 4px; font-size:17px; }
+    .env-card p { margin:0; color:var(--gris); font-size:14px; }
+  </style>
 
   <!-- MODAL DE RESERVA -->
   <div id="modal" style="display:none;position:fixed;inset:0;background:rgba(20,30,26,.55);z-index:50;align-items:center;justify-content:center;padding:16px">
@@ -149,7 +158,8 @@ const avail = await Promise.all(
     .chip { border:1px solid var(--linea); background:#fff; padding:8px 14px; border-radius:22px; cursor:pointer; font-size:14px; }
     .chip[data-active="1"] { background:var(--verde); color:#fff; border-color:var(--verde); }
     .apt { border:1px solid var(--linea); border-radius:16px; overflow:hidden; background:#fff; display:flex; flex-direction:column; }
-    .apt .photo { height:180px; background:linear-gradient(135deg,#cfe3dc,#a7c8bd); display:flex; align-items:center; justify-content:center; color:#0e5c4a; position:relative; }
+    .apt .photo { height:180px; background:#cfe3dc center/cover no-repeat; display:flex; align-items:flex-end; justify-content:flex-start; color:#0e5c4a; position:relative; }
+    .apt .pend-tag { position:absolute; bottom:10px; right:10px; background:rgba(26,36,32,.72); color:#fff; font-size:11px; padding:3px 8px; border-radius:12px; }
     .apt .body { padding:16px; display:flex; flex-direction:column; gap:8px; flex:1; }
     .apt .specs { display:flex; flex-wrap:wrap; gap:8px; color:var(--gris); font-size:13px; }
     .apt .serv { display:flex; flex-wrap:wrap; gap:6px; }
@@ -174,8 +184,9 @@ const avail = await Promise.all(
         var pending = (a.fotos && a.fotos[0] && String(a.fotos[0]).indexOf('PENDIENTE')>-1);
         var serv = a.servicios.slice(0,5).map(function(s){ return '<span>'+(LABELS[s]||s)+'</span>'; }).join('');
         var loc = a.ubicacion.tipo==='playa'?'🏖️ Playa':'🌳 Campo';
+        var img = a.ubicacion.tipo==='playa'?'/img/placeholder/apt-playa.svg':'/img/placeholder/apt-campo.svg';
         return '<article class="apt" data-serv="'+a.servicios.join(',')+'" data-tipo="'+a.ubicacion.tipo+'">'+
-          '<div class="photo"><span class="loc">'+loc+' · '+a.ubicacion.texto+'</span>'+(pending?'📷 Foto pendiente':'🏡 '+a.nombre)+'</div>'+
+          '<div class="photo" style="background-image:url('+img+')"><span class="loc">'+loc+' · '+a.ubicacion.texto+'</span>'+(pending?'<span class="pend-tag">Imagen de muestra</span>':'')+'</div>'+
           '<div class="body">'+
             '<h3 style="margin:0;font-size:19px">'+a.nombre+'</h3>'+
             '<div class="specs sans"><span>📐 '+a.m2+' m²</span><span>🛏️ '+a.dormitorios+' dorm.</span><span>🚿 '+a.banos+' baños</span><span>👥 hasta '+a.capacidad+'</span></div>'+
