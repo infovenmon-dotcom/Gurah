@@ -30,7 +30,7 @@ const TABS = [
 
 // --- CSS ---------------------------------------------------------------------
 const css = `
-:root{--verde:#0e5c4a;--verde2:#127a63;--arena:#f4efe6;--tinta:#1a2420;--gris:#6b7a74;--linea:#e3ddd0;--rojo:#b4462f}
+:root{--verde:#46554a;--verde2:#37433b;--arena:#f4efe6;--tinta:#1a2420;--gris:#6b7a74;--linea:#e3ddd0;--rojo:#b4462f}
 *{box-sizing:border-box}
 body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--tinta);background:var(--arena)}
 .panel-top{display:flex;align-items:center;justify-content:space-between;padding:14px 22px;background:var(--verde);color:#fff}

@@ -32,10 +32,10 @@ const CSP = [
   "default-src 'self'",
   "img-src 'self' data: https:",
   "script-src 'self' 'unsafe-inline' https://js.stripe.com",
-  "style-src 'self' 'unsafe-inline'",
+  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "frame-src https://js.stripe.com https://hooks.stripe.com https://www.openstreetmap.org",
   "connect-src 'self' https://api.stripe.com",
-  "font-src 'self' data:",
+  "font-src 'self' data: https://fonts.gstatic.com",
   "base-uri 'self'",
   "form-action 'self'",
 ].join('; ');
