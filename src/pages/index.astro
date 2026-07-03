@@ -19,7 +19,7 @@ const avail = await Promise.all(
     ubicacion: a.ubicacion, m2: a.m2, dormitorios: a.dormitorios, banos: a.banos,
     capacidad: a.capacidad, camas: a.camas, servicios: a.servicios,
     precio_base: a.precio_base, precio_base_web: webPrice(a.precio_base),
-    estancia_minima: a.estancia_minima, fotos: a.fotos,
+    estancia_minima: a.estancia_minima, fotos: a.fotos, clip: a.clip,
     blocked: await getBlockedDates(a.id),
   })),
 );
@@ -75,6 +75,11 @@ const avail = await Promise.all(
   {avail.map((a, i) => (
     <section class={`apt-full ${i % 2 === 1 ? 'rev' : ''}`}>
       <div class="apt-full-img reveal" style={`background-image:url('${a.fotos && a.fotos[0] && String(a.fotos[0]).startsWith('/img/') ? a.fotos[0] : '/img/placeholder/apt-' + (a.ubicacion.tipo === 'playa' ? 'playa' : 'campo') + '.svg'}')`}>
+        {a.clip && (
+          <video class="apt-video" autoplay muted loop playsinline preload="none" poster={a.fotos?.[0]}>
+            <source src={a.clip} type="video/webm" />
+          </video>
+        )}
         <span class="apt-loc sans">{a.ubicacion.tipo === 'playa' ? '🏖 Playa' : '🌳 Campo'} · {a.ubicacion.texto}</span>
       </div>
       <div class="apt-full-text reveal">
@@ -231,8 +236,9 @@ const avail = await Promise.all(
     .apt-full.rev { grid-template-columns:1fr 1.15fr; }
     .apt-full.rev .apt-full-img { order:2; }
     .apt-full.rev .apt-full-text { order:1; }
-    .apt-full-img { position:relative; background-size:cover; background-position:center; min-height:56vh; }
-    .apt-loc { position:absolute; top:20px; left:20px; background:rgba(35,34,30,.6); color:#fff; padding:6px 13px; border-radius:20px; font-size:12px; letter-spacing:.04em; }
+    .apt-full-img { position:relative; background-size:cover; background-position:center; min-height:56vh; overflow:hidden; }
+    .apt-video { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; z-index:0; }
+    .apt-loc { position:absolute; top:20px; left:20px; z-index:2; background:rgba(35,34,30,.6); color:#fff; padding:6px 13px; border-radius:20px; font-size:12px; letter-spacing:.04em; }
     .apt-full-text { display:flex; flex-direction:column; justify-content:center; padding:6vh 6vw; background:var(--crema); }
     .apt-full.rev .apt-full-text { background:var(--arena); }
     .apt-full-text h3 { font-size:clamp(30px,4vw,46px); margin:0 0 18px; }

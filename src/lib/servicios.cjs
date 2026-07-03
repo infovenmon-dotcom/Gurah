@@ -11,4 +11,8 @@ module.exports = {
   barbacoa: 'Barbacoa',
   terraza: 'Terraza',
   vistas_mar: 'Vistas al mar',
+  gimnasio: 'Gimnasio',
+  solarium: 'Solárium',
+  padel: 'Tenis-pádel',
+  piscina_comunitaria: 'Piscina comunitaria',
 };

@@ -45,6 +45,8 @@ export interface Apartment {
   estancia_minima: number;
   tarifas_temporada: TarifaTemporada[];
   fotos: string[];
+  /** Clip de ambiente (webm) para la ficha a pantalla completa. */
+  clip?: string;
   estado: 'activa' | 'inactiva';
   /** Lista de campos aún pendientes de confirmación por el cliente. */
   pendiente_cliente?: string[];
@@ -62,6 +64,10 @@ export const SERVICIOS_LABEL: Record<string, string> = {
   barbacoa: 'Barbacoa',
   terraza: 'Terraza',
   vistas_mar: 'Vistas al mar',
+  gimnasio: 'Gimnasio',
+  solarium: 'Solárium',
+  padel: 'Tenis-pádel',
+  piscina_comunitaria: 'Piscina comunitaria',
 };
 
 export function servicioLabel(key: string): string {

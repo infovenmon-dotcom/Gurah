@@ -94,8 +94,8 @@ export const gurah: HotelTheme = {
       'https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Poppins:wght@300;400;500;600&display=swap',
   },
   hero: {
-    // [PENDIENTE CLIENTE] metraje cinematográfico real (dron, viñas, piscina, interiores).
-    videoUrl: null,
+    // Clip cinematográfico generado desde las fotos reales (sustituible por metraje de dron).
+    videoUrl: '/img/gurah/clips/hero.webm',
     images: ['/img/gurah/hero.jpg', '/img/gurah/env-gaztelugatxe.jpg', '/img/gurah/apt-casa-campo.jpg'],
     eyebrow: 'Bakio · Bizkaia · Costa Vasca',
     titleLines: ['Donde el campo', 'encuentra el mar'],
