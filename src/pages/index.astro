@@ -42,18 +42,58 @@ const avail = await Promise.all(
     </div>
   )}
 
-  <!-- HERO -->
-  <section style="position:relative;padding:90px 0 70px;background:linear-gradient(135deg,#0e5c4a 0%,#127a63 100%);color:#fff">
-    <div class="container">
-      <p class="sans" style="letter-spacing:.22em;text-transform:uppercase;font-size:13px;opacity:.85;margin:0 0 12px">Bakio · Bizkaia · Costa Vasca</p>
-      <h1 style="font-size:clamp(34px,6vw,58px);margin:0 0 16px;line-height:1.05">Apartamentos boutique<br />frente al Cantábrico</h1>
-      <p style="font-size:19px;max-width:560px;opacity:.95">Casa de campo con piscina, apartamentos pet-friendly y refugios junto a la playa. A 3 km de San Juan de Gaztelugatxe. Reserva directa, con el mejor precio.</p>
-      <div style="margin-top:26px;display:flex;gap:12px;flex-wrap:wrap">
+  <!-- HERO inmersivo (estilo editorial, foto a pantalla completa) -->
+  <section class="hero">
+    <!-- Fondo: [PENDIENTE CLIENTE] sustituir por fotografía propia sin marca de agua.
+         Placeholder: degradado que evoca la costa verde de Bakio. -->
+    <div class="hero-bg" aria-hidden="true"></div>
+    <div class="hero-overlay" aria-hidden="true"></div>
+    <div class="hero-inner">
+      <p class="hero-eyebrow sans">Bakio · Bizkaia · Costa Vasca</p>
+      <h1 class="hero-title">Donde el campo<br /><em>encuentra el mar</em></h1>
+      <p class="hero-sub">Apartamentos boutique a 3&nbsp;km de San Juan de Gaztelugatxe. Casa de campo con piscina, refugios junto a la playa, pet-friendly.</p>
+      <div class="hero-cta">
         <a class="btn" href="#apartamentos" style="background:#fff;color:var(--verde)">Elige tu apartamento</a>
-        <a class="btn ghost" href="#experiencia" style="border-color:#fff;color:#fff">El entorno</a>
+        <a class="btn ghost" href="#experiencia" style="border-color:rgba(255,255,255,.8);color:#fff">Descubre el entorno</a>
       </div>
     </div>
+    <a href="#apartamentos" class="hero-scroll sans" aria-label="Bajar">
+      <span>Explora</span>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M6 13l6 6 6-6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
   </section>
+
+  <style>
+    .hero { position:relative; min-height:92vh; display:flex; align-items:center; justify-content:center; text-align:center; color:#fff; overflow:hidden; }
+    .hero-bg {
+      position:absolute; inset:0;
+      background:
+        radial-gradient(120% 80% at 50% 0%, rgba(18,122,99,.35), transparent 60%),
+        linear-gradient(180deg, #0b4a3c 0%, #0e5c4a 42%, #16775f 100%);
+      /* Textura sutil de relieve/olas mientras no hay foto real */
+      background-blend-mode:overlay;
+      transform:scale(1.04);
+      animation:heroZoom 22s ease-in-out infinite alternate;
+    }
+    .hero-bg::after {
+      content:""; position:absolute; inset:0;
+      background:
+        radial-gradient(60% 40% at 20% 85%, rgba(201,162,75,.22), transparent 70%),
+        radial-gradient(50% 40% at 85% 20%, rgba(255,255,255,.10), transparent 70%);
+    }
+    @keyframes heroZoom { from{ transform:scale(1.04);} to{ transform:scale(1.12);} }
+    .hero-overlay { position:absolute; inset:0; background:linear-gradient(180deg, rgba(10,30,24,.28) 0%, rgba(10,30,24,.10) 40%, rgba(10,30,24,.55) 100%); }
+    .hero-inner { position:relative; z-index:2; max-width:820px; padding:40px 22px; }
+    .hero-eyebrow { letter-spacing:.32em; text-transform:uppercase; font-size:12px; opacity:.9; margin:0 0 22px; font-weight:600; }
+    .hero-title { font-family:'Georgia','Times New Roman',serif; font-weight:400; font-size:clamp(40px,8vw,86px); line-height:1.02; margin:0 0 22px; letter-spacing:.01em; text-shadow:0 2px 30px rgba(0,0,0,.25); }
+    .hero-title em { font-style:italic; color:#e9d9a8; }
+    .hero-sub { font-family:system-ui,sans-serif; font-size:clamp(16px,2vw,20px); line-height:1.6; max-width:560px; margin:0 auto; opacity:.96; }
+    .hero-cta { margin-top:34px; display:flex; gap:14px; flex-wrap:wrap; justify-content:center; }
+    .hero-scroll { position:absolute; bottom:26px; left:50%; transform:translateX(-50%); z-index:2; display:flex; flex-direction:column; align-items:center; gap:6px; color:#fff; text-decoration:none; font-size:11px; letter-spacing:.24em; text-transform:uppercase; opacity:.85; }
+    .hero-scroll svg { animation:bob 1.8s ease-in-out infinite; }
+    @keyframes bob { 0%,100%{ transform:translateY(0);} 50%{ transform:translateY(6px);} }
+    @media (prefers-reduced-motion: reduce) { .hero-bg,.hero-scroll svg{ animation:none; } }
+  </style>
 
   <!-- SELECCIÓN DE APARTAMENTO -->
   <section id="apartamentos" class="container" style="padding:56px 0 20px">

@@ -6,6 +6,7 @@
  */
 
 import { readJson, updateJson } from './persist';
+import { registrarTbai, type TbaiData } from './garante';
 import type { Booking } from './bookings';
 
 const INVOICES_KEY = 'invoices';
@@ -24,6 +25,7 @@ export interface Invoice {
   ivaPct: number;
   total: number;
   serie: string;
+  tbai?: TbaiData; // datos garante TicketBAI/Batuz
   demo?: boolean;
 }
 
@@ -47,12 +49,14 @@ export async function createInvoiceForBooking(
   const { base, iva } = desglosaIva(booking.total, IVA_PCT);
 
   let created!: Invoice;
+  let numero = '';
   await updateJson<Invoice[]>(
     INVOICES_KEY,
     (all) => {
       const nEnAnio = all.filter((i) => i.serie === serie).length + 1;
+      numero = String(nEnAnio).padStart(4, '0');
       created = {
-        id: `${serie}-${String(nEnAnio).padStart(4, '0')}`,
+        id: `${serie}-${numero}`,
         bookingId: booking.id,
         fecha: booking.creada,
         cliente: { nombre: booking.huesped.nombre, email: booking.huesped.email },
@@ -68,5 +72,19 @@ export async function createInvoiceForBooking(
     },
     [],
   );
+
+  // Registrar en el sistema garante TicketBAI/Batuz (encadenamiento + TBAI ID + QR).
+  const tbai = await registrarTbai({
+    serie,
+    numero,
+    fecha: booking.creada.slice(0, 10),
+    total: booking.total,
+  });
+  await updateJson<Invoice[]>(
+    INVOICES_KEY,
+    (all) => all.map((i) => (i.id === created.id ? { ...i, tbai } : i)),
+    [],
+  );
+  created.tbai = tbai;
   return created;
 }

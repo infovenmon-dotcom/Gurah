@@ -11,11 +11,13 @@ import { readJson } from '../../../lib/persist';
 export const prerender = false;
 
 export const GET: APIRoute = async () => {
-  const [bookings, invoices, expenses, customers] = await Promise.all([
+  const [bookings, invoices, expenses, customers, reviews, feeds] = await Promise.all([
     getBookings(),
     getInvoices(),
     readJson('expenses', []),
     readJson('customers', []),
+    readJson('reviews', []),
+    readJson('ical_feeds', {}),
   ]);
 
   // Clientes derivados de reservas si no hay lista explícita.
@@ -33,6 +35,8 @@ export const GET: APIRoute = async () => {
       bookings,
       invoices,
       expenses,
+      reviews,
+      feeds,
       customers: (customers as any[]).length ? customers : [...derived.values()],
     }),
     { headers: { 'content-type': 'application/json' } },

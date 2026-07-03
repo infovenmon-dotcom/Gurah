@@ -28,7 +28,28 @@ const SEEDS: Record<string, Json> = {
   expenses: [],
   customers: [],
   blocks: {}, // { [apartmentId]: string[] fechas ISO bloqueadas }
-  reviews: [],
+  reviews: [
+    {
+      id: 'rev-demo-1',
+      autor: 'Marta G.',
+      apartmentId: 'gurah-casa-campo',
+      texto: 'Un fin de semana perfecto. La piscina y el jardín son un lujo, y Gaztelugatxe a un paso. Repetiremos.',
+      puntuacion: 5,
+      idioma: 'es',
+      fecha: '2026-06-15',
+      respuesta: '',
+    },
+    {
+      id: 'rev-demo-2',
+      autor: 'Jon A.',
+      apartmentId: 'bakea',
+      texto: 'Apartamento coqueto y muy cerca de la playa. El check-in podría haber sido algo más rápido.',
+      puntuacion: 4,
+      idioma: 'es',
+      fecha: '2026-06-22',
+      respuesta: '',
+    },
+  ],
 };
 
 function seedFor(key: string): Json {

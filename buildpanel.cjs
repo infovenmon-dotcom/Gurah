@@ -92,7 +92,7 @@ const appjs = `
 // window.PANEL — lógica del panel GURAH (generado por buildpanel.cjs).
 (function(){
   const SERVICIOS = ${JSON.stringify(require('./src/lib/servicios.cjs'))};
-  let state = { apartments: [], blocks: {}, bookings: [], invoices: [], expenses: [], customers: [] };
+  let state = { apartments: [], blocks: {}, bookings: [], invoices: [], expenses: [], customers: [], reviews: [], feeds: {} };
 
   function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2200); }
   function eur(n){ return (Number(n)||0).toFixed(2)+' €'; }
@@ -104,7 +104,7 @@ const appjs = `
   async function load(){
     const [a,d] = await Promise.all([api('/api/panel/apartments'), api('/api/panel/data')]);
     if(a.ok){ state.apartments=a.apartments; state.blocks=a.blocks||{}; }
-    if(d.ok){ state.bookings=d.bookings; state.invoices=d.invoices; state.expenses=d.expenses; state.customers=d.customers; }
+    if(d.ok){ state.bookings=d.bookings; state.invoices=d.invoices; state.expenses=d.expenses; state.customers=d.customers; state.reviews=d.reviews||[]; state.feeds=d.feeds||{}; }
     renderAll();
   }
 
@@ -183,9 +183,10 @@ const appjs = `
   function renderFacturas(){
     const el=document.getElementById('tab-facturas');
     const rows=state.invoices.slice().reverse().map(function(f){
-      return '<tr><td>'+f.id+'</td><td>'+f.cliente.nombre+'</td><td>'+f.concepto+'</td><td>'+eur(f.base)+'</td><td>'+f.ivaPct+'%</td><td>'+eur(f.total)+'</td></tr>';
+      var tbai=f.tbai?('<div class="muted" style="font-size:11px" title="'+f.tbai.qrUrl+'">'+f.tbai.tbaiId+(f.tbai.firmadoReal?'':' · sin firma (demo)')+'</div>'):'<span class="muted">—</span>';
+      return '<tr><td>'+f.id+'<br>'+tbai+'</td><td>'+f.cliente.nombre+'</td><td>'+f.concepto+'</td><td>'+eur(f.base)+'</td><td>'+f.ivaPct+'%</td><td>'+eur(f.total)+'</td></tr>';
     }).join('');
-    el.innerHTML='<div class="card"><h3>Facturas <span class="muted">(compatible TicketBAI / Batuz)</span></h3><table><thead><tr><th>Nº</th><th>Cliente</th><th>Concepto</th><th>Base</th><th>IVA</th><th>Total</th></tr></thead><tbody>'+(rows||'<tr><td colspan=6 class=muted>Sin facturas.</td></tr>')+'</tbody></table></div>';
+    el.innerHTML='<div class="card"><h3>Facturas <span class="muted">(compatible TicketBAI / Batuz · Bizkaia)</span></h3><table><thead><tr><th>Nº / TBAI</th><th>Cliente</th><th>Concepto</th><th>Base</th><th>IVA</th><th>Total</th></tr></thead><tbody>'+(rows||'<tr><td colspan=6 class=muted>Sin facturas.</td></tr>')+'</tbody></table></div>';
   }
 
   // --- Ingresos/Gastos + Contabilidad --------------------------------------
@@ -214,8 +215,53 @@ const appjs = `
     };
   }
 
-  function renderCanales(){ document.getElementById('tab-canales').innerHTML='<div class="card"><h3>Canales (iCal)</h3><p class="muted">Channel manager iCal heredado de Kirana: importa/exporta bloqueos de Booking, Airbnb, etc. por apartamento. URL export: <code>/api/ical/&lt;apartment&gt;.ics</code>.</p></div>'; }
-  function renderResenas(){ document.getElementById('tab-resenas').innerHTML='<div class="card"><h3>Reseñas (IA)</h3><p class="muted">Respuestas a reseñas asistidas por IA (Claude), heredado de Kirana. Requiere ANTHROPIC_API_KEY.</p></div>'; }
+  function renderCanales(){
+    var el=document.getElementById('tab-canales');
+    el.innerHTML='<div class="card"><h3>Canales (iCal)</h3><p class="muted">Channel manager: pega las URLs iCal de Booking/Airbnb (una por línea) por apartamento e importa los bloqueos. Export por unidad: <code>/api/ical/&lt;id&gt;.ics</code>.</p>'+
+      state.apartments.map(function(a){
+        var urls=(state.feeds[a.id]||[]).join('\\n');
+        return '<div style="border-top:1px solid var(--linea);padding:12px 0" data-ical="'+a.id+'"><strong>'+a.nombre+'</strong>'+
+          '<textarea data-urls rows="2" style="width:100%;margin:6px 0;padding:8px;border:1px solid var(--linea);border-radius:8px" placeholder="https://...booking.../ical\\nhttps://...airbnb.../ical">'+urls+'</textarea>'+
+          '<div style="display:flex;gap:8px"><button class="btn sec" data-act="savefeeds">Guardar URLs</button><button class="btn" data-act="sync">Sincronizar ahora</button><span class="muted" data-status style="align-self:center"></span></div></div>';
+      }).join('')+'</div>';
+    el.querySelectorAll('[data-ical]').forEach(function(row){
+      var id=row.getAttribute('data-ical');
+      var status=row.querySelector('[data-status]');
+      row.querySelector('[data-act="savefeeds"]').onclick=async function(){
+        var urls=row.querySelector('[data-urls]').value.split('\\n').map(function(s){return s.trim();}).filter(Boolean);
+        var r=await api('/api/panel/ical',{action:'feeds',id:id,urls:urls}); if(r.ok){state.feeds=r.feeds; status.textContent='URLs guardadas'; toast('URLs guardadas');}
+      };
+      row.querySelector('[data-act="sync"]').onclick=async function(){
+        status.textContent='Sincronizando…';
+        var r=await api('/api/panel/ical',{action:'sync',id:id});
+        if(r.ok){ var res=r.results[0]||{}; status.textContent=(res.fechas||0)+' fechas importadas'+(res.errores&&res.errores.length?(' · '+res.errores.length+' errores'):''); toast('Sincronizado'); load(); }
+      };
+    });
+  }
+  function renderResenas(){
+    var el=document.getElementById('tab-resenas');
+    el.innerHTML='<div class="card"><h3>Reseñas <span class="muted">(respuestas con IA · Claude)</span></h3>'+
+      (state.reviews.length?state.reviews.map(function(r){
+        var apt=(state.apartments.find(function(a){return a.id===r.apartmentId;})||{}).nombre||'';
+        return '<div style="border-top:1px solid var(--linea);padding:12px 0" data-rev="'+r.id+'">'+
+          '<div><strong>'+(r.autor||'Huésped')+'</strong> '+(r.puntuacion?('· '+r.puntuacion+'/5'):'')+' <span class="muted">'+apt+' · '+(r.fecha||'')+'</span></div>'+
+          '<p style="margin:6px 0">'+r.texto+'</p>'+
+          '<textarea data-reply rows="2" style="width:100%;padding:8px;border:1px solid var(--linea);border-radius:8px" placeholder="Respuesta pública…">'+(r.respuesta||'')+'</textarea>'+
+          '<div style="display:flex;gap:8px;margin-top:6px"><button class="btn sec" data-act="ai">✨ Generar con IA</button><button class="btn" data-act="save">Guardar respuesta</button><span class="muted" data-status style="align-self:center"></span></div></div>';
+      }).join(''):'<p class="muted">Sin reseñas.</p>')+'</div>';
+    el.querySelectorAll('[data-rev]').forEach(function(row){
+      var id=row.getAttribute('data-rev'); var ta=row.querySelector('[data-reply]'); var status=row.querySelector('[data-status]');
+      row.querySelector('[data-act="ai"]').onclick=async function(){
+        status.textContent='Generando…';
+        var r=await api('/api/panel/review-reply',{reviewId:id});
+        if(r.ok){ ta.value=r.draft; status.textContent=r.demo?'(borrador demo)':'borrador IA listo'; } else { status.textContent=r.error||'error'; }
+      };
+      row.querySelector('[data-act="save"]').onclick=async function(){
+        var r=await api('/api/panel/review-reply',{reviewId:id,respuesta:ta.value});
+        if(r.ok){ status.textContent='Guardada'; toast('Respuesta guardada'); }
+      };
+    });
+  }
 
   function renderAll(){ renderApartamentos(); renderReservas(); renderFacturas(); renderGastos(); renderContabilidad(); renderClientes(); renderCanales(); renderResenas(); }
 

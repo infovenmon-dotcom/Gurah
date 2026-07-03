@@ -1,25 +1,42 @@
 ---
 import { checkPanelPassword, createSessionToken, SESSION_COOKIE, isDemoAuth } from '../../lib/auth';
+import { checkLogin, registerFail, clearAttempts } from '../../lib/loginGuard';
 
 let error = '';
+// IP del cliente para el guard anti fuerza bruta.
+const ip =
+  Astro.request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+  Astro.clientAddress ||
+  'unknown';
+
 if (Astro.request.method === 'POST') {
-  const form = await Astro.request.formData();
-  const password = String(form.get('password') || '');
-  // Honeypot anti-bots: si el campo oculto viene relleno, rechazar.
-  const honey = String(form.get('website') || '');
-  if (honey) {
-    error = 'Solicitud no válida.';
-  } else if (checkPanelPassword(password)) {
-    Astro.cookies.set(SESSION_COOKIE, createSessionToken(), {
-      httpOnly: true,
-      secure: Astro.url.protocol === 'https:',
-      sameSite: 'lax',
-      path: '/',
-      maxAge: 60 * 60 * 8,
-    });
-    return Astro.redirect('/panel');
+  const guard = await checkLogin(ip);
+  if (guard.blocked) {
+    const mins = Math.ceil((guard.retryAfterMs ?? 0) / 60000);
+    error = `Demasiados intentos. Inténtalo de nuevo en ${mins} min.`;
   } else {
-    error = 'Contraseña incorrecta.';
+    const form = await Astro.request.formData();
+    const password = String(form.get('password') || '');
+    // Honeypot anti-bots: si el campo oculto viene relleno, rechazar.
+    const honey = String(form.get('website') || '');
+    if (honey) {
+      error = 'Solicitud no válida.';
+    } else if (checkPanelPassword(password)) {
+      await clearAttempts(ip);
+      Astro.cookies.set(SESSION_COOKIE, createSessionToken(), {
+        httpOnly: true,
+        secure: Astro.url.protocol === 'https:',
+        sameSite: 'lax',
+        path: '/',
+        maxAge: 60 * 60 * 8,
+      });
+      return Astro.redirect('/panel');
+    } else {
+      const after = await registerFail(ip);
+      error = after.blocked
+        ? 'Demasiados intentos. Cuenta bloqueada temporalmente.'
+        : `Contraseña incorrecta. Intentos restantes: ${after.remaining}.`;
+    }
   }
 }
 const demo = isDemoAuth();
