@@ -26,42 +26,42 @@
       "chimenea",
       "barbacoa"
     ],
-    "precio_base": 260,
+    "precio_base": 230,
     "estancia_minima": 2,
     "tarifas_temporada": [
       {
         "nombre": "Temporada baja",
         "desde": "01-08",
         "hasta": "03-31",
-        "precio": 210,
+        "precio": 195,
         "estancia_minima": 2
       },
       {
         "nombre": "Temporada media",
         "desde": "04-01",
         "hasta": "06-30",
-        "precio": 260,
+        "precio": 230,
         "estancia_minima": 2
       },
       {
         "nombre": "Temporada alta",
         "desde": "07-01",
         "hasta": "09-15",
-        "precio": 340,
+        "precio": 300,
         "estancia_minima": 3
       },
       {
         "nombre": "Otoño",
         "desde": "09-16",
         "hasta": "12-20",
-        "precio": 240,
+        "precio": 215,
         "estancia_minima": 2
       },
       {
         "nombre": "Navidad",
         "desde": "12-21",
         "hasta": "01-07",
-        "precio": 320,
+        "precio": 285,
         "estancia_minima": 3
       }
     ],
@@ -102,42 +102,42 @@
       "cocina_equipada",
       "vistas_mar"
     ],
-    "precio_base": 120,
+    "precio_base": 210,
     "estancia_minima": 2,
     "tarifas_temporada": [
       {
         "nombre": "Temporada baja",
         "desde": "01-08",
         "hasta": "03-31",
-        "precio": 95,
+        "precio": 180,
         "estancia_minima": 2
       },
       {
         "nombre": "Temporada media",
         "desde": "04-01",
         "hasta": "06-30",
-        "precio": 120,
+        "precio": 210,
         "estancia_minima": 2
       },
       {
         "nombre": "Temporada alta",
         "desde": "07-01",
         "hasta": "09-15",
-        "precio": 165,
+        "precio": 275,
         "estancia_minima": 3
       },
       {
         "nombre": "Otoño",
         "desde": "09-16",
         "hasta": "12-20",
-        "precio": 110,
+        "precio": 195,
         "estancia_minima": 2
       },
       {
         "nombre": "Navidad",
         "desde": "12-21",
         "hasta": "01-07",
-        "precio": 150,
+        "precio": 260,
         "estancia_minima": 3
       }
     ],
@@ -177,42 +177,42 @@
       "cocina_equipada",
       "jardin"
     ],
-    "precio_base": 175,
+    "precio_base": 230,
     "estancia_minima": 2,
     "tarifas_temporada": [
       {
         "nombre": "Temporada baja",
         "desde": "01-08",
         "hasta": "03-31",
-        "precio": 140,
+        "precio": 195,
         "estancia_minima": 2
       },
       {
         "nombre": "Temporada media",
         "desde": "04-01",
         "hasta": "06-30",
-        "precio": 175,
+        "precio": 230,
         "estancia_minima": 2
       },
       {
         "nombre": "Temporada alta",
         "desde": "07-01",
         "hasta": "09-15",
-        "precio": 235,
+        "precio": 300,
         "estancia_minima": 3
       },
       {
         "nombre": "Otoño",
         "desde": "09-16",
         "hasta": "12-20",
-        "precio": 160,
+        "precio": 215,
         "estancia_minima": 2
       },
       {
         "nombre": "Navidad",
         "desde": "12-21",
         "hasta": "01-07",
-        "precio": 220,
+        "precio": 285,
         "estancia_minima": 3
       }
     ],
@@ -257,42 +257,42 @@
       "barbacoa",
       "chimenea"
     ],
-    "precio_base": 380,
+    "precio_base": 260,
     "estancia_minima": 3,
     "tarifas_temporada": [
       {
         "nombre": "Temporada baja",
         "desde": "01-08",
         "hasta": "03-31",
-        "precio": 310,
+        "precio": 220,
         "estancia_minima": 2
       },
       {
         "nombre": "Temporada media",
         "desde": "04-01",
         "hasta": "06-30",
-        "precio": 380,
+        "precio": 260,
         "estancia_minima": 3
       },
       {
         "nombre": "Temporada alta",
         "desde": "07-01",
         "hasta": "09-15",
-        "precio": 520,
+        "precio": 340,
         "estancia_minima": 4
       },
       {
         "nombre": "Otoño",
         "desde": "09-16",
         "hasta": "12-20",
-        "precio": 350,
+        "precio": 240,
         "estancia_minima": 3
       },
       {
         "nombre": "Navidad",
         "desde": "12-21",
         "hasta": "01-07",
-        "precio": 480,
+        "precio": 320,
         "estancia_minima": 4
       }
     ],
