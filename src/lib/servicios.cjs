@@ -15,4 +15,9 @@ module.exports = {
   solarium: 'Solárium',
   padel: 'Tenis-pádel',
   piscina_comunitaria: 'Piscina comunitaria',
+  lavavajillas: 'Lavavajillas',
+  tv: 'TV pantalla plana',
+  lavadora: 'Lavadora',
+  entrada_privada: 'Entrada privada',
+  vistas_montana: 'Vistas a la montaña',
 };

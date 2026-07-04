@@ -17,7 +17,7 @@ const avail = await Promise.all(
   apartments.map(async (a) => ({
     id: a.id, nombre: a.nombre, concepto: a.concepto, storytelling: a.storytelling,
     ubicacion: a.ubicacion, m2: a.m2, dormitorios: a.dormitorios, banos: a.banos,
-    capacidad: a.capacidad, camas: a.camas, servicios: a.servicios,
+    capacidad: a.capacidad, camas: a.camas, banos: a.banos, servicios: a.servicios,
     precio_base: a.precio_base, precio_base_web: webPrice(a.precio_base),
     estancia_minima: a.estancia_minima, fotos: a.fotos, clip: a.clip,
     blocked: await getBlockedDates(a.id),
@@ -88,8 +88,9 @@ const avail = await Promise.all(
         <p class="apt-story sans">{a.storytelling.replace('[PENDIENTE CLIENTE] ', '')}</p>
         <div class="apt-specs sans">
           <span>{a.m2} m²</span><i></i><span>{a.dormitorios} dorm.</span><i></i>
-          <span>{a.banos} baños</span><i></i><span>hasta {a.capacidad}</span>
+          <span>{a.banos} baño{a.banos > 1 ? 's' : ''}</span><i></i><span>hasta {a.capacidad}</span>
         </div>
+        {a.camas && <p class="apt-camas sans">🛏 {a.camas}</p>}
         <div class="apt-serv sans">{a.servicios.slice(0, 5).map((s) => (<span>{servicioLabel(s)}</span>))}</div>
         <div class="apt-foot">
           <div class="apt-price sans"><s>{Math.round(a.precio_base)} €</s><b>{Math.round(a.precio_base_web)} €</b><small>/noche · −10%</small></div>
@@ -245,6 +246,7 @@ const avail = await Promise.all(
     .apt-story { color:#5c574c; font-size:16px; line-height:1.8; max-width:44ch; margin:0 0 22px; }
     .apt-specs { display:flex; align-items:center; gap:14px; color:var(--gris); font-size:14px; margin-bottom:18px; }
     .apt-specs i { width:4px; height:4px; border-radius:50%; background:var(--dorado); display:inline-block; }
+    .apt-camas { color:var(--gris); font-size:13px; margin:0 0 18px; }
     .apt-serv { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:30px; }
     .apt-serv span { border:1px solid var(--linea); border-radius:20px; padding:5px 13px; font-size:12px; color:#6b665b; }
     .apt-foot { display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap; }

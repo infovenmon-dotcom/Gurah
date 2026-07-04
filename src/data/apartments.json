@@ -4,7 +4,7 @@
     "nombre": "GURAH · Lurra",
     "slug": "lurra-planta-baja",
     "concepto": "Planta baja de la casa de campo · 3 dormitorios",
-    "storytelling": "La planta baja de la casa, donde el jardín entra por la terraza. Tres dormitorios de piedra y madera, con la piscina, el gimnasio y el solárium a un paso. El punto de partida perfecto para desconectar sin salir de casa.",
+    "storytelling": "La planta baja de la casa, con entrada privada y todo a un mismo nivel. Tres dormitorios de piedra y madera para hasta seis personas, con vistas al jardín y a la montaña, y la piscina, el gimnasio y el solárium a un paso. El punto de partida perfecto para desconectar sin salir de casa.",
     "ubicacion": {
       "texto": "Campo · Bakio (Bizkaia)",
       "tipo": "campo",
@@ -13,18 +13,23 @@
     },
     "m2": 100,
     "dormitorios": 3,
-    "banos": 2,
+    "banos": 1,
     "capacidad": 6,
-    "camas": "[PENDIENTE CLIENTE] 2 dobles + 2 individuales",
+    "camas": "2 camas dobles grandes + 2 individuales",
     "servicios": [
       "piscina",
       "gimnasio",
       "solarium",
       "terraza",
       "jardin",
+      "vistas_montana",
+      "entrada_privada",
       "parking",
       "wifi",
       "cocina_equipada",
+      "lavavajillas",
+      "tv",
+      "lavadora",
       "mascotas",
       "barbacoa"
     ],
@@ -68,13 +73,11 @@
       }
     ],
     "fotos": [
-      "/img/gurah/apt-casa-campo.jpg"
+      "/img/gurah/apt-lurra.jpg"
     ],
     "clip": "/img/gurah/clips/planta-baja.webm",
     "estado": "activa",
     "pendiente_cliente": [
-      "m2",
-      "camas",
       "precios",
       "coordenadas"
     ]
@@ -84,27 +87,32 @@
     "nombre": "GURAH · Zerua",
     "slug": "zerua-planta-alta",
     "concepto": "Planta alta de la casa de campo · 2 dormitorios",
-    "storytelling": "Arriba, donde manda la luz. Dos dormitorios bajo el tejado vasco, techos con carácter y vistas abiertas al valle. Comparte piscina, gimnasio y solárium con la casa; se queda con el silencio y el cielo.",
+    "storytelling": "Arriba, donde manda la luz. Dos dormitorios dobles bajo el tejado vasco, techos con carácter y vistas abiertas al valle y la montaña. Entrada privada y acceso por escalera; comparte piscina, gimnasio y solárium con la casa, y se queda con el silencio y el cielo.",
     "ubicacion": {
       "texto": "Campo · Bakio (Bizkaia)",
       "tipo": "campo",
       "lat": 43.4258,
       "lng": -2.8106
     },
-    "m2": 90,
+    "m2": 100,
     "dormitorios": 2,
     "banos": 1,
     "capacidad": 4,
-    "camas": "[PENDIENTE CLIENTE] 1 doble + 2 individuales",
+    "camas": "2 camas dobles grandes",
     "servicios": [
       "piscina",
       "gimnasio",
       "solarium",
       "terraza",
       "jardin",
+      "vistas_montana",
+      "entrada_privada",
       "parking",
       "wifi",
       "cocina_equipada",
+      "lavavajillas",
+      "tv",
+      "lavadora",
       "mascotas"
     ],
     "precio_base": 220,
@@ -147,13 +155,11 @@
       }
     ],
     "fotos": [
-      "/img/gurah/apt-3dorm.jpg"
+      "/img/gurah/apt-zerua.jpg"
     ],
     "clip": "/img/gurah/clips/planta-alta.webm",
     "estado": "activa",
     "pendiente_cliente": [
-      "m2",
-      "camas",
       "precios",
       "coordenadas"
     ]
@@ -162,28 +168,31 @@
     "id": "bakea",
     "nombre": "BAKEA",
     "slug": "bakea",
-    "concepto": "Apartamento junto a la playa",
-    "storytelling": "A un paseo del arenal de Bakio. Jardín privado, piscina comunitaria y pistas de tenis-pádel para los días de sol. Diseño cálido y luminoso: el refugio para volver del mar sin prisa. Pet-friendly.",
+    "concepto": "Apartamento con terraza, junto a la playa",
+    "storytelling": "A un paseo del arenal de Bakio. Cincuenta y siete metros de diseño cálido con terraza y jardín, piscina y pistas de tenis-pádel para los días de sol. El refugio luminoso para volver del mar sin prisa. Pet-friendly.",
     "ubicacion": {
       "texto": "Playa · Bakio (Bizkaia)",
       "tipo": "playa",
       "lat": 43.4285,
       "lng": -2.8092
     },
-    "m2": 70,
+    "m2": 57,
     "dormitorios": 2,
     "banos": 1,
     "capacidad": 4,
-    "camas": "[PENDIENTE CLIENTE] 1 doble + 1 individual + sofá cama",
+    "camas": "1 cama doble grande + 2 individuales",
     "servicios": [
       "piscina_comunitaria",
       "padel",
       "jardin",
       "terraza",
+      "vistas_mar",
       "wifi",
       "cocina_equipada",
-      "mascotas",
-      "vistas_mar"
+      "lavavajillas",
+      "tv",
+      "lavadora",
+      "mascotas"
     ],
     "precio_base": 210,
     "estancia_minima": 2,
@@ -230,8 +239,6 @@
     "clip": "/img/gurah/clips/bakea.webm",
     "estado": "activa",
     "pendiente_cliente": [
-      "m2",
-      "camas",
       "precios",
       "coordenadas"
     ]
