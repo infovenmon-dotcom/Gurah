@@ -104,6 +104,23 @@ th{color:var(--gris);font-weight:600;font-size:12px;text-transform:uppercase;let
 .infocard{display:flex;gap:14px;align-items:flex-start}
 .infocard .tag{background:var(--verde);color:#fff;border-radius:10px;padding:12px 14px;font-size:12px;text-align:center;line-height:1.3;min-width:96px}
 .rowbtn{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.btn.sec{padding:6px 12px;font-size:13px}
+.fac-ver{background:var(--arena);color:var(--tinta);white-space:nowrap}
+.qrdot{color:var(--verde)}
+.tbaiid{margin-top:2px}
+/* Barra de periodo (Contabilidad) */
+.toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+.toolbar select{padding:8px 10px;border:1px solid var(--linea);border-radius:8px;font-size:14px;background:#fff;color:var(--tinta)}
+/* Modal de factura */
+.facmodal{position:fixed;inset:0;background:rgba(20,19,16,.55);z-index:60;display:flex;align-items:center;justify-content:center;padding:16px}
+.facbox{background:#fff;max-width:640px;width:100%;border-radius:16px;padding:22px;max-height:92vh;overflow:auto}
+.facbar{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:16px}
+.facgrid{display:grid;grid-template-columns:1.4fr 1fr;gap:22px}
+.facgrid table td{padding:6px 0;border-bottom:1px solid var(--linea)}
+.tbaibox{text-align:center;background:var(--arena);border-radius:12px;padding:16px}
+.tbaihdr{margin-bottom:10px}
+.tag2{background:var(--verde);color:#fff;font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px}
+@media(max-width:560px){.facgrid{grid-template-columns:1fr}}
 .toast{position:fixed;bottom:20px;right:20px;background:var(--tinta);color:#fff;padding:12px 18px;border-radius:10px;opacity:0;transition:.3s;pointer-events:none}
 .toast.show{opacity:1}
 @media(max-width:600px){.tabpage{padding:14px}.kpi b{font-size:23px}}
@@ -124,6 +141,7 @@ const markup = `
 </div>
 <nav class="tabs">${tabButtons}</nav>
 ${tabPages}
+<div class="facmodal" id="facModal" style="display:none"><div class="facbox" id="facBody"></div></div>
 <div class="toast" id="toast"></div>
 `.trim();
 
@@ -133,6 +151,7 @@ const appjs = `
 (function(){
   const SERVICIOS = ${JSON.stringify(require('./src/lib/servicios.cjs'))};
   let state = { apartments: [], blocks: {}, bookings: [], invoices: [], expenses: [], customers: [], reviews: [], feeds: {} };
+  var contab = { y: String(new Date().getFullYear()), p: 'all' }; // filtro de Contabilidad
 
   function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2200); }
   function eur(n){ return (Number(n)||0).toLocaleString('es-ES',{maximumFractionDigits:0})+' €'; }
@@ -144,6 +163,43 @@ const appjs = `
   function estadoReserva(b){ var t=todayISO(); if(b.salida<=t)return{k:'pasada',t:'Pasada'}; if(b.entrada<=t)return{k:'encasa',t:'En casa'}; return{k:'confirmada',t:'Confirmada'}; }
   function diasDelMes(y,m){ return new Date(y,m+1,0).getDate(); }
   function isDemo(){ return state.bookings.some(function(b){return b.demo;})||state.invoices.some(function(f){return f.demo;}); }
+  function facturaDe(bookingId){ return state.invoices.find(function(f){return f.bookingId===bookingId;}); }
+  // QR visual TicketBAI (representativo): patrón determinista a partir del id.
+  function hashStr(s){ var h=2166136261; for(var i=0;i<(s||'').length;i++){ h^=s.charCodeAt(i); h=Math.imul(h,16777619);} return h>>>0; }
+  function qrSVG(text,size){
+    size=size||124; var n=25, cell=size/n, sc='#1a2420', seed=hashStr(text)||1;
+    function rnd(){ seed^=seed<<13;seed^=seed>>>17;seed^=seed<<5;seed>>>=0; return seed/4294967296; }
+    var r='';
+    for(var y=0;y<n;y++){for(var x=0;x<n;x++){ if((x<8&&y<8)||(x>n-9&&y<8)||(x<8&&y>n-9))continue; if(rnd()>0.52)r+='<rect x="'+(x*cell)+'" y="'+(y*cell)+'" width="'+cell+'" height="'+cell+'" fill="'+sc+'"/>'; }}
+    function fnd(x,y){ r+='<rect x="'+(x*cell)+'" y="'+(y*cell)+'" width="'+(7*cell)+'" height="'+(7*cell)+'" fill="'+sc+'"/><rect x="'+((x+1)*cell)+'" y="'+((y+1)*cell)+'" width="'+(5*cell)+'" height="'+(5*cell)+'" fill="#fff"/><rect x="'+((x+2)*cell)+'" y="'+((y+2)*cell)+'" width="'+(3*cell)+'" height="'+(3*cell)+'" fill="'+sc+'"/>'; }
+    fnd(0,0); fnd(n-7,0); fnd(0,n-7);
+    return '<svg viewBox="0 0 '+size+' '+size+'" width="'+size+'" height="'+size+'" style="background:#fff;border-radius:8px;padding:6px">'+r+'</svg>';
+  }
+  function verFactura(id){
+    var f=state.invoices.find(function(x){return x.id===id;}); if(!f)return;
+    var bk=state.bookings.find(function(b){return b.id===f.bookingId;});
+    var est=f.estado==='cobrada'?'<span class="pill cobrada">Cobrada</span>':'<span class="pill pendiente">Pendiente</span>';
+    var tb=f.tbai||{};
+    var body=document.getElementById('facBody');
+    body.innerHTML=
+      '<div class="facbar"><div><strong style="font-size:18px">Factura '+f.id+'</strong> '+est+'<div class="muted">'+fmt(f.fecha)+' · '+(bk?aptNombre(bk.apartmentId):'')+'</div></div><button class="btn sec" id="facClose">Cerrar</button></div>'+
+      '<div class="facgrid"><div>'+
+        '<div class="muted">Cliente</div><div><strong>'+f.cliente.nombre+'</strong><br><span class="muted">'+(f.cliente.email||'')+'</span></div>'+
+        '<div class="muted" style="margin-top:12px">Concepto</div><div>'+f.concepto+(bk?' ('+fmt(bk.entrada)+' → '+fmt(bk.salida)+')':'')+'</div>'+
+        '<table style="margin-top:14px"><tr><td class="muted">Base imponible</td><td style="text-align:right">'+eur2(f.base)+'</td></tr>'+
+        '<tr><td class="muted">IVA ('+f.ivaPct+'% alojamiento)</td><td style="text-align:right">'+eur2(f.iva)+'</td></tr>'+
+        '<tr><td><strong>Total</strong></td><td style="text-align:right"><strong>'+eur2(f.total)+'</strong></td></tr></table>'+
+      '</div><div class="tbaibox">'+
+        '<div class="tbaihdr"><span class="tag2">TicketBAI · Batuz</span></div>'+
+        qrSVG(tb.tbaiId||f.id,140)+
+        '<div class="muted" style="font-size:10px;word-break:break-all;margin-top:8px">'+(tb.tbaiId||'—')+'</div>'+
+        '<div class="muted" style="font-size:11px;margin-top:6px">'+(tb.firmadoReal?'Firmada y enviada a Hacienda Foral de Bizkaia.':'Demo · en producción: firma XAdES + envío con certificado.')+'</div>'+
+      '</div></div>';
+    var m=document.getElementById('facModal'); m.style.display='flex';
+    document.getElementById('facClose').onclick=closeFac;
+    m.onclick=function(e){ if(e.target===m)closeFac(); };
+  }
+  function closeFac(){ document.getElementById('facModal').style.display='none'; }
   async function api(url, body){
     const opt = body ? {method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)} : {};
     const r = await fetch(url, opt); return r.json();
@@ -243,20 +299,24 @@ const appjs = `
     var rows=ord.map(function(b){
       var es=estadoReserva(b);
       var canal=b.canal||'Directa';
+      var fac=facturaDe(b.id);
+      var facCell=fac?('<button class="btn sec fac-ver" data-fac="'+fac.id+'">🧾 '+fac.id+'</button>'):'<span class="muted">—</span>';
       return '<tr><td><strong>'+b.huesped.nombre+'</strong><div class="muted">'+b.id+'</div></td>'+
         '<td>'+aptNombre(b.apartmentId)+'</td>'+
         '<td>'+fmt(b.entrada)+' → '+fmt(b.salida)+'</td>'+
         '<td>'+b.noches+'</td>'+
         '<td><span class="pill '+canalClass(canal)+'">'+canal+'</span></td>'+
         '<td><span class="pill '+es.k+'">'+es.t+'</span></td>'+
+        '<td>'+facCell+'</td>'+
         '<td style="text-align:right"><strong>'+eur(b.total)+'</strong></td></tr>';
     }).join('');
     el.innerHTML=
       '<h2 class="subttl">Reservas</h2><p class="lead">Calendario de ocupación por apartamento.</p>'+
-      (isDemo()?'<div class="demoline">Demo · reservas de ejemplo</div>':'')+
+      (isDemo()?'<div class="demoline">Demo · reservas de ejemplo · cada reserva genera factura con TicketBAI</div>':'')+
       kpis+
       '<div class="card"><div class="rowbtn"><h3 style="margin:0">Calendario · '+MESES[m]+' '+y+'</h3></div><div class="cal-wrap">'+cal+'</div>'+leyendaApts()+'</div>'+
-      '<div class="card"><h3>Próximas reservas</h3><table><thead><tr><th>Huésped</th><th>Apartamento</th><th>Fechas</th><th>Noches</th><th>Canal</th><th>Estado</th><th style="text-align:right">Total</th></tr></thead><tbody>'+(rows||'<tr><td colspan=7 class=muted>Sin reservas todavía.</td></tr>')+'</tbody></table></div>';
+      '<div class="card"><h3>Próximas reservas</h3><table><thead><tr><th>Huésped</th><th>Apartamento</th><th>Fechas</th><th>Noches</th><th>Canal</th><th>Estado</th><th>Factura</th><th style="text-align:right">Total</th></tr></thead><tbody>'+(rows||'<tr><td colspan=8 class=muted>Sin reservas todavía.</td></tr>')+'</tbody></table></div>';
+    el.querySelectorAll('.fac-ver').forEach(function(btn){ btn.onclick=function(){ verFactura(btn.getAttribute('data-fac')); }; });
   }
   function kpi(label,val,sub,cls){ return '<div class="kpi"><label>'+label+'</label><b>'+val+'</b><span class="'+(cls||'')+'">'+(sub||'')+'</span></div>'; }
   function fmt(iso){ if(!iso)return''; var p=iso.split('-'); return p[2]+'/'+p[1]; }
@@ -304,14 +364,15 @@ const appjs = `
       (isDemo()?'<em>Demo:</em> la firma y el envío reales los realiza un software garante homologado + certificado digital; este panel organiza los datos.':'')+'</div></div></div>';
     const rows=state.invoices.slice().sort(function(a,b){return a.fecha<b.fecha?1:-1;}).map(function(f){
       var est=f.estado==='cobrada'?'<span class="pill cobrada">Cobrada</span>':'<span class="pill pendiente">Pendiente</span>';
-      var tbai=f.tbai?('<div class="muted" style="font-size:10px" title="'+f.tbai.qrUrl+'">'+f.tbai.tbaiId+(f.tbai.firmadoReal?'':' · sin firma (demo)')+'</div>'):'';
-      return '<tr><td><strong>'+f.id+'</strong>'+tbai+'</td><td>'+fmt(f.fecha)+'</td><td>'+f.cliente.nombre+'</td><td>'+f.concepto+'</td><td style="text-align:right">'+eur2(f.total)+'</td><td>'+est+'</td></tr>';
+      var tbai=f.tbai?('<div class="muted tbaiid" style="font-size:10px" title="'+f.tbai.qrUrl+'"><span class="qrdot">▦</span> '+f.tbai.tbaiId+(f.tbai.firmadoReal?'':' · demo')+'</div>'):'';
+      return '<tr><td><strong>'+f.id+'</strong>'+tbai+'</td><td>'+fmt(f.fecha)+'</td><td>'+f.cliente.nombre+'</td><td>'+f.concepto+'</td><td style="text-align:right">'+eur2(f.total)+'</td><td>'+est+'</td><td style="text-align:right"><button class="btn sec fac-ver" data-fac="'+f.id+'">Ver</button></td></tr>';
     }).join('');
     el.innerHTML=
       '<h2 class="subttl">Facturas</h2><p class="lead">Emisión y seguimiento de facturas.</p>'+
       (isDemo()?'<div class="demoline">Demo · facturas de ejemplo</div>':'')+
       kpis+info+
-      '<div class="card"><h3>Facturas emitidas</h3><table><thead><tr><th>Nº / TBAI</th><th>Fecha</th><th>Cliente</th><th>Concepto</th><th style="text-align:right">Total</th><th>Estado</th></tr></thead><tbody>'+(rows||'<tr><td colspan=6 class=muted>Sin facturas.</td></tr>')+'</tbody></table></div>';
+      '<div class="card"><h3>Facturas emitidas</h3><table><thead><tr><th>Nº / TBAI</th><th>Fecha</th><th>Cliente</th><th>Concepto</th><th style="text-align:right">Total</th><th>Estado</th><th></th></tr></thead><tbody>'+(rows||'<tr><td colspan=7 class=muted>Sin facturas.</td></tr>')+'</tbody></table></div>';
+    el.querySelectorAll('.fac-ver').forEach(function(btn){ btn.onclick=function(){ verFactura(btn.getAttribute('data-fac')); }; });
   }
 
   // --- Ingresos/Gastos ------------------------------------------------------
@@ -350,23 +411,48 @@ const appjs = `
       '<div class="card"><div class="rowbtn"><h3 style="margin:0">Gastos</h3><span class="muted">Total '+y+': <strong class="neg">'+eur(gTotal)+'</strong></span></div><table><thead><tr><th>Fecha</th><th>Concepto</th><th>Categoría</th><th style="text-align:right">Importe</th></tr></thead><tbody>'+(grows||'<tr><td colspan=4 class=muted>Sin gastos. Alta manual + importación CSV.</td></tr>')+'</tbody></table></div>';
   }
   // --- Contabilidad ---------------------------------------------------------
+  function enPeriodo(fecha,p){
+    if(p==='all')return true;
+    var mm=parseInt((fecha||'').slice(5,7),10);
+    if(p.charAt(0)==='T'){ var q=parseInt(p.slice(1),10); return mm>=(q-1)*3+1 && mm<=q*3; }
+    return (fecha||'').slice(5,7)===p;
+  }
+  function periodoLabel(p){
+    if(p==='all')return'Año completo';
+    if(p.charAt(0)==='T')return'Trimestre '+p.slice(1);
+    return MESES[parseInt(p,10)-1];
+  }
   function renderContabilidad(){
     const el=document.getElementById('tab-contabilidad');
-    var y=new Date().getFullYear();
-    var añoInv=state.invoices.filter(function(f){return (f.fecha||'').slice(0,4)==String(y);});
-    var ingresos=añoInv.reduce(function(s,f){return s+f.total;},0);
-    var gastos=(state.expenses||[]).filter(function(e){return (e.fecha||'').slice(0,4)==String(y);}).reduce(function(s,e){return s+(e.importe||0);},0);
-    var resultado=ingresos-gastos;
-    var margen=ingresos?Math.round(resultado/ingresos*100):0;
+    // Años disponibles en los datos
+    var years={};
+    state.invoices.forEach(function(f){ var y=(f.fecha||'').slice(0,4); if(y)years[y]=1; });
+    (state.expenses||[]).forEach(function(e){ var y=(e.fecha||'').slice(0,4); if(y)years[y]=1; });
+    var yl=Object.keys(years).sort().reverse(); if(!yl.length)yl=[contab.y]; if(yl.indexOf(contab.y)<0)contab.y=yl[0];
+    var Y=contab.y, P=contab.p;
+    var inv=state.invoices.filter(function(f){return (f.fecha||'').slice(0,4)===Y && enPeriodo(f.fecha,P);});
+    var gas=(state.expenses||[]).filter(function(e){return (e.fecha||'').slice(0,4)===Y && enPeriodo(e.fecha,P);});
+    var ingresos=inv.reduce(function(s,f){return s+f.total;},0);
+    var gastos=gas.reduce(function(s,e){return s+(e.importe||0);},0);
+    var ivaRep=inv.reduce(function(s,f){return s+(f.iva||0);},0);
+    var resultado=ingresos-gastos, margen=ingresos?Math.round(resultado/ingresos*100):0;
+    // Selectores
+    var yOpts=yl.map(function(y){return '<option value="'+y+'"'+(y===Y?' selected':'')+'>'+y+'</option>';}).join('');
+    var pOpts=['all','T1','T2','T3','T4','01','02','03','04','05','06','07','08','09','10','11','12']
+      .map(function(p){return '<option value="'+p+'"'+(p===P?' selected':'')+'>'+periodoLabel(p)+'</option>';}).join('');
+    var toolbar='<div class="toolbar"><span class="muted">Periodo:</span>'+
+      '<select id="ctY">'+yOpts+'</select>'+
+      '<select id="ctP">'+pOpts+'</select>'+
+      '<span class="muted">'+periodoLabel(P)+' '+Y+'</span>'+
+      '<button class="btn sec" id="ctCSV" style="margin-left:auto">Exportar CSV</button></div>';
     var kpis='<div class="kpis">'+
-      kpi('Ingresos ('+y+')',eur(ingresos),'acumulado')+
-      kpi('Gastos',eur(gastos),'acumulado')+
+      kpi('Ingresos',eur(ingresos),periodoLabel(P)+' '+Y)+
+      kpi('Gastos',eur(gastos),'IVA rep. '+eur(ivaRep))+
       kpi('Resultado',eur(resultado),'ingresos − gastos')+
       kpi('Margen',margen+'%','sobre ingresos')+'</div>';
-    // Movimientos (ingresos + gastos) ordenados por fecha
     var movs=[];
-    añoInv.forEach(function(f){ movs.push({fecha:f.fecha,concepto:'Factura '+f.id+' · '+f.cliente.nombre,cat:'Ingreso alojamiento',iva:f.iva,imp:f.total,pos:true}); });
-    (state.expenses||[]).forEach(function(e){ if((e.fecha||'').slice(0,4)==String(y)) movs.push({fecha:e.fecha,concepto:e.concepto,cat:e.categoria||'Gasto',iva:e.iva||0,imp:-e.importe,pos:false}); });
+    inv.forEach(function(f){ movs.push({fecha:f.fecha,concepto:'Factura '+f.id+' · '+f.cliente.nombre,cat:'Ingreso alojamiento',iva:f.iva,imp:f.total,pos:true}); });
+    gas.forEach(function(e){ movs.push({fecha:e.fecha,concepto:e.concepto,cat:e.categoria||'Gasto',iva:e.iva||0,imp:-e.importe,pos:false}); });
     movs.sort(function(a,b){return a.fecha<b.fecha?1:-1;});
     var rows=movs.map(function(mv){
       return '<tr><td>'+fmt(mv.fecha)+'</td><td>'+mv.concepto+'</td><td><span class="pill">'+mv.cat+'</span></td><td style="text-align:right">'+eur2(mv.iva)+'</td><td style="text-align:right" class="'+(mv.pos?'pos':'neg')+'">'+(mv.pos?'+':'−')+eur2(Math.abs(mv.imp))+'</td></tr>';
@@ -374,8 +460,14 @@ const appjs = `
     el.innerHTML=
       '<h2 class="subttl">Contabilidad</h2><p class="lead">Ingresos, gastos y resultado.</p>'+
       (isDemo()?'<div class="demoline">Demo · datos de ejemplo</div>':'')+
-      kpis+
-      '<div class="card"><h3>Movimientos recientes</h3><table><thead><tr><th>Fecha</th><th>Concepto</th><th>Categoría</th><th style="text-align:right">IVA</th><th style="text-align:right">Importe</th></tr></thead><tbody>'+(rows||'<tr><td colspan=5 class=muted>Sin movimientos.</td></tr>')+'</tbody></table></div>';
+      '<div class="card">'+toolbar+kpis.replace('<div class="kpis">','<div class="kpis" style="margin-bottom:0">')+'</div>'+
+      '<div class="card"><h3>Movimientos · '+periodoLabel(P)+' '+Y+' <span class="muted">('+movs.length+')</span></h3><table><thead><tr><th>Fecha</th><th>Concepto</th><th>Categoría</th><th style="text-align:right">IVA</th><th style="text-align:right">Importe</th></tr></thead><tbody>'+(rows||'<tr><td colspan=5 class=muted>Sin movimientos en este periodo.</td></tr>')+'</tbody></table></div>';
+    document.getElementById('ctY').onchange=function(){ contab.y=this.value; renderContabilidad(); };
+    document.getElementById('ctP').onchange=function(){ contab.p=this.value; renderContabilidad(); };
+    document.getElementById('ctCSV').onclick=function(){
+      var csv='fecha,concepto,categoria,iva,importe\\n'+movs.map(function(mv){return [mv.fecha,'"'+mv.concepto+'"',mv.cat,mv.iva,mv.imp].join(',');}).join('\\n');
+      var a=document.createElement('a'); a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv); a.download='contabilidad-gurah-'+Y+'-'+P+'.csv'; a.click();
+    };
   }
 
   // --- Clientes -------------------------------------------------------------
