@@ -83,30 +83,31 @@ function b(
   };
 }
 
-// Facturas emitidas (de las reservas ya pasadas/en curso). IVA 10% alojamiento.
+// Facturas emitidas: UNA POR RESERVA (como en real). IVA 10% alojamiento.
+// Cada factura se "encadena" (TBAI-id correlativo) y lleva QR TicketBAI/Batuz.
 const IVA = 10;
-export const demoInvoices: DemoInvoice[] = demoBookings
-  .filter((bk) => bk.entrada <= '2026-07-06') // emitidas hasta la fecha
-  .map((bk, i) => {
-    const base = Math.round((bk.total / (1 + IVA / 100)) * 100) / 100;
-    const iva = Math.round((bk.total - base) * 100) / 100;
-    const num = String(60 + i).padStart(3, '0');
-    return {
-      id: '2026/' + num,
-      bookingId: bk.id,
-      fecha: bk.entrada,
-      cliente: { nombre: bk.huesped.nombre, email: bk.huesped.email },
-      concepto: `Estancia ${bk.noches} noches · ${APT[bk.apartmentId as keyof typeof APT]}`,
-      base, iva, ivaPct: IVA, total: bk.total,
-      estado: bk.entrada >= '2026-06-01' ? 'pendiente' : 'cobrada',
-      tbai: {
-        tbaiId: 'TBAI-' + 'A1B2C3'.slice(0, 6) + '-' + bk.entrada.replace(/-/g, '') + '-' + num,
-        qrUrl: 'https://batuz.eus/QRTBAI/?id=' + num,
-        firmadoReal: false,
-      },
-      demo: true,
-    };
-  });
+export const demoInvoices: DemoInvoice[] = demoBookings.map((bk, i) => {
+  const base = Math.round((bk.total / (1 + IVA / 100)) * 100) / 100;
+  const iva = Math.round((bk.total - base) * 100) / 100;
+  const num = String(60 + i).padStart(3, '0');
+  const tbaiId = 'TBAI-B95' + '123456' + '-' + bk.entrada.replace(/-/g, '') + '-' + num;
+  return {
+    id: '2026/' + num,
+    bookingId: bk.id,
+    fecha: bk.entrada,
+    cliente: { nombre: bk.huesped.nombre, email: bk.huesped.email },
+    concepto: `Estancia ${bk.noches} noches · ${APT[bk.apartmentId as keyof typeof APT]}`,
+    base, iva, ivaPct: IVA, total: bk.total,
+    // Pasadas → cobradas; en curso/futuras → emitidas pendientes de cobro.
+    estado: bk.salida < '2026-07-04' ? 'cobrada' : 'pendiente',
+    tbai: {
+      tbaiId,
+      qrUrl: 'https://batuz.eus/QRTBAI/?id=' + tbaiId + '&cr=' + num,
+      firmadoReal: false,
+    },
+    demo: true,
+  };
+});
 
 // Gastos de ejemplo (para Contabilidad · Ingresos/Gastos).
 export const demoExpenses: DemoExpense[] = [
