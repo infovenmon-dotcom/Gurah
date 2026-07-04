@@ -32,7 +32,8 @@ const TABS = [
 const css = `
 :root{--verde:#46554a;--verde2:#37433b;--arena:#f4efe6;--tinta:#1a2420;--gris:#6b7a74;--linea:#e3ddd0;--rojo:#b4462f}
 *{box-sizing:border-box}
-body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--tinta);background:var(--arena)}
+body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--tinta);background:var(--arena);overflow-x:hidden}
+.card{overflow-x:auto}
 .panel-top{display:flex;align-items:center;justify-content:space-between;padding:14px 22px;background:var(--verde);color:#fff}
 .panel-top strong{font-size:18px;letter-spacing:.04em}
 .panel-top .demo{background:#ffd257;color:#5b4a00;font-size:12px;font-weight:600;padding:3px 9px;border-radius:20px;margin-left:10px}
@@ -61,12 +62,51 @@ th{color:var(--gris);font-weight:600;font-size:12px;text-transform:uppercase;let
 .btn:disabled{opacity:.5;cursor:default}
 .seasons td input{width:100%}
 .muted{color:var(--gris);font-size:13px}
-.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:16px}
-.kpi{background:#fff;border:1px solid var(--linea);border-radius:12px;padding:14px}
-.kpi b{display:block;font-size:24px;color:var(--verde)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:16px}
+.kpi{background:#fff;border:1px solid var(--linea);border-radius:14px;padding:16px}
+.kpi label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--gris);margin-bottom:6px}
+.kpi b{display:block;font-size:28px;font-weight:600;color:var(--tinta);line-height:1.1}
 .kpi span{font-size:12px;color:var(--gris)}
+.kpi span.up{color:#2e7d54}.kpi span.down{color:var(--rojo)}
+.subttl{margin:0 0 2px}.lead{color:var(--gris);font-size:13px;margin:0 0 16px}
+.demoline{display:inline-block;border:1px solid #d8c48a;color:#8a6d00;background:#fbf5e3;border-radius:20px;padding:6px 12px;font-size:11px;letter-spacing:.05em;text-transform:uppercase;margin-bottom:16px}
+/* Píldoras de canal y estado */
+.pill{display:inline-block;font-size:12px;padding:3px 10px;border-radius:20px;background:var(--arena);color:var(--gris);white-space:nowrap}
+.pill.directa{background:#d8f0e6;color:var(--verde)}
+.pill.booking{background:#dbe7f6;color:#26568f}
+.pill.ota{background:#efe2f4;color:#7a4b8f}
+.pill.tel{background:#e7efd8;color:#5b7a2e}
+.pill.encasa{background:#d8f0e6;color:var(--verde)}
+.pill.confirmada{background:#fff2cc;color:#8a6d00}
+.pill.pasada{background:#eee9df;color:var(--gris)}
+.pill.pendiente{background:#fff2cc;color:#8a6d00}
+.pill.cobrada{background:#d8f0e6;color:var(--verde)}
+/* Calendario de ocupación (tipo Gantt) */
+.cal-wrap{overflow-x:auto}
+.cal{border-collapse:collapse;font-size:11px;min-width:640px;width:100%;table-layout:fixed}
+.cal th,.cal td{border:1px solid var(--linea);padding:0;text-align:center;height:26px}
+.cal th.room,.cal td.room{width:120px;text-align:left;padding:0 8px;font-size:12px;white-space:nowrap;position:sticky;left:0;background:#fff;z-index:1}
+.cal th{color:var(--gris);font-weight:600;height:22px}
+.cal th.wknd,.cal td.wknd{background:#faf7f0}
+.cal td.today{box-shadow:inset 0 0 0 2px var(--verde)}
+.cal .bar{background:var(--verde);color:#fff;border-radius:6px;font-size:10px;line-height:20px;height:20px;margin:3px 1px;overflow:hidden;white-space:nowrap;padding:0 6px}
+.cal .bar.c2{background:#7a8f84}.cal .bar.c3{background:#b98a4b}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:middle}
+.legend{display:flex;flex-wrap:wrap;gap:14px;margin-top:12px;font-size:12px;color:var(--gris)}
+/* Gráfico de barras (ingresos por mes) */
+.bars{display:flex;align-items:flex-end;gap:8px;height:180px;padding-top:24px}
+.bars .b{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end}
+.bars .b i{display:block;width:100%;max-width:34px;background:var(--verde);border-radius:6px 6px 0 0;position:relative}
+.bars .b i.alt{background:#b98a4b}
+.bars .b em{font-size:10px;color:var(--gris);font-style:normal}
+.bars .b small{font-size:9px;color:var(--tinta);font-weight:600}
+.pos{color:#2e7d54;font-weight:600}.neg{color:var(--rojo);font-weight:600}
+.infocard{display:flex;gap:14px;align-items:flex-start}
+.infocard .tag{background:var(--verde);color:#fff;border-radius:10px;padding:12px 14px;font-size:12px;text-align:center;line-height:1.3;min-width:96px}
+.rowbtn{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px}
 .toast{position:fixed;bottom:20px;right:20px;background:var(--tinta);color:#fff;padding:12px 18px;border-radius:10px;opacity:0;transition:.3s;pointer-events:none}
 .toast.show{opacity:1}
+@media(max-width:600px){.tabpage{padding:14px}.kpi b{font-size:23px}}
 `.trim();
 
 // --- Markup ------------------------------------------------------------------
@@ -95,7 +135,15 @@ const appjs = `
   let state = { apartments: [], blocks: {}, bookings: [], invoices: [], expenses: [], customers: [], reviews: [], feeds: {} };
 
   function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2200); }
-  function eur(n){ return (Number(n)||0).toFixed(2)+' €'; }
+  function eur(n){ return (Number(n)||0).toLocaleString('es-ES',{maximumFractionDigits:0})+' €'; }
+  function eur2(n){ return (Number(n)||0).toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2})+' €'; }
+  var MESES=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  function todayISO(){ var d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+  function aptNombre(id){ return (state.apartments.find(function(a){return a.id===id;})||{}).nombre||id; }
+  function canalClass(c){ c=(c||'').toLowerCase(); if(c.indexOf('directa')>=0)return'directa'; if(c.indexOf('booking')>=0)return'booking'; if(c.indexOf('expedia')>=0||c.indexOf('vrbo')>=0||c.indexOf('airbnb')>=0)return'ota'; if(c.indexOf('tel')>=0||c.indexOf('whats')>=0)return'tel'; return''; }
+  function estadoReserva(b){ var t=todayISO(); if(b.salida<=t)return{k:'pasada',t:'Pasada'}; if(b.entrada<=t)return{k:'encasa',t:'En casa'}; return{k:'confirmada',t:'Confirmada'}; }
+  function diasDelMes(y,m){ return new Date(y,m+1,0).getDate(); }
+  function isDemo(){ return state.bookings.some(function(b){return b.demo;})||state.invoices.some(function(f){return f.demo;}); }
   async function api(url, body){
     const opt = body ? {method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)} : {};
     const r = await fetch(url, opt); return r.json();
@@ -172,36 +220,162 @@ const appjs = `
   // --- Reservas -------------------------------------------------------------
   function renderReservas(){
     const el=document.getElementById('tab-reservas');
-    const rows = state.bookings.slice().reverse().map(function(b){
-      const apt=(state.apartments.find(a=>a.id===b.apartmentId)||{}).nombre||b.apartmentId;
-      return '<tr><td>'+b.id+'</td><td>'+apt+'</td><td>'+b.huesped.nombre+'</td><td>'+b.entrada+'→'+b.salida+'</td><td>'+b.noches+'</td><td>'+eur(b.total)+'</td><td>'+b.estado+(b.demo?' (demo)':'')+'</td></tr>';
+    var t=todayISO(), now=new Date(), y=now.getFullYear(), m=now.getMonth();
+    var bks=state.bookings.filter(function(b){return b.estado!=='cancelada';});
+    // KPIs
+    var ndias=diasDelMes(y,m), napt=Math.max(1,state.apartments.length);
+    var mesPref=y+'-'+String(m+1).padStart(2,'0');
+    var nochesMes=0;
+    bks.forEach(function(b){ for(var d=new Date(b.entrada+'T00:00:00');d<new Date(b.salida+'T00:00:00');d.setDate(d.getDate()+1)){ var iso=d.toISOString().slice(0,10); if(iso.slice(0,7)===mesPref)nochesMes++; } });
+    var ocup=Math.round(nochesMes/(napt*ndias)*100);
+    var activas=bks.filter(function(b){return b.salida>t;}).length;
+    var entradasHoy=bks.filter(function(b){return b.entrada===t;}).length;
+    var salidasHoy=bks.filter(function(b){return b.salida===t;}).length;
+    var kpis='<div class="kpis">'+
+      kpi('Ocupación (mes)',ocup+'%',MESES[m]+' '+y)+
+      kpi('Reservas activas',activas,'próximas + en curso')+
+      kpi('Entradas hoy',entradasHoy,'check-in 16:00')+
+      kpi('Salidas hoy',salidasHoy,'check-out 11:00')+'</div>';
+    // Calendario de ocupación del mes
+    var cal=calendarioOcupacion(bks,y,m,ndias,t);
+    // Próximas reservas (ordenadas por entrada desc)
+    var ord=bks.slice().sort(function(a,b){return a.entrada<b.entrada?1:-1;});
+    var rows=ord.map(function(b){
+      var es=estadoReserva(b);
+      var canal=b.canal||'Directa';
+      return '<tr><td><strong>'+b.huesped.nombre+'</strong><div class="muted">'+b.id+'</div></td>'+
+        '<td>'+aptNombre(b.apartmentId)+'</td>'+
+        '<td>'+fmt(b.entrada)+' → '+fmt(b.salida)+'</td>'+
+        '<td>'+b.noches+'</td>'+
+        '<td><span class="pill '+canalClass(canal)+'">'+canal+'</span></td>'+
+        '<td><span class="pill '+es.k+'">'+es.t+'</span></td>'+
+        '<td style="text-align:right"><strong>'+eur(b.total)+'</strong></td></tr>';
     }).join('');
-    el.innerHTML='<div class="card"><h3>Reservas</h3><table><thead><tr><th>Localizador</th><th>Apartamento</th><th>Huésped</th><th>Fechas</th><th>Noches</th><th>Total</th><th>Estado</th></tr></thead><tbody>'+(rows||'<tr><td colspan=7 class=muted>Sin reservas todavía.</td></tr>')+'</tbody></table></div>';
+    el.innerHTML=
+      '<h2 class="subttl">Reservas</h2><p class="lead">Calendario de ocupación por apartamento.</p>'+
+      (isDemo()?'<div class="demoline">Demo · reservas de ejemplo</div>':'')+
+      kpis+
+      '<div class="card"><div class="rowbtn"><h3 style="margin:0">Calendario · '+MESES[m]+' '+y+'</h3></div><div class="cal-wrap">'+cal+'</div>'+leyendaApts()+'</div>'+
+      '<div class="card"><h3>Próximas reservas</h3><table><thead><tr><th>Huésped</th><th>Apartamento</th><th>Fechas</th><th>Noches</th><th>Canal</th><th>Estado</th><th style="text-align:right">Total</th></tr></thead><tbody>'+(rows||'<tr><td colspan=7 class=muted>Sin reservas todavía.</td></tr>')+'</tbody></table></div>';
+  }
+  function kpi(label,val,sub,cls){ return '<div class="kpi"><label>'+label+'</label><b>'+val+'</b><span class="'+(cls||'')+'">'+(sub||'')+'</span></div>'; }
+  function fmt(iso){ if(!iso)return''; var p=iso.split('-'); return p[2]+'/'+p[1]; }
+  function leyendaApts(){ return '<div class="legend">'+state.apartments.map(function(a,i){ return '<span><span class="dot" style="background:'+['#46554a','#7a8f84','#b98a4b','#9a6b4b'][i%4]+'"></span>'+a.nombre+'</span>'; }).join('')+'</div>'; }
+  function calendarioOcupacion(bks,y,m,ndias,t){
+    var head='<tr><th class="room">Apartamento</th>';
+    for(var d=1;d<=ndias;d++){ var wd=new Date(y,m,d).getDay(); var wknd=(wd===0||wd===6)?' wknd':''; head+='<th class="'+wknd.trim()+'">'+d+'</th>'; }
+    head+='</tr>';
+    var body=state.apartments.map(function(a,ai){
+      var cells='<td class="room">'+a.nombre+'</td>';
+      var d=1;
+      while(d<=ndias){
+        var iso=y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+        var bk=bks.find(function(b){return b.apartmentId===a.id && b.entrada<=iso && b.salida>iso;});
+        var wd=new Date(y,m,d).getDay(); var wknd=(wd===0||wd===6)?' wknd':''; var isToday=(iso===t)?' today':'';
+        if(bk){
+          // cuántos días de esta reserva caen dentro del mes desde d
+          var span=0; var dd=d;
+          while(dd<=ndias){ var i2=y+'-'+String(m+1).padStart(2,'0')+'-'+String(dd).padStart(2,'0'); if(bk.entrada<=i2 && bk.salida>i2){span++;dd++;}else break; }
+          var nm=(bk.huesped.nombre||'').split(' ')[0];
+          cells+='<td class="'+wknd.trim()+isToday.trim()+'" colspan="'+span+'"><div class="bar c'+((ai%3)+1)+'">'+nm+'</div></td>';
+          d+=span;
+        } else { cells+='<td class="'+(wknd+isToday).trim()+'"></td>'; d++; }
+      }
+      return '<tr>'+cells+'</tr>';
+    }).join('');
+    return '<table class="cal"><thead>'+head+'</thead><tbody>'+body+'</tbody></table>';
   }
 
   // --- Facturas -------------------------------------------------------------
   function renderFacturas(){
     const el=document.getElementById('tab-facturas');
-    const rows=state.invoices.slice().reverse().map(function(f){
-      var tbai=f.tbai?('<div class="muted" style="font-size:11px" title="'+f.tbai.qrUrl+'">'+f.tbai.tbaiId+(f.tbai.firmadoReal?'':' · sin firma (demo)')+'</div>'):'<span class="muted">—</span>';
-      return '<tr><td>'+f.id+'<br>'+tbai+'</td><td>'+f.cliente.nombre+'</td><td>'+f.concepto+'</td><td>'+eur(f.base)+'</td><td>'+f.ivaPct+'%</td><td>'+eur(f.total)+'</td></tr>';
+    var y=new Date().getFullYear();
+    var añoInv=state.invoices.filter(function(f){return (f.fecha||'').slice(0,4)==String(y);});
+    var facturado=añoInv.reduce(function(s,f){return s+f.total;},0);
+    var ivaRep=añoInv.reduce(function(s,f){return s+(f.iva||0);},0);
+    var pend=state.invoices.filter(function(f){return f.estado==='pendiente';}).reduce(function(s,f){return s+f.total;},0);
+    var kpis='<div class="kpis">'+
+      kpi('Facturado ('+y+')',eur(facturado),'base + IVA')+
+      kpi('Emitidas',añoInv.length,String(y))+
+      kpi('Pendientes de cobro',eur(pend),'por cobrar')+
+      kpi('IVA repercutido',eur(ivaRep),'10% alojamiento')+'</div>';
+    var info='<div class="card"><div class="infocard"><div class="tag">TicketBAI<br><strong>Batuz · Bizkaia</strong></div>'+
+      '<div class="muted" style="font-size:13px;line-height:1.5"><strong style="color:var(--tinta)">Facturación conectada a la Hacienda Foral de Bizkaia.</strong> Obligatorio desde el 1 de enero de 2026: cada factura se firma digitalmente, se encadena con la anterior, lleva <strong style="color:var(--tinta)">código TBAI + QR</strong> y se anota en el LROE. '+
+      (isDemo()?'<em>Demo:</em> la firma y el envío reales los realiza un software garante homologado + certificado digital; este panel organiza los datos.':'')+'</div></div></div>';
+    const rows=state.invoices.slice().sort(function(a,b){return a.fecha<b.fecha?1:-1;}).map(function(f){
+      var est=f.estado==='cobrada'?'<span class="pill cobrada">Cobrada</span>':'<span class="pill pendiente">Pendiente</span>';
+      var tbai=f.tbai?('<div class="muted" style="font-size:10px" title="'+f.tbai.qrUrl+'">'+f.tbai.tbaiId+(f.tbai.firmadoReal?'':' · sin firma (demo)')+'</div>'):'';
+      return '<tr><td><strong>'+f.id+'</strong>'+tbai+'</td><td>'+fmt(f.fecha)+'</td><td>'+f.cliente.nombre+'</td><td>'+f.concepto+'</td><td style="text-align:right">'+eur2(f.total)+'</td><td>'+est+'</td></tr>';
     }).join('');
-    el.innerHTML='<div class="card"><h3>Facturas <span class="muted">(compatible TicketBAI / Batuz · Bizkaia)</span></h3><table><thead><tr><th>Nº / TBAI</th><th>Cliente</th><th>Concepto</th><th>Base</th><th>IVA</th><th>Total</th></tr></thead><tbody>'+(rows||'<tr><td colspan=6 class=muted>Sin facturas.</td></tr>')+'</tbody></table></div>';
+    el.innerHTML=
+      '<h2 class="subttl">Facturas</h2><p class="lead">Emisión y seguimiento de facturas.</p>'+
+      (isDemo()?'<div class="demoline">Demo · facturas de ejemplo</div>':'')+
+      kpis+info+
+      '<div class="card"><h3>Facturas emitidas</h3><table><thead><tr><th>Nº / TBAI</th><th>Fecha</th><th>Cliente</th><th>Concepto</th><th style="text-align:right">Total</th><th>Estado</th></tr></thead><tbody>'+(rows||'<tr><td colspan=6 class=muted>Sin facturas.</td></tr>')+'</tbody></table></div>';
   }
 
-  // --- Ingresos/Gastos + Contabilidad --------------------------------------
+  // --- Ingresos/Gastos ------------------------------------------------------
   function renderGastos(){
     const el=document.getElementById('tab-gastos');
-    const ingresos=state.invoices.reduce((s,f)=>s+f.total,0);
-    const gastos=(state.expenses||[]).reduce((s,e)=>s+(e.importe||0),0);
-    el.innerHTML='<div class="kpis"><div class="kpi"><b>'+eur(ingresos)+'</b><span>Ingresos</span></div><div class="kpi"><b>'+eur(gastos)+'</b><span>Gastos</span></div><div class="kpi"><b>'+eur(ingresos-gastos)+'</b><span>Resultado</span></div></div><div class="card muted">Registro de gastos: heredado de Kirana (alta manual + CSV). Placeholder en demo.</div>';
+    var now=new Date(), y=now.getFullYear(), m=now.getMonth();
+    var añoInv=state.invoices.filter(function(f){return (f.fecha||'').slice(0,4)==String(y);});
+    var mesPref=y+'-'+String(m+1).padStart(2,'0');
+    var ingMes=añoInv.filter(function(f){return (f.fecha||'').slice(0,7)===mesPref;}).reduce(function(s,f){return s+f.total;},0);
+    var ingAño=añoInv.reduce(function(s,f){return s+f.total;},0);
+    var bks=state.bookings.filter(function(b){return b.estado!=='cancelada';});
+    var totNoches=bks.reduce(function(s,b){return s+(b.noches||0);},0);
+    var totBk=bks.reduce(function(s,b){return s+(b.total||0);},0);
+    var adr=totNoches?Math.round(totBk/totNoches):0;
+    var estMedia=bks.length?(totNoches/bks.length):0;
+    var kpis='<div class="kpis">'+
+      kpi('Ingresos (mes)',eur(ingMes),MESES[m]+' '+y)+
+      kpi('Ingresos ('+y+')',eur(ingAño),'acumulado')+
+      kpi('Tarifa media (ADR)',eur(adr),'por noche')+
+      kpi('Estancia media',estMedia.toFixed(1),'noches/reserva')+'</div>';
+    // Barras por mes
+    var porMes=new Array(12).fill(0);
+    añoInv.forEach(function(f){ var mm=parseInt((f.fecha||'').slice(5,7),10)-1; if(mm>=0&&mm<12)porMes[mm]+=f.total; });
+    var max=Math.max.apply(null,porMes.concat([1]));
+    var bars=porMes.map(function(v,i){ var h=Math.round(v/max*100); return '<div class="b"><small>'+(v?eur(v):'')+'</small><i class="'+(i===m?'alt':'')+'" style="height:'+h+'%"></i><em>'+MESES[i]+'</em></div>'; }).join('');
+    // Gastos
+    var gTotal=(state.expenses||[]).reduce(function(s,e){return s+(e.importe||0);},0);
+    var grows=(state.expenses||[]).slice().sort(function(a,b){return a.fecha<b.fecha?1:-1;}).map(function(e){
+      return '<tr><td>'+fmt(e.fecha)+'</td><td>'+e.concepto+'</td><td><span class="pill">'+(e.categoria||'—')+'</span></td><td style="text-align:right" class="neg">−'+eur2(e.importe)+'</td></tr>';
+    }).join('');
+    el.innerHTML=
+      '<h2 class="subttl">Ingresos / Gastos</h2><p class="lead">Evolución y desglose.</p>'+
+      (isDemo()?'<div class="demoline">Demo · datos de ejemplo</div>':'')+
+      kpis+
+      '<div class="card"><h3>Ingresos por mes · '+y+'</h3><div class="bars">'+bars+'</div></div>'+
+      '<div class="card"><div class="rowbtn"><h3 style="margin:0">Gastos</h3><span class="muted">Total '+y+': <strong class="neg">'+eur(gTotal)+'</strong></span></div><table><thead><tr><th>Fecha</th><th>Concepto</th><th>Categoría</th><th style="text-align:right">Importe</th></tr></thead><tbody>'+(grows||'<tr><td colspan=4 class=muted>Sin gastos. Alta manual + importación CSV.</td></tr>')+'</tbody></table></div>';
   }
+  // --- Contabilidad ---------------------------------------------------------
   function renderContabilidad(){
     const el=document.getElementById('tab-contabilidad');
-    const byYear={};
-    state.invoices.forEach(function(f){ const y=(f.fecha||'').slice(0,4)||'—'; byYear[y]=(byYear[y]||0)+f.total; });
-    const rows=Object.keys(byYear).sort().map(y=>'<tr><td>'+y+'</td><td>'+eur(byYear[y])+'</td></tr>').join('');
-    el.innerHTML='<div class="card"><h3>Contabilidad (multi-año)</h3><table><thead><tr><th>Año</th><th>Facturado</th></tr></thead><tbody>'+(rows||'<tr><td colspan=2 class=muted>Sin datos.</td></tr>')+'</tbody></table></div>';
+    var y=new Date().getFullYear();
+    var añoInv=state.invoices.filter(function(f){return (f.fecha||'').slice(0,4)==String(y);});
+    var ingresos=añoInv.reduce(function(s,f){return s+f.total;},0);
+    var gastos=(state.expenses||[]).filter(function(e){return (e.fecha||'').slice(0,4)==String(y);}).reduce(function(s,e){return s+(e.importe||0);},0);
+    var resultado=ingresos-gastos;
+    var margen=ingresos?Math.round(resultado/ingresos*100):0;
+    var kpis='<div class="kpis">'+
+      kpi('Ingresos ('+y+')',eur(ingresos),'acumulado')+
+      kpi('Gastos',eur(gastos),'acumulado')+
+      kpi('Resultado',eur(resultado),'ingresos − gastos')+
+      kpi('Margen',margen+'%','sobre ingresos')+'</div>';
+    // Movimientos (ingresos + gastos) ordenados por fecha
+    var movs=[];
+    añoInv.forEach(function(f){ movs.push({fecha:f.fecha,concepto:'Factura '+f.id+' · '+f.cliente.nombre,cat:'Ingreso alojamiento',iva:f.iva,imp:f.total,pos:true}); });
+    (state.expenses||[]).forEach(function(e){ if((e.fecha||'').slice(0,4)==String(y)) movs.push({fecha:e.fecha,concepto:e.concepto,cat:e.categoria||'Gasto',iva:e.iva||0,imp:-e.importe,pos:false}); });
+    movs.sort(function(a,b){return a.fecha<b.fecha?1:-1;});
+    var rows=movs.map(function(mv){
+      return '<tr><td>'+fmt(mv.fecha)+'</td><td>'+mv.concepto+'</td><td><span class="pill">'+mv.cat+'</span></td><td style="text-align:right">'+eur2(mv.iva)+'</td><td style="text-align:right" class="'+(mv.pos?'pos':'neg')+'">'+(mv.pos?'+':'−')+eur2(Math.abs(mv.imp))+'</td></tr>';
+    }).join('');
+    el.innerHTML=
+      '<h2 class="subttl">Contabilidad</h2><p class="lead">Ingresos, gastos y resultado.</p>'+
+      (isDemo()?'<div class="demoline">Demo · datos de ejemplo</div>':'')+
+      kpis+
+      '<div class="card"><h3>Movimientos recientes</h3><table><thead><tr><th>Fecha</th><th>Concepto</th><th>Categoría</th><th style="text-align:right">IVA</th><th style="text-align:right">Importe</th></tr></thead><tbody>'+(rows||'<tr><td colspan=5 class=muted>Sin movimientos.</td></tr>')+'</tbody></table></div>';
   }
 
   // --- Clientes -------------------------------------------------------------

@@ -23,6 +23,14 @@ const lang = Astro.props.lang
   : getLang(Astro.url, Astro.cookies, Astro.request.headers.get('accept-language'));
 const activeLocale = localeOf(lang);
 
+// Ikurriña (bandera vasca) en SVG: el emoji con secuencia de etiqueta no lo pinta
+// la mayoría de sistemas (sale como «?»), así que la dibujamos.
+const ikurrina =
+  '<svg viewBox="0 0 30 20" width="17" height="12" style="border-radius:2px;display:block" aria-hidden="true">' +
+  '<rect width="30" height="20" fill="#D52B1E"/>' +
+  '<path d="M0 0 L30 20 M30 0 L0 20" stroke="#009B48" stroke-width="4"/>' +
+  '<path d="M15 0 V20 M0 10 H30" stroke="#fff" stroke-width="4"/></svg>';
+
 // Tokens de color + tipografías inyectados desde el tema activo.
 const rootVars = `:root{` +
   `--verde:${t.palette.verde};--verde2:${t.palette.verde2};--salvia:${t.palette.salvia};` +
@@ -53,7 +61,7 @@ const rootVars = `:root{` +
     <style is:global set:html={rootVars}></style>
     <style is:global>
       * { box-sizing: border-box; }
-      html { scroll-behavior: smooth; }
+      html { scroll-behavior: smooth; overflow-x: hidden; }
       body {
         margin: 0;
         font-family: var(--sans);
@@ -61,7 +69,10 @@ const rootVars = `:root{` +
         color: var(--tinta);
         background: var(--crema);
         line-height: 1.6;
+        overflow-x: hidden;
+        max-width: 100%;
       }
+      img, video { max-width: 100%; }
       h1, h2, h3, .serif { font-family: var(--serif); font-weight: 400; }
       .sans { font-family: var(--sans); }
       a { color: var(--verde); }
@@ -82,7 +93,7 @@ const rootVars = `:root{` +
       .brand { display: flex; align-items: center; gap: 12px; text-decoration: none; }
       .brand svg { color: var(--tinta); }
       .brand b { font-family: var(--serif); font-weight: 400; font-size: 24px; letter-spacing: .22em; color: var(--tinta); line-height: 1; }
-      .brand small { color: var(--gris); font-size: 10px; letter-spacing: .28em; text-transform: uppercase; }
+      .brand small { color: var(--gris); font-size: 10px; letter-spacing: .28em; text-transform: uppercase; white-space: nowrap; }
       footer.site { background: var(--tinta); color: #cfc9bc; margin-top: 60px; padding: 46px 0; font-family: var(--sans); font-size: 14px; }
       footer.site a { color: #fff; }
       /* Selector de idioma (menú desplegable sin JS, con <details>) */
@@ -108,6 +119,25 @@ const rootVars = `:root{` +
       .langsel .langmenu a:hover { background: var(--arena); }
       .langsel .langmenu a.on { font-weight: 600; color: var(--verde); }
       .langsel .langmenu a .flag { font-size: 17px; line-height: 1; }
+      /* Navegación de cabecera */
+      .site-nav { display: flex; gap: 18px; align-items: center; }
+      /* --- Responsive de la cabecera (evita el desbordamiento en móvil) --- */
+      @media (max-width: 680px) {
+        header.site { padding: 11px 14px; gap: 10px; }
+        .brand { gap: 9px; }
+        .brand svg { width: 30px; height: 30px; }
+        .brand b { font-size: 19px; letter-spacing: .16em; }
+        .brand small { font-size: 8px; letter-spacing: .2em; }
+        .site-nav { gap: 8px; }
+        /* Los enlaces de ancla se ocultan en móvil: se navega con el botón y el scroll */
+        .site-nav .navlink { display: none; }
+        .langsel > summary { padding: 6px 9px; font-size: 12px; }
+        .site-nav .btn { padding: 10px 15px; font-size: 12.5px; letter-spacing: .02em; }
+      }
+      @media (max-width: 380px) {
+        .brand small { display: none; }
+        .site-nav .btn { padding: 9px 13px; }
+      }
     </style>
   </head>
   <body>
@@ -122,19 +152,19 @@ const rootVars = `:root{` +
         </svg>
         <span><b>{t.brand.name}</b><br /><small>{t.brand.subtitle}</small></span>
       </a>
-      <nav class="sans" style="display:flex;gap:18px;align-items:center">
-        <a href="/#apartamentos" style="text-decoration:none;color:var(--tinta)">{tr(lang, 'nav.apartments')}</a>
-        <a href="/#entorno" style="text-decoration:none;color:var(--tinta)">{tr(lang, 'nav.environment')}</a>
+      <nav class="sans site-nav">
+        <a class="navlink" href="/#apartamentos" style="text-decoration:none;color:var(--tinta)">{tr(lang, 'nav.apartments')}</a>
+        <a class="navlink" href="/#entorno" style="text-decoration:none;color:var(--tinta)">{tr(lang, 'nav.environment')}</a>
         <details class="langsel">
           <summary aria-label={tr(lang, 'lang.label')}>
-            <span class="flag">{activeLocale.flag}</span>
+            {activeLocale.code === 'eu' ? <span class="flag" set:html={ikurrina} /> : <span class="flag">{activeLocale.flag}</span>}
             <span>{activeLocale.code.toUpperCase()}</span>
             <svg class="chev" width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </summary>
           <div class="langmenu">
             {LOCALES.map((l) => (
               <a href={langHref(Astro.url, l.code)} class={l.code === lang ? 'on' : ''} hreflang={l.htmlLang} lang={l.htmlLang}>
-                <span class="flag">{l.flag}</span><span>{l.endonym}</span>
+                {l.code === 'eu' ? <span class="flag" set:html={ikurrina} /> : <span class="flag">{l.flag}</span>}<span>{l.endonym}</span>
               </a>
             ))}
           </div>
