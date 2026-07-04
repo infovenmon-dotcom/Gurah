@@ -68,6 +68,7 @@ export const SERVICIOS_LABEL: Record<string, string> = {
   solarium: 'Solárium',
   padel: 'Tenis-pádel',
   piscina_comunitaria: 'Piscina comunitaria',
+  piscina_privada: 'Piscina privada',
   lavavajillas: 'Lavavajillas',
   tv: 'TV pantalla plana',
   lavadora: 'Lavadora',

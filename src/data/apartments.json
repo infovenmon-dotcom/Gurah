@@ -17,7 +17,7 @@
     "capacidad": 6,
     "camas": "2 camas dobles grandes + 2 individuales",
     "servicios": [
-      "piscina",
+      "piscina_privada",
       "gimnasio",
       "solarium",
       "terraza",
@@ -100,7 +100,7 @@
     "capacidad": 4,
     "camas": "2 camas dobles grandes",
     "servicios": [
-      "piscina",
+      "piscina_privada",
       "gimnasio",
       "solarium",
       "terraza",
