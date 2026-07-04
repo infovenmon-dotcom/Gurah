@@ -1,0 +1,28 @@
+---
+/**
+ * Recuperación de contraseña del panel (placeholder heredado de Kirana).
+ * En producción envía un enlace por email (Brevo) al ADMIN_EMAIL. En demo no envía.
+ */
+import { ADMIN_EMAIL } from '../../lib/email';
+let sent = false;
+if (Astro.request.method === 'POST') {
+  // Demo: no envía nada; en real dispararía email de recuperación.
+  sent = true;
+}
+---
+<!doctype html>
+<html lang="es">
+  <head><meta charset="utf-8" /><title>Recuperar acceso · GURAH</title>
+    <style>body{font-family:system-ui,sans-serif;background:#0e5c4a;display:flex;min-height:100vh;align-items:center;justify-content:center}.box{background:#fff;padding:32px;border-radius:16px;max-width:340px}input,button{width:100%;padding:11px;margin-top:12px;border-radius:9px;border:1px solid #e3ddd0;font-size:15px}button{background:#0e5c4a;color:#fff;border:0;font-weight:600;cursor:pointer}</style>
+  </head>
+  <body>
+    <form class="box" method="POST">
+      <h1 style="color:#0e5c4a;margin:0">Recuperar acceso</h1>
+      <p style="color:#6b7a74;font-size:14px">Se enviará un enlace de recuperación al administrador.</p>
+      {sent
+        ? <p style="color:#0e5c4a">Si el correo existe, recibirás instrucciones en {ADMIN_EMAIL}.</p>
+        : <><input type="email" name="email" placeholder="Email del administrador" required /><button>Enviar enlace</button></>}
+      <p style="margin-top:14px"><a href="/panel/login">← Volver</a></p>
+    </form>
+  </body>
+</html>

@@ -1,0 +1,20 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  # Node fijado para reproducir el build verificado (Astro 5 + adaptador Netlify).
+  NODE_VERSION = "20"
+
+[functions]
+  node_bundler = "esbuild"
+  # @netlify/blobs lo provee Netlify en runtime (no se empaqueta en la función).
+  external_node_modules = ["@netlify/blobs"]
+
+# Sincronización iCal periódica (channel manager) — placeholder heredado de Kirana.
+# [functions."sync-ical"]
+#   schedule = "@hourly"
+
+[dev]
+  command = "npm run dev"
+  framework = "astro"

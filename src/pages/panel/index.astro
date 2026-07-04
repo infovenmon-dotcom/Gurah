@@ -1,0 +1,27 @@
+---
+/**
+ * Panel de gestión GURAH. Consume los assets generados por buildpanel.cjs.
+ * NO editar el markup/CSS/JS aquí: editar el generador buildpanel.cjs.
+ */
+import { isDemoAuth } from '../../lib/auth';
+import panelCss from '../../generated/panel.css?raw';
+import panelMarkup from '../../generated/panel-markup.html?raw';
+import panelApp from '../../generated/panel-app.js?raw';
+
+const demo = isDemoAuth();
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Panel de gestión · GURAH</title>
+    <style set:html={panelCss}></style>
+  </head>
+  <body>
+    <div set:html={panelMarkup}></div>
+    {demo && <script is:inline>document.getElementById('demoBadge')?.removeAttribute('hidden');</script>}
+    <script is:inline set:html={panelApp}></script>
+  </body>
+</html>

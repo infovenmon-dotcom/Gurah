@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Apartamento junto a la playa (imagen de muestra)">
+  <defs>
+    <linearGradient id="ps" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#bfe0da"/><stop offset="1" stop-color="#8fc4bc"/></linearGradient>
+  </defs>
+  <rect width="640" height="360" fill="url(#ps)"/>
+  <circle cx="120" cy="80" r="40" fill="#f3e7bf" opacity="0.85"/>
+  <!-- mar -->
+  <rect y="210" width="640" height="150" fill="#3a8f9c"/>
+  <g stroke="#bfe6ea" stroke-width="3" opacity="0.5" fill="none"><path d="M60 250 q 30 -10 60 0 t 60 0"/><path d="M360 275 q 30 -10 60 0 t 60 0"/></g>
+  <!-- arena -->
+  <path d="M0 300 Q 320 275 640 305 V360 H0 Z" fill="#e7d6ab"/>
+  <!-- apartamento -->
+  <g transform="translate(400 150)">
+    <rect x="0" y="30" width="150" height="90" fill="#f4efe6"/>
+    <rect x="0" y="30" width="150" height="16" fill="#0e5c4a"/>
+    <rect x="18" y="58" width="30" height="30" fill="#9fc3b6"/>
+    <rect x="60" y="58" width="30" height="30" fill="#9fc3b6"/>
+    <rect x="102" y="58" width="30" height="30" fill="#9fc3b6"/>
+  </g>
+</svg>

@@ -1,0 +1,246 @@
+[
+  {
+    "id": "lurra",
+    "nombre": "GURAH · Lurra",
+    "slug": "lurra-planta-baja",
+    "concepto": "Planta baja de la casa de campo · 3 dormitorios",
+    "storytelling": "La planta baja de la casa, con entrada privada y todo a un mismo nivel. Tres dormitorios de piedra y madera para hasta seis personas, con vistas al jardín y a la montaña, y la piscina, el gimnasio y el solárium a un paso. El punto de partida perfecto para desconectar sin salir de casa.",
+    "ubicacion": {
+      "texto": "Campo · Bakio (Bizkaia)",
+      "tipo": "campo",
+      "lat": 43.4258,
+      "lng": -2.8106
+    },
+    "m2": 100,
+    "dormitorios": 3,
+    "banos": 1,
+    "capacidad": 6,
+    "camas": "2 camas dobles grandes + 2 individuales",
+    "servicios": [
+      "piscina_privada",
+      "gimnasio",
+      "solarium",
+      "terraza",
+      "jardin",
+      "vistas_montana",
+      "entrada_privada",
+      "parking",
+      "wifi",
+      "cocina_equipada",
+      "lavavajillas",
+      "tv",
+      "lavadora",
+      "mascotas",
+      "barbacoa"
+    ],
+    "precio_base": 250,
+    "estancia_minima": 2,
+    "tarifas_temporada": [
+      {
+        "nombre": "Temporada baja",
+        "desde": "01-08",
+        "hasta": "03-31",
+        "precio": 210,
+        "estancia_minima": 2
+      },
+      {
+        "nombre": "Temporada media",
+        "desde": "04-01",
+        "hasta": "06-30",
+        "precio": 250,
+        "estancia_minima": 2
+      },
+      {
+        "nombre": "Temporada alta",
+        "desde": "07-01",
+        "hasta": "09-15",
+        "precio": 325,
+        "estancia_minima": 3
+      },
+      {
+        "nombre": "Otoño",
+        "desde": "09-16",
+        "hasta": "12-20",
+        "precio": 230,
+        "estancia_minima": 2
+      },
+      {
+        "nombre": "Navidad",
+        "desde": "12-21",
+        "hasta": "01-07",
+        "precio": 310,
+        "estancia_minima": 3
+      }
+    ],
+    "fotos": [
+      "/img/gurah/apt-lurra.jpg"
+    ],
+    "clip": "/img/gurah/clips/planta-baja.webm",
+    "estado": "activa",
+    "pendiente_cliente": [
+      "precios",
+      "coordenadas"
+    ]
+  },
+  {
+    "id": "zerua",
+    "nombre": "GURAH · Zerua",
+    "slug": "zerua-planta-alta",
+    "concepto": "Planta alta de la casa de campo · 2 dormitorios",
+    "storytelling": "Arriba, donde manda la luz. Dos dormitorios dobles bajo el tejado vasco, techos con carácter y vistas abiertas al valle y la montaña. Entrada privada y acceso por escalera; comparte piscina, gimnasio y solárium con la casa, y se queda con el silencio y el cielo.",
+    "ubicacion": {
+      "texto": "Campo · Bakio (Bizkaia)",
+      "tipo": "campo",
+      "lat": 43.4258,
+      "lng": -2.8106
+    },
+    "m2": 100,
+    "dormitorios": 2,
+    "banos": 1,
+    "capacidad": 4,
+    "camas": "2 camas dobles grandes",
+    "servicios": [
+      "piscina_privada",
+      "gimnasio",
+      "solarium",
+      "terraza",
+      "jardin",
+      "vistas_montana",
+      "entrada_privada",
+      "parking",
+      "wifi",
+      "cocina_equipada",
+      "lavavajillas",
+      "tv",
+      "lavadora",
+      "mascotas"
+    ],
+    "precio_base": 220,
+    "estancia_minima": 2,
+    "tarifas_temporada": [
+      {
+        "nombre": "Temporada baja",
+        "desde": "01-08",
+        "hasta": "03-31",
+        "precio": 185,
+        "estancia_minima": 2
+      },
+      {
+        "nombre": "Temporada media",
+        "desde": "04-01",
+        "hasta": "06-30",
+        "precio": 220,
+        "estancia_minima": 2
+      },
+      {
+        "nombre": "Temporada alta",
+        "desde": "07-01",
+        "hasta": "09-15",
+        "precio": 285,
+        "estancia_minima": 3
+      },
+      {
+        "nombre": "Otoño",
+        "desde": "09-16",
+        "hasta": "12-20",
+        "precio": 205,
+        "estancia_minima": 2
+      },
+      {
+        "nombre": "Navidad",
+        "desde": "12-21",
+        "hasta": "01-07",
+        "precio": 275,
+        "estancia_minima": 3
+      }
+    ],
+    "fotos": [
+      "/img/gurah/apt-zerua.jpg"
+    ],
+    "clip": "/img/gurah/clips/planta-alta.webm",
+    "estado": "activa",
+    "pendiente_cliente": [
+      "precios",
+      "coordenadas"
+    ]
+  },
+  {
+    "id": "bakea",
+    "nombre": "BAKEA",
+    "slug": "bakea",
+    "concepto": "Apartamento con terraza, junto a la playa",
+    "storytelling": "A un paseo del arenal de Bakio. Cincuenta y siete metros de diseño cálido con terraza y jardín, piscina y pistas de tenis-pádel para los días de sol. El refugio luminoso para volver del mar sin prisa. Pet-friendly.",
+    "ubicacion": {
+      "texto": "Playa · Bakio (Bizkaia)",
+      "tipo": "playa",
+      "lat": 43.4285,
+      "lng": -2.8092
+    },
+    "m2": 57,
+    "dormitorios": 2,
+    "banos": 1,
+    "capacidad": 4,
+    "camas": "1 cama doble grande + 2 individuales",
+    "servicios": [
+      "piscina_comunitaria",
+      "padel",
+      "jardin",
+      "terraza",
+      "vistas_mar",
+      "wifi",
+      "cocina_equipada",
+      "lavavajillas",
+      "tv",
+      "lavadora",
+      "mascotas"
+    ],
+    "precio_base": 210,
+    "estancia_minima": 2,
+    "tarifas_temporada": [
+      {
+        "nombre": "Temporada baja",
+        "desde": "01-08",
+        "hasta": "03-31",
+        "precio": 180,
+        "estancia_minima": 2
+      },
+      {
+        "nombre": "Temporada media",
+        "desde": "04-01",
+        "hasta": "06-30",
+        "precio": 210,
+        "estancia_minima": 2
+      },
+      {
+        "nombre": "Temporada alta",
+        "desde": "07-01",
+        "hasta": "09-15",
+        "precio": 275,
+        "estancia_minima": 3
+      },
+      {
+        "nombre": "Otoño",
+        "desde": "09-16",
+        "hasta": "12-20",
+        "precio": 195,
+        "estancia_minima": 2
+      },
+      {
+        "nombre": "Navidad",
+        "desde": "12-21",
+        "hasta": "01-07",
+        "precio": 260,
+        "estancia_minima": 3
+      }
+    ],
+    "fotos": [
+      "/img/gurah/apt-bakea.jpg"
+    ],
+    "clip": "/img/gurah/clips/bakea.webm",
+    "estado": "activa",
+    "pendiente_cliente": [
+      "precios",
+      "coordenadas"
+    ]
+  }
+]

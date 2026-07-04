@@ -1,0 +1,34 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getBookings } from '../lib/bookings';
+import { getApartment } from '../lib/apartmentsStore';
+
+const id = Astro.url.searchParams.get('id');
+const bookings = await getBookings();
+const booking = id ? bookings.find((b) => b.id === id) : null;
+const apto = booking ? await getApartment(booking.apartmentId) : null;
+---
+
+<BaseLayout title="Reserva confirmada · GURAH">
+  <section class="container" style="padding:70px 0;text-align:center">
+    <div style="font-size:56px">✅</div>
+    <h1 style="font-size:34px;margin:10px 0">¡Reserva confirmada!</h1>
+    {booking ? (
+      <div class="sans" style="max-width:440px;margin:20px auto;text-align:left;background:#fff;border:1px solid var(--linea);border-radius:16px;padding:24px">
+        <p style="color:var(--gris);margin:0 0 12px">Localizador <strong style="color:var(--tinta)">{booking.id}</strong></p>
+        <table style="width:100%;font-size:15px">
+          <tr><td style="padding:6px 0;color:var(--gris)">Apartamento</td><td style="text-align:right">{apto?.nombre}</td></tr>
+          <tr><td style="padding:6px 0;color:var(--gris)">Entrada</td><td style="text-align:right">{booking.entrada}</td></tr>
+          <tr><td style="padding:6px 0;color:var(--gris)">Salida</td><td style="text-align:right">{booking.salida}</td></tr>
+          <tr><td style="padding:6px 0;color:var(--gris)">Noches</td><td style="text-align:right">{booking.noches}</td></tr>
+          <tr><td style="padding:8px 0;color:var(--gris);border-top:1px solid var(--linea)">Total</td><td style="text-align:right;border-top:1px solid var(--linea)"><strong>{booking.total.toFixed(2)} €</strong></td></tr>
+        </table>
+        {booking.demo && <p style="margin-top:14px;font-size:13px;color:#8a6d00;background:#fff2cc;padding:8px;border-radius:8px">Reserva de demostración (modo demo, sin cobro real).</p>}
+        <p style="font-size:13px;color:var(--gris);margin-top:14px">Te hemos enviado la confirmación por email.</p>
+      </div>
+    ) : (
+      <p class="sans" style="color:var(--gris)">No encontramos esa reserva. Si acabas de pagar, revisa tu email.</p>
+    )}
+    <a class="btn" href="/">Volver al inicio</a>
+  </section>
+</BaseLayout>

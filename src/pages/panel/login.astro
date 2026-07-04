@@ -1,0 +1,73 @@
+---
+import { checkPanelPassword, createSessionToken, SESSION_COOKIE, isDemoAuth } from '../../lib/auth';
+import { checkLogin, registerFail, clearAttempts } from '../../lib/loginGuard';
+
+let error = '';
+// IP del cliente para el guard anti fuerza bruta.
+const ip =
+  Astro.request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+  Astro.clientAddress ||
+  'unknown';
+
+if (Astro.request.method === 'POST') {
+  const guard = await checkLogin(ip);
+  if (guard.blocked) {
+    const mins = Math.ceil((guard.retryAfterMs ?? 0) / 60000);
+    error = `Demasiados intentos. Inténtalo de nuevo en ${mins} min.`;
+  } else {
+    const form = await Astro.request.formData();
+    const password = String(form.get('password') || '');
+    // Honeypot anti-bots: si el campo oculto viene relleno, rechazar.
+    const honey = String(form.get('website') || '');
+    if (honey) {
+      error = 'Solicitud no válida.';
+    } else if (checkPanelPassword(password)) {
+      await clearAttempts(ip);
+      Astro.cookies.set(SESSION_COOKIE, createSessionToken(), {
+        httpOnly: true,
+        secure: Astro.url.protocol === 'https:',
+        sameSite: 'lax',
+        path: '/',
+        maxAge: 60 * 60 * 8,
+      });
+      return Astro.redirect('/panel');
+    } else {
+      const after = await registerFail(ip);
+      error = after.blocked
+        ? 'Demasiados intentos. Cuenta bloqueada temporalmente.'
+        : `Contraseña incorrecta. Intentos restantes: ${after.remaining}.`;
+    }
+  }
+}
+const demo = isDemoAuth();
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Panel GURAH · Acceso</title>
+    <style>
+      body{margin:0;font-family:system-ui,sans-serif;background:#0e5c4a;display:flex;min-height:100vh;align-items:center;justify-content:center}
+      .box{background:#fff;padding:32px;border-radius:16px;width:100%;max-width:340px}
+      h1{margin:0 0 4px;color:#0e5c4a;letter-spacing:.14em}
+      input{width:100%;padding:11px;border:1px solid #e3ddd0;border-radius:9px;margin-top:12px;font-size:15px}
+      button{width:100%;padding:12px;border:0;border-radius:9px;background:#0e5c4a;color:#fff;font-weight:600;font-size:15px;margin-top:16px;cursor:pointer}
+      .err{color:#b4462f;font-size:13px;margin-top:10px}
+      .demo{background:#fff2cc;color:#8a6d00;font-size:13px;padding:8px;border-radius:8px;margin-top:14px}
+      .hp{position:absolute;left:-9999px}
+    </style>
+  </head>
+  <body>
+    <form class="box" method="POST">
+      <h1>GURAH</h1>
+      <p style="color:#6b7a74;margin:0;font-size:14px">Panel de gestión</p>
+      <input type="password" name="password" placeholder="Contraseña" autofocus required />
+      <input class="hp" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" />
+      <button type="submit">Entrar</button>
+      {error && <p class="err">{error}</p>}
+      {demo && <p class="demo">Modo demo: la contraseña es <strong>demo</strong>.</p>}
+    </form>
+  </body>
+</html>

@@ -1,0 +1,13 @@
+node_modules/
+dist/
+.netlify/
+.astro/
+src/generated/
+.env
+.env.*
+!.env.example
+*.log
+.DS_Store
+
+# preview snapshots (generados)
+preview/
