@@ -30,6 +30,27 @@
     document.querySelectorAll('.reveal').forEach(function (el) { el.classList.add('in'); });
   }
 
+  // --- Clips de apartamentos: carga diferida (solo el que está en pantalla) --
+  // Evita descargar ~8 MB de vídeo de golpe: cada clip se carga y reproduce al
+  // acercarse al viewport y se pausa al salir. Sin soporte → se queda el póster.
+  var clips = document.querySelectorAll('.apt-video[data-clip]');
+  if (clips.length && 'IntersectionObserver' in window && !reduce) {
+    var vio = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        var v = e.target;
+        if (e.isIntersecting) {
+          if (!v.getAttribute('data-loaded')) {
+            var s = document.createElement('source');
+            s.src = v.getAttribute('data-clip'); s.type = 'video/webm';
+            v.appendChild(s); v.setAttribute('data-loaded', '1'); v.load();
+          }
+          var pr = v.play(); if (pr && pr.catch) pr.catch(function () {});
+        } else if (!v.paused) { v.pause(); }
+      });
+    }, { rootMargin: '250px 0px' });
+    clips.forEach(function (v) { vio.observe(v); });
+  }
+
   // --- Booking modal --------------------------------------------------------
   var modal = document.getElementById('modal');
   var cur = null;

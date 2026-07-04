@@ -98,9 +98,7 @@ const I18N = {
     <section class={`apt-full ${i % 2 === 1 ? 'rev' : ''}`}>
       <div class="apt-full-img reveal" style={`background-image:url('${a.fotos && a.fotos[0] && String(a.fotos[0]).startsWith('/img/') ? a.fotos[0] : '/img/placeholder/apt-' + (a.ubicacion.tipo === 'playa' ? 'playa' : 'campo') + '.svg'}')`}>
         {a.clip && (
-          <video class="apt-video" autoplay muted loop playsinline preload="none" poster={a.fotos?.[0]}>
-            <source src={a.clip} type="video/webm" />
-          </video>
+          <video class="apt-video" muted loop playsinline preload="none" poster={a.fotos?.[0]} data-clip={a.clip}></video>
         )}
         <span class="apt-loc sans">{a.ubicacion.tipo === 'playa' ? '🏖 ' + tr(lang, 'loc.beach') : '🌳 ' + tr(lang, 'loc.field')} · {a.ubicacion.texto}</span>
       </div>
