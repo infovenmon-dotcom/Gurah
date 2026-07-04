@@ -3,6 +3,14 @@
 Web + panel de gestión + **reserva directa** para apartamentos boutique en **Bakio (Bizkaia)**.
 Astro SSR sobre Netlify Blobs. Proyecto de **Venmon**.
 
+## Desplegar
+
+[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/infovenmon-dotcom/gurah)
+
+Un clic → publica en Netlify. **Sin variables de entorno arranca en MODO DEMO**
+(reservas y pagos simulados, panel con clave `demo`). Guía completa y tabla de
+variables en [`docs/DEPLOY-NETLIFY.md`](docs/DEPLOY-NETLIFY.md).
+
 ## Inicio rápido
 
 ```bash
@@ -24,6 +32,9 @@ Panel de gestión: `/panel` — contraseña **`demo`** en modo demo.
   Facturas (TicketBAI/Batuz), Ingresos/Gastos, Contabilidad, Clientes (CSV), Canales (iCal), Reseñas (IA).
 - **Web pública** "Elige tu apartamento" con filtros (🐾 mascotas, 🏊 piscina, 🌳 campo, 🏖️ playa)
   y modal de reserva con temporadas.
+- **Multi-idioma (10 idiomas)**: es · eu · fr · en · it · be (flamenco) · nl · no · da · de.
+  Selector en la cabecera, `hreflang` para SEO, cookie de preferencia y concierge IA que
+  responde en el idioma elegido. Interfaz en los 10; storytelling largo en es/en/fr/de/it.
 - Seguridad: panel protegido, cookie de sesión firmada, honeypot anti-bots, CSP y cabeceras.
 - Facturación, email transaccional (Brevo) e iCal (channel manager) por apartamento.
 
