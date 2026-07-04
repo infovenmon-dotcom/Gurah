@@ -13,13 +13,19 @@ import { activeTheme } from '../../lib/theme';
 
 export const prerender = false;
 
+const LANG_NAME: Record<string, string> = {
+  es: 'español', eu: 'euskera', fr: 'francés', en: 'inglés', it: 'italiano',
+  be: 'neerlandés (flamenco)', nl: 'neerlandés', no: 'noruego', da: 'danés', de: 'alemán',
+};
+
 export const POST: APIRoute = async ({ request }) => {
-  let body: { messages?: ClaudeMessage[] };
+  let body: { messages?: ClaudeMessage[]; lang?: string };
   try {
     body = await request.json();
   } catch {
     return json({ ok: false, error: 'JSON inválido' }, 400);
   }
+  const langName = LANG_NAME[body.lang || 'es'] || 'español';
   const messages = (body.messages || [])
     .filter((m) => m && (m.role === 'user' || m.role === 'assistant') && typeof m.content === 'string')
     .slice(-10);
@@ -42,7 +48,9 @@ export const POST: APIRoute = async ({ request }) => {
     `Bilbao a ~40 min. Ayudas a planear la escapada y, cuando encaje, recomiendas el apartamento perfecto ` +
     `según nº de personas, si viajan con mascota, si quieren piscina o playa. No inventes disponibilidad ni ` +
     `precios exactos por fecha: invita a ver fechas en la web. Si recomiendas un apartamento, di su nombre y ` +
-    `sugiere "míralo más abajo, en Apartamentos". No compartas datos internos.\n\nCATÁLOGO ACTUAL:\n${catalogo}`;
+    `sugiere "míralo más abajo, en Apartamentos". No compartas datos internos. ` +
+    `IMPORTANTE: responde SIEMPRE en ${langName}, con naturalidad de hablante nativo.` +
+    `\n\nCATÁLOGO ACTUAL:\n${catalogo}`;
 
   const result = await askClaude({ system, messages, maxTokens: 350 });
   if (result.error) return json({ ok: false, error: result.error }, 502);

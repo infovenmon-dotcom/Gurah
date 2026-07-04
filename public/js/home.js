@@ -1,6 +1,8 @@
 /* home.js — GURAH: reveal-on-scroll, motor de reserva (modal) y concierge IA. */
 (function () {
   var A = window.GURAH_AVAIL || [];
+  var I = window.I18N || {};
+  function T(k, d) { return I[k] != null ? I[k] : d; }
   function money(n) { return (Math.round(n * 100) / 100).toFixed(0); }
   var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -35,7 +37,7 @@
   function openModal(id) {
     cur = A.find(function (x) { return x.id === id; }); if (!cur) return;
     $('m-title').textContent = cur.nombre;
-    $('m-sub').textContent = cur.concepto + ' · estancia mínima ' + cur.estancia_minima + ' noches';
+    $('m-sub').textContent = cur.concepto + ' · ' + T('minStay', 'estancia mínima') + ' ' + cur.estancia_minima + ' ' + T('nights', 'noches');
     $('m-pax').max = cur.capacidad;
     $('m-quote').style.display = 'none'; $('m-msg').textContent = '';
     var today = new Date().toISOString().slice(0, 10);
@@ -53,10 +55,10 @@
     fetch('/api/availability?apartment=' + cur.id + '&entrada=' + i + '&salida=' + o)
       .then(function (r) { return r.json(); })
       .then(function (d) {
-        if (!d.disponible) { msg.textContent = d.motivo || 'No disponible en esas fechas.'; return; }
+        if (!d.disponible) { msg.textContent = d.motivo || T('notAvailable', 'No disponible en esas fechas.'); return; }
         var p = d.precios; q.style.display = 'block';
-        q.innerHTML = '<div style="display:flex;justify-content:space-between"><span>' + p.noches + ' noches</span><span><s style="color:#999">' + money(p.total) + ' €</s> <b style="color:var(--verde)">' + money(p.totalWeb) + ' €</b></span></div>' +
-          '<div style="color:var(--gris);font-size:12px;margin-top:4px">Ahorras ' + money(p.ahorro) + ' € con la reserva directa.</div>';
+        q.innerHTML = '<div style="display:flex;justify-content:space-between"><span>' + p.noches + ' ' + T('nights', 'noches') + '</span><span><s style="color:#999">' + money(p.total) + ' €</s> <b style="color:var(--verde)">' + money(p.totalWeb) + ' €</b></span></div>' +
+          '<div style="color:var(--gris);font-size:12px;margin-top:4px">' + T('saveBefore', 'Ahorras') + ' ' + money(p.ahorro) + ' ' + T('saveAfter', '€ con la reserva directa.') + '</div>';
       });
   }
   $('m-in').onchange = quote; $('m-out').onchange = quote;
@@ -64,16 +66,16 @@
   $('m-book').onclick = function () {
     var msg = $('m-msg');
     var body = { apartmentId: cur.id, entrada: $('m-in').value, salida: $('m-out').value, personas: +$('m-pax').value, nombre: $('m-nombre').value.trim(), email: $('m-email').value.trim(), telefono: $('m-tel').value.trim() };
-    if (!body.entrada || !body.salida || !body.nombre || !body.email) { msg.textContent = 'Completa fechas, nombre y email.'; return; }
-    var btn = this; btn.disabled = true; btn.textContent = 'Procesando…';
+    if (!body.entrada || !body.salida || !body.nombre || !body.email) { msg.textContent = T('completeDates', 'Completa fechas, nombre y email.'); return; }
+    var btn = this; btn.disabled = true; btn.textContent = T('processing', 'Procesando…');
     fetch('/api/checkout', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) })
       .then(function (r) { return r.json(); })
       .then(function (d) {
-        if (!d.ok) { msg.textContent = d.error || 'No se pudo completar.'; btn.disabled = false; btn.textContent = 'Reservar y pagar'; return; }
+        if (!d.ok) { msg.textContent = d.error || T('couldNotComplete', 'No se pudo completar.'); btn.disabled = false; btn.textContent = T('bookPay', 'Reservar y pagar'); return; }
         if (d.mode === 'stripe' && d.url) { window.location.href = d.url; return; }
         window.location.href = d.redirect || ('/reserva-ok?id=' + (d.booking && d.booking.id));
       })
-      .catch(function () { msg.textContent = 'Error de red.'; btn.disabled = false; btn.textContent = 'Reservar y pagar'; });
+      .catch(function () { msg.textContent = T('netError', 'Error de red.'); btn.disabled = false; btn.textContent = T('bookPay', 'Reservar y pagar'); });
   };
 
   // --- Concierge IA ---------------------------------------------------------
@@ -92,14 +94,14 @@
     e.preventDefault();
     var text = input.value.trim(); if (!text) return;
     bubble(text, 'me'); history.push({ role: 'user', content: text }); input.value = '';
-    var typing = bubble('escribiendo…', 'bot typing');
-    fetch('/api/concierge', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ messages: history }) })
+    var typing = bubble(T('typing', 'escribiendo…'), 'bot typing');
+    fetch('/api/concierge', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ messages: history, lang: I.lang }) })
       .then(function (r) { return r.json(); })
       .then(function (d) {
         typing.remove();
-        var reply = d.ok ? d.reply : (d.error || 'Ahora mismo no puedo responder, inténtalo en un momento.');
+        var reply = d.ok ? d.reply : (d.error || T('ccError', 'Ahora mismo no puedo responder, inténtalo en un momento.'));
         bubble(reply, 'bot'); history.push({ role: 'assistant', content: reply });
       })
-      .catch(function () { typing.remove(); bubble('Error de conexión.', 'bot'); });
+      .catch(function () { typing.remove(); bubble(T('connError', 'Error de conexión.'), 'bot'); });
   };
 })();

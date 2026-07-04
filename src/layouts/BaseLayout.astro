@@ -4,6 +4,7 @@
  * Paleta, tipografías y marca provienen del tema activo → framework re-tematizable.
  */
 import { getTheme } from '../lib/theme';
+import { getLang, localeOf, LOCALES, langHref, t as tr } from '../lib/i18n';
 const t = getTheme(Astro.url);
 
 export interface Props {
@@ -14,8 +15,13 @@ export interface Props {
 const {
   title = 'GURAH Boutique Apartments · Bakio, Bizkaia',
   description = 'Apartamentos boutique en Bakio, a 3 km de San Juan de Gaztelugatxe. Piscina, pet-friendly, reserva directa con el mejor precio.',
-  lang = 'es',
 } = Astro.props;
+
+// Idioma activo (query ?lang → cookie → Accept-Language → es). Se persiste en cookie.
+const lang = Astro.props.lang
+  ? (Astro.props.lang as any)
+  : getLang(Astro.url, Astro.cookies, Astro.request.headers.get('accept-language'));
+const activeLocale = localeOf(lang);
 
 // Tokens de color + tipografías inyectados desde el tema activo.
 const rootVars = `:root{` +
@@ -26,13 +32,18 @@ const rootVars = `:root{` +
 ---
 
 <!doctype html>
-<html lang={lang}>
+<html lang={activeLocale.htmlLang}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     <meta name="description" content={description} />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <!-- SEO multi-idioma: alternativas hreflang para los 10 idiomas -->
+    {LOCALES.map((l) => (
+      <link rel="alternate" hreflang={l.htmlLang} href={langHref(Astro.url, l.code)} />
+    ))}
+    <link rel="alternate" hreflang="x-default" href={Astro.url.pathname} />
     <!-- Tipografías de marca: DM Serif Display (titulares) + Poppins (texto). En producción
          las carga el navegador; en el sandbox sin red se usan las fuentes de reserva. -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -74,6 +85,29 @@ const rootVars = `:root{` +
       .brand small { color: var(--gris); font-size: 10px; letter-spacing: .28em; text-transform: uppercase; }
       footer.site { background: var(--tinta); color: #cfc9bc; margin-top: 60px; padding: 46px 0; font-family: var(--sans); font-size: 14px; }
       footer.site a { color: #fff; }
+      /* Selector de idioma (menú desplegable sin JS, con <details>) */
+      .langsel { position: relative; }
+      .langsel > summary {
+        list-style: none; cursor: pointer; display: flex; align-items: center; gap: 6px;
+        font-size: 13px; color: var(--tinta); padding: 7px 10px; border: 1px solid var(--linea);
+        border-radius: 20px; background: rgba(255,255,255,.5); user-select: none;
+      }
+      .langsel > summary::-webkit-details-marker { display: none; }
+      .langsel > summary .chev { transition: transform .2s; opacity: .6; }
+      .langsel[open] > summary .chev { transform: rotate(180deg); }
+      .langsel .langmenu {
+        position: absolute; right: 0; top: calc(100% + 8px); z-index: 40;
+        background: #fff; border: 1px solid var(--linea); border-radius: 12px;
+        box-shadow: 0 14px 40px rgba(0,0,0,.16); padding: 6px; min-width: 190px;
+        max-height: 70vh; overflow: auto;
+      }
+      .langsel .langmenu a {
+        display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 8px;
+        text-decoration: none; color: var(--tinta); font-size: 14px;
+      }
+      .langsel .langmenu a:hover { background: var(--arena); }
+      .langsel .langmenu a.on { font-weight: 600; color: var(--verde); }
+      .langsel .langmenu a .flag { font-size: 17px; line-height: 1; }
     </style>
   </head>
   <body>
@@ -89,9 +123,23 @@ const rootVars = `:root{` +
         <span><b>{t.brand.name}</b><br /><small>{t.brand.subtitle}</small></span>
       </a>
       <nav class="sans" style="display:flex;gap:18px;align-items:center">
-        <a href="/#apartamentos" style="text-decoration:none;color:var(--tinta)">Apartamentos</a>
-        <a href="/#experiencia" style="text-decoration:none;color:var(--tinta)">Entorno</a>
-        <a class="btn" href="/#apartamentos">Reservar</a>
+        <a href="/#apartamentos" style="text-decoration:none;color:var(--tinta)">{tr(lang, 'nav.apartments')}</a>
+        <a href="/#entorno" style="text-decoration:none;color:var(--tinta)">{tr(lang, 'nav.environment')}</a>
+        <details class="langsel">
+          <summary aria-label={tr(lang, 'lang.label')}>
+            <span class="flag">{activeLocale.flag}</span>
+            <span>{activeLocale.code.toUpperCase()}</span>
+            <svg class="chev" width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </summary>
+          <div class="langmenu">
+            {LOCALES.map((l) => (
+              <a href={langHref(Astro.url, l.code)} class={l.code === lang ? 'on' : ''} hreflang={l.htmlLang} lang={l.htmlLang}>
+                <span class="flag">{l.flag}</span><span>{l.endonym}</span>
+              </a>
+            ))}
+          </div>
+        </details>
+        <a class="btn" href="/#apartamentos">{tr(lang, 'nav.book')}</a>
       </nav>
     </header>
 
@@ -104,14 +152,14 @@ const rootVars = `:root{` +
         <div>
           <b class="serif" style="font-size:22px;letter-spacing:.22em">{t.brand.name}</b>
           <p style="letter-spacing:.18em;font-size:11px;text-transform:uppercase;color:#a49d8f;margin:4px 0 10px">{t.brand.tagline}</p>
-          <p>Apartamentos boutique · Bakio, Bizkaia<br />A 3 km de San Juan de Gaztelugatxe.</p>
+          <p>{tr(lang, 'footer.boutique')}<br />{tr(lang, 'footer.near')}</p>
         </div>
         <div>
-          <p><strong>Reserva directa</strong><br />El mejor precio, sin comisiones de plataformas.</p>
-          <p class="muted" style="color:#9fb0a8">Un proyecto de Venmon.</p>
+          <p><strong>{tr(lang, 'footer.directTitle')}</strong><br />{tr(lang, 'footer.directDesc')}</p>
+          <p class="muted" style="color:#9fb0a8">{tr(lang, 'footer.venmon')}</p>
         </div>
         <div>
-          <a href="/privacidad">Privacidad</a> · <a href="/panel/login">Panel</a>
+          <a href="/privacidad">{tr(lang, 'footer.privacy')}</a> · <a href="/panel/login">{tr(lang, 'footer.panel')}</a>
         </div>
       </div>
     </footer>
