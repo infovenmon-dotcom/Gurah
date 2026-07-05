@@ -126,7 +126,7 @@ export const gurah: HotelTheme = {
     items: [
       { texto: 'Despertar con luz natural', foto: '/img/gurah/lurra-dormitorio.jpg' },
       { texto: 'Desayunar en la terraza', foto: '/img/gurah/casa-terraza.jpg' },
-      { texto: 'Volver de la playa', foto: '/img/gurah/env-playa.jpg' },
+      { texto: 'Volver de la playa', foto: '/img/gurah/entorno-playa-atardecer.jpg' },
       { texto: 'Leer junto a la piscina', foto: '/img/gurah/casa-solarium.jpg' },
     ],
   },
@@ -134,8 +134,8 @@ export const gurah: HotelTheme = {
     kicker: 'El lugar',
     title: 'Bakio y su costa',
     items: [
-      { titulo: 'Playa de Bakio', texto: 'Uno de los mejores arenales de Bizkaia para surf y paseo.', foto: '/img/gurah/env-playa.jpg' },
-      { titulo: 'San Juan de Gaztelugatxe', texto: 'El icónico islote y su ermita, a solo 10 minutos.', foto: '/img/gurah/env-gaztelugatxe.jpg' },
+      { titulo: 'Playa de Bakio', texto: 'Uno de los mejores arenales de Bizkaia para surf y paseo.', foto: '/img/gurah/entorno-playa.jpg' },
+      { titulo: 'San Juan de Gaztelugatxe', texto: 'El icónico islote y su ermita, a solo 10 minutos.', foto: '/img/gurah/entorno-gaztelugatxe.jpg' },
       { titulo: 'Viñedos y valle', texto: 'Txakoli, verde y silencio a la puerta de casa.', foto: '/img/gurah/piscina-valle.jpg' },
     ],
   },
