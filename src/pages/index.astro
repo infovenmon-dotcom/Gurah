@@ -86,6 +86,7 @@ const I18N = {
     <div class="story-text reveal">
       <h2 class="story-title">{tx(lang, 'story.title', t.storytelling.title).split('\n').map((l) => (<span>{l}<br /></span>))}</h2>
       {t.storytelling.paragraphs.map((p, i) => (<p class="sans">{tx(lang, 'story.p' + i, p)}</p>))}
+      <p class="story-host sans">♡ {tr(lang, 'story.host')}</p>
       <a class="link-underline sans" href="#apartamentos">{tr(lang, 'story.discover')}</a>
     </div>
     <div class="story-img reveal" style={`background-image:url('${t.storytelling.image}')`}></div>
@@ -273,6 +274,7 @@ const I18N = {
     .story { max-width:1180px; margin:0 auto; padding:110px 24px; display:grid; grid-template-columns:1.05fr .95fr; gap:64px; align-items:center; }
     .story-title { font-size:clamp(30px,4.6vw,54px); line-height:1.08; margin:0 0 26px; }
     .story-text p.sans { color:#5c574c; font-size:17px; line-height:1.85; margin:0 0 18px; max-width:38ch; }
+    .story-text p.story-host { color:var(--dorado); font-size:14px; letter-spacing:.03em; margin:4px 0 22px; }
     .link-underline { color:var(--verde); text-decoration:none; border-bottom:1px solid var(--verde); padding-bottom:2px; font-size:14px; letter-spacing:.02em; }
     .story-img { min-height:480px; border-radius:6px; background-size:cover; background-position:center; }
 
