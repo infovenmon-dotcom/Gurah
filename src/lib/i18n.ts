@@ -155,6 +155,17 @@ const DICT: Record<string, Entry> = {
     es: 'Lo que cuentan', eu: 'Zer dioten', fr: 'Ce qu’ils racontent', en: 'What guests say',
     it: 'Cosa raccontano', nl: 'Wat gasten zeggen', no: 'Hva gjestene sier', da: 'Hvad gæsterne siger', de: 'Was Gäste sagen',
   },
+  'reviews.lead': {
+    es: 'Nuestros huéspedes, en las principales plataformas.',
+    eu: 'Gure gonbidatuak, plataforma nagusietan.',
+    fr: 'Nos hôtes, sur les principales plateformes.',
+    en: 'Our guests, on the leading platforms.',
+    it: 'I nostri ospiti, sulle principali piattaforme.',
+    nl: 'Onze gasten, op de belangrijkste platforms.',
+    no: 'Gjestene våre, på de ledende plattformene.',
+    da: 'Vores gæster, på de førende platforme.',
+    de: 'Unsere Gäste, auf den führenden Plattformen.',
+  },
 
   // CTA final
   'cta.title': {

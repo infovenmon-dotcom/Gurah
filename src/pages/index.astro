@@ -3,7 +3,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import { getActiveApartments } from '../lib/apartmentsStore';
 import { getBlockedDates } from '../lib/bookings';
 import { webPrice } from '../lib/pricing';
-import { isDemoMode, readJson } from '../lib/persist';
+import { isDemoMode } from '../lib/persist';
 import { getTheme } from '../lib/theme';
 import { getLang, t as tr, tx, servicioLabelI18n, localizeApartment } from '../lib/i18n';
 
@@ -14,7 +14,6 @@ const servicioLabel = (key: string) => servicioLabelI18n(key, lang);
 
 const apartments = (await getActiveApartments()).map((a) => localizeApartment(a as any, lang));
 const demo = await isDemoMode();
-const reviews = (await readJson<any[]>('reviews', [])).slice(0, 3);
 
 // Inyección para el motor de reserva en cliente (precio web + bloqueos).
 const avail = await Promise.all(
@@ -157,19 +156,28 @@ const I18N = {
   </section>
 
   <!-- ===================== OPINIONES ===================== -->
-  {reviews.length > 0 && (
-    <section class="reviews">
-      <div class="section-head reveal"><p class="kicker sans">{tr(lang, 'reviews.kicker')}</p><h2>{tr(lang, 'reviews.title')}</h2></div>
-      <div class="reviews-list">
-        {reviews.map((r) => (
-          <blockquote class="review reveal">
-            <p class="serif">“{r.texto}”</p>
-            <cite class="sans">— {r.autor}{r.puntuacion ? ` · ${'★'.repeat(r.puntuacion)}` : ''}</cite>
-          </blockquote>
-        ))}
-      </div>
-    </section>
-  )}
+  <section class="reviews">
+    <div class="section-head reveal"><p class="kicker sans">{tr(lang, 'reviews.kicker')}</p><h2>{tr(lang, 'reviews.title')}</h2><p class="sans muted-lead">{tr(lang, 'reviews.lead')}</p></div>
+    <div class="ratings reveal">
+      {t.ratings.map((r) => (
+        <div class="rating-card">
+          <span class="rt-stars">★★★★★</span>
+          <span class="rt-score serif">{r.score}<small>{r.escala}</small></span>
+          <span class="rt-plat sans">{r.plataforma}</span>
+          {r.etiqueta && <span class="rt-label sans">{r.etiqueta}</span>}
+        </div>
+      ))}
+    </div>
+    <div class="reviews-list">
+      {t.reviews.map((r) => (
+        <blockquote class="review reveal">
+          <span class="rev-stars">★★★★★</span>
+          <p class="serif">“{r.texto}”</p>
+          <cite class="sans">— {r.autor}{r.origen ? ` · ${r.origen}` : ''}</cite>
+        </blockquote>
+      ))}
+    </div>
+  </section>
 
   <!-- ===================== RESERVA FINAL ===================== -->
   <section class="cta-final reveal">
@@ -307,9 +315,17 @@ const I18N = {
 
     /* OPINIONES */
     .reviews { background:var(--arena); padding-bottom:100px; }
+    .ratings { max-width:1000px; margin:0 auto 46px; padding:0 24px; display:flex; flex-wrap:wrap; justify-content:center; gap:16px; }
+    .rating-card { background:#fff; border:1px solid var(--linea); border-radius:16px; padding:20px 24px; min-width:190px; text-align:center; display:flex; flex-direction:column; align-items:center; gap:5px; }
+    .rt-stars { color:var(--dorado); letter-spacing:2px; font-size:13px; }
+    .rt-score { font-size:36px; color:var(--verde); line-height:1; }
+    .rt-score small { font-size:15px; color:var(--gris); }
+    .rt-plat { font-weight:500; font-size:14px; color:var(--tinta); letter-spacing:.02em; }
+    .rt-label { font-size:10.5px; color:var(--gris); text-transform:uppercase; letter-spacing:.07em; }
     .reviews-list { max-width:1080px; margin:0 auto; padding:0 24px; display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:34px; }
     .review { margin:0; }
-    .review p { font-size:20px; line-height:1.5; font-style:italic; color:var(--tinta); margin:0 0 14px; }
+    .rev-stars { color:var(--dorado); letter-spacing:2px; font-size:13px; display:block; margin-bottom:10px; }
+    .review p { font-size:19px; line-height:1.5; font-style:italic; color:var(--tinta); margin:0 0 14px; }
     .review cite { color:var(--gris); font-style:normal; font-size:13px; letter-spacing:.04em; }
 
     /* CTA FINAL */
@@ -357,6 +373,15 @@ const I18N = {
       .exp-grid { grid-template-columns:repeat(2,1fr); }
       .place-grid { grid-template-columns:1fr; }
       .cc-launch span { display:none; }
+    }
+    @media (max-width:560px) {
+      /* "Una experiencia" a una columna: los títulos ya no se cortan */
+      .exp-grid { grid-template-columns:1fr; gap:12px; }
+      .exp-item { height:260px; }
+      .exp-item figcaption { font-size:24px; }
+      .ratings { gap:12px; }
+      .rating-card { min-width:0; flex:1 1 40%; padding:16px 12px; }
+      .rt-score { font-size:30px; }
     }
     @media (prefers-reduced-motion: reduce) { .hero-slide,.hero-scroll svg { animation:none; } .hero-slide:first-child{opacity:1} .reveal{transition:none;opacity:1;transform:none} }
   </style>
