@@ -99,6 +99,25 @@
       .catch(function () { msg.textContent = T('netError', 'Error de red.'); btn.disabled = false; btn.textContent = T('bookPay', 'Reservar y pagar'); });
   };
 
+  // --- Visor de fotos por apartamento (lightbox) ----------------------------
+  var GAL = window.APT_GALLERY || {};
+  var lb = $('lightbox'), lbImgs = [], lbIdx = 0;
+  function lbShow() { if (!lbImgs.length) return; $('lb-img').src = lbImgs[lbIdx]; $('lb-count').textContent = (lbIdx + 1) + ' / ' + lbImgs.length; }
+  function lbOpen(id) { lbImgs = GAL[id] || []; if (!lbImgs.length) return; lbIdx = 0; lbShow(); lb.style.display = 'flex'; }
+  function lbClose() { lb.style.display = 'none'; }
+  function lbGo(d) { if (!lbImgs.length) return; lbIdx = (lbIdx + d + lbImgs.length) % lbImgs.length; lbShow(); }
+  if (lb) {
+    $('lb-close').onclick = lbClose;
+    $('lb-prev').onclick = function () { lbGo(-1); };
+    $('lb-next').onclick = function () { lbGo(1); };
+    lb.onclick = function (e) { if (e.target === lb || e.target.classList.contains('lb-stage')) lbClose(); };
+    document.addEventListener('keydown', function (e) {
+      if (lb.style.display !== 'flex') return;
+      if (e.key === 'Escape') lbClose(); else if (e.key === 'ArrowLeft') lbGo(-1); else if (e.key === 'ArrowRight') lbGo(1);
+    });
+    document.querySelectorAll('.apt-gallery-btn').forEach(function (b) { b.onclick = function () { lbOpen(b.getAttribute('data-gal')); }; });
+  }
+
   // --- Concierge IA ---------------------------------------------------------
   var panel = $('cc-panel'), launch = $('cc-launch'), log = $('cc-log'), input = $('cc-input');
   var history = [], started = false;

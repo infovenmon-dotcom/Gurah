@@ -159,6 +159,13 @@ const DICT: Record<string, Entry> = {
     en: 'See dates & book', it: 'Vedi date e prenota', nl: 'Data bekijken & boeken',
     no: 'Se datoer og bestill', da: 'Se datoer og book', de: 'Termine ansehen & buchen',
   },
+  'gallery.photos': {
+    es: 'fotos', eu: 'argazki', fr: 'photos', en: 'photos', it: 'foto', nl: "foto's", no: 'bilder', da: 'billeder', de: 'Fotos',
+  },
+  'gallery.view': {
+    es: 'Ver fotos', eu: 'Ikusi argazkiak', fr: 'Voir les photos', en: 'View photos',
+    it: 'Vedi foto', nl: "Bekijk foto's", no: 'Se bilder', da: 'Se billeder', de: 'Fotos ansehen',
+  },
 
   // Opiniones
   'reviews.kicker': { es: 'Opiniones', eu: 'Iritziak', fr: 'Avis', en: 'Reviews', it: 'Recensioni', nl: 'Beoordelingen', no: 'Omtaler', da: 'Anmeldelser', de: 'Bewertungen' },
