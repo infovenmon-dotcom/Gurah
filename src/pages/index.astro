@@ -19,6 +19,10 @@ const demo = await isDemoMode();
 const BOOKING_APT: Record<string, { s: string; o: number }> = {
   lurra: { s: '9,7', o: 124 }, zerua: { s: '9,7', o: 124 }, bakea: { s: '9,5', o: 76 },
 };
+// Foto real de portada por unidad (interior de cada apartamento de la casa).
+const APT_PHOTO: Record<string, string> = {
+  lurra: '/img/gurah/lurra-salon.jpg', zerua: '/img/gurah/zerua-salon.jpg',
+};
 
 // Inyección para el motor de reserva en cliente (precio web + bloqueos).
 const avail = await Promise.all(
@@ -101,10 +105,7 @@ const I18N = {
 
   {avail.map((a, i) => (
     <section class={`apt-full ${i % 2 === 1 ? 'rev' : ''}`}>
-      <div class="apt-full-img reveal" style={`background-image:url('${a.fotos && a.fotos[0] && String(a.fotos[0]).startsWith('/img/') ? a.fotos[0] : '/img/placeholder/apt-' + (a.ubicacion.tipo === 'playa' ? 'playa' : 'campo') + '.svg'}')`}>
-        {a.clip && (
-          <video class="apt-video" muted loop playsinline preload="none" poster={a.fotos?.[0]} data-clip={a.clip}></video>
-        )}
+      <div class="apt-full-img reveal" style={`background-image:url('${APT_PHOTO[a.id] || (a.fotos && a.fotos[0] && String(a.fotos[0]).startsWith('/img/') ? a.fotos[0] : '/img/placeholder/apt-' + (a.ubicacion.tipo === 'playa' ? 'playa' : 'campo') + '.svg')}')`}>
         <span class="apt-loc sans">{a.ubicacion.tipo === 'playa' ? '🏖 ' + tr(lang, 'loc.beach') : '🌳 ' + tr(lang, 'loc.field')} · {a.ubicacion.texto.replace(/^(campo|playa)\s*·\s*/i, '')}</span>
       </div>
       <div class="apt-full-text reveal">

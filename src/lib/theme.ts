@@ -104,9 +104,9 @@ export const gurah: HotelTheme = {
       'https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Poppins:wght@300;400;500;600&display=swap',
   },
   hero: {
-    // Clip cinematográfico generado desde las fotos reales (sustituible por metraje de dron).
-    videoUrl: '/img/gurah/clips/hero.webm',
-    images: ['/img/gurah/hero.jpg', '/img/gurah/env-gaztelugatxe.jpg', '/img/gurah/apt-casa-campo.jpg'],
+    // Fotos REALES de la casa en fundido cinematográfico (sustituible por metraje de dron).
+    videoUrl: null,
+    images: ['/img/gurah/piscina-valle.jpg', '/img/gurah/casa-exterior.jpg', '/img/gurah/lurra-salon.jpg', '/img/gurah/casa-piscina.jpg'],
     eyebrow: 'Bakio · Bizkaia · Costa Vasca',
     titleLines: ['Donde el campo', 'encuentra el mar'],
     emphasisWord: 'encuentra el mar',
@@ -118,16 +118,16 @@ export const gurah: HotelTheme = {
       'Una casa de campo boutique entre viñas y el silencio del valle vizcaíno, a diez minutos de San Juan de Gaztelugatxe y media hora de Bilbao. Piedra, madera y luz suave.',
       'Aquí el día empieza con niebla sobre Bakio y termina con el sonido del Cantábrico. Sin prisa. Sin ruido. Solo mar, diseño y calma.',
     ],
-    image: '/img/gurah/env-piscina.jpg',
+    image: '/img/gurah/casa-piscina.jpg',
   },
   experience: {
     kicker: 'Una experiencia',
     title: 'Vivir, no solo alojarse',
     items: [
-      { texto: 'Despertar con luz natural', foto: '/img/gurah/apt-3dorm.jpg' },
-      { texto: 'Desayunar en la terraza', foto: '/img/gurah/apt-bakea.jpg' },
+      { texto: 'Despertar con luz natural', foto: '/img/gurah/lurra-dormitorio.jpg' },
+      { texto: 'Desayunar en la terraza', foto: '/img/gurah/casa-terraza.jpg' },
       { texto: 'Volver de la playa', foto: '/img/gurah/env-playa.jpg' },
-      { texto: 'Leer junto a la piscina', foto: '/img/gurah/env-piscina.jpg' },
+      { texto: 'Leer junto a la piscina', foto: '/img/gurah/casa-solarium.jpg' },
     ],
   },
   place: {
@@ -136,15 +136,15 @@ export const gurah: HotelTheme = {
     items: [
       { titulo: 'Playa de Bakio', texto: 'Uno de los mejores arenales de Bizkaia para surf y paseo.', foto: '/img/gurah/env-playa.jpg' },
       { titulo: 'San Juan de Gaztelugatxe', texto: 'El icónico islote y su ermita, a solo 10 minutos.', foto: '/img/gurah/env-gaztelugatxe.jpg' },
-      { titulo: 'Viñedos y valle', texto: 'Txakoli, verde y silencio a la puerta de casa.', foto: '/img/gurah/env-jardin.jpg' },
+      { titulo: 'Viñedos y valle', texto: 'Txakoli, verde y silencio a la puerta de casa.', foto: '/img/gurah/piscina-valle.jpg' },
     ],
   },
   gallery: {
     kicker: 'Galería',
     title: 'Un vistazo a GURAH',
     images: [
-      '/img/gurah/gal-1.jpg', '/img/gurah/gal-2.jpg', '/img/gurah/gal-3.jpg', '/img/gurah/gal-4.jpg',
-      '/img/gurah/gal-5.jpg', '/img/gurah/gal-6.jpg', '/img/gurah/gal-7.jpg', '/img/gurah/gal-8.jpg',
+      '/img/gurah/piscina-valle.jpg', '/img/gurah/lurra-salon.jpg', '/img/gurah/zerua-salon.jpg', '/img/gurah/casa-exterior.jpg',
+      '/img/gurah/casa-piscina.jpg', '/img/gurah/casa-solarium.jpg', '/img/gurah/zerua-cocina.jpg', '/img/gurah/lurra-comedor.jpg',
     ],
   },
   // Puntuación REAL de Booking.com (capturas del cliente).
