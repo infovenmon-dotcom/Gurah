@@ -82,8 +82,9 @@ export async function askClaude(opts: AskOptions): Promise<ClaudeResult> {
 // --- Casos de uso GURAH ------------------------------------------------------
 
 const BRAND_CONTEXT =
-  'GURAH Boutique Apartments, apartamentos boutique en Bakio (Bizkaia), a 3 km de San Juan de ' +
-  'Gaztelugatxe. Casa de campo con piscina, apartamentos pet-friendly y refugios junto a la playa. ' +
+  'GURAH Boutique Apartments, apartamentos boutique en Bakio (Bizkaia), a 10 min de San Juan de ' +
+  'Gaztelugatxe y 30 de Bilbao. Anfitriona: Maialen. Casa de campo con piscina, apartamentos pet-friendly ' +
+  'y refugios junto a la playa. ' +
   'Trato cercano, cálido y profesional. Un proyecto de Venmon.';
 
 /** Genera una respuesta profesional a una reseña de un huésped. */

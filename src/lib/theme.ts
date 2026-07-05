@@ -115,7 +115,7 @@ export const gurah: HotelTheme = {
   storytelling: {
     title: 'No vienes a dormir.\nVienes a desconectar.',
     paragraphs: [
-      'Una casa de campo boutique entre viñas y el silencio del valle vizcaíno, a tres kilómetros de San Juan de Gaztelugatxe. Piedra, madera y luz suave.',
+      'Una casa de campo boutique entre viñas y el silencio del valle vizcaíno, a diez minutos de San Juan de Gaztelugatxe y media hora de Bilbao. Piedra, madera y luz suave.',
       'Aquí el día empieza con niebla sobre Bakio y termina con el sonido del Cantábrico. Sin prisa. Sin ruido. Solo mar, diseño y calma.',
     ],
     image: '/img/gurah/env-piscina.jpg',
@@ -135,7 +135,7 @@ export const gurah: HotelTheme = {
     title: 'Bakio y su costa',
     items: [
       { titulo: 'Playa de Bakio', texto: 'Uno de los mejores arenales de Bizkaia para surf y paseo.', foto: '/img/gurah/env-playa.jpg' },
-      { titulo: 'San Juan de Gaztelugatxe', texto: 'El icónico islote y su ermita, a solo 3 km.', foto: '/img/gurah/env-gaztelugatxe.jpg' },
+      { titulo: 'San Juan de Gaztelugatxe', texto: 'El icónico islote y su ermita, a solo 10 minutos.', foto: '/img/gurah/env-gaztelugatxe.jpg' },
       { titulo: 'Viñedos y valle', texto: 'Txakoli, verde y silencio a la puerta de casa.', foto: '/img/gurah/env-jardin.jpg' },
     ],
   },

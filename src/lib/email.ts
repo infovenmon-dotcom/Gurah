@@ -73,6 +73,6 @@ export function bookingEmailHtml(opts: {
       <tr><td style="padding:6px 0;color:#666">Noches</td><td style="text-align:right">${opts.noches}</td></tr>
       <tr><td style="padding:6px 0;color:#666;border-top:1px solid #eee">Total</td><td style="text-align:right;border-top:1px solid #eee"><strong>${opts.total.toFixed(2)} €</strong></td></tr>
     </table>
-    <p style="color:#666;font-size:13px">GURAH Boutique Apartments · Bakio, Bizkaia · a 3 km de San Juan de Gaztelugatxe.</p>
+    <p style="color:#666;font-size:13px">GURAH Boutique Apartments · Bakio, Bizkaia · a 10 min de San Juan de Gaztelugatxe.</p>
   </div></body></html>`;
 }
