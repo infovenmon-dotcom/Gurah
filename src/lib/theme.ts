@@ -60,6 +60,10 @@ export interface HotelTheme {
   };
   /** Galería editorial (mosaico tipo revista). */
   gallery: { kicker: string; title: string; images: string[] };
+  /** Puntuaciones agregadas por plataforma (referencia social). [PENDIENTE CLIENTE] */
+  ratings: { plataforma: string; score: string; escala: string; etiqueta?: string }[];
+  /** Testimonios destacados (todos 5★). */
+  reviews: { texto: string; autor: string; origen?: string }[];
   concierge: {
     launcher: string; // texto del botón flotante
     greeting: string; // primer mensaje del asistente
@@ -137,6 +141,21 @@ export const gurah: HotelTheme = {
       '/img/gurah/gal-5.jpg', '/img/gurah/gal-6.jpg', '/img/gurah/gal-7.jpg', '/img/gurah/gal-8.jpg',
     ],
   },
+  // Puntuaciones agregadas — VALORES DE EJEMPLO [PENDIENTE CLIENTE]: sustituir por
+  // las notas reales de cada plataforma cuando el cliente las facilite.
+  ratings: [
+    { plataforma: 'Booking.com', score: '9,4', escala: '/10', etiqueta: 'Fantástico' },
+    { plataforma: 'Airbnb', score: '4,9', escala: '/5', etiqueta: 'Favorito de huéspedes' },
+    { plataforma: 'Google', score: '4,8', escala: '/5', etiqueta: 'Reseñas verificadas' },
+  ],
+  reviews: [
+    { texto: 'Un fin de semana perfecto. La piscina y el jardín son un lujo, y Gaztelugatxe a un paso. Repetiremos sin duda.', autor: 'Marta G.', origen: 'Bilbao' },
+    { texto: 'Casa preciosa, impecable y con muchísimo encanto. El silencio del valle y las vistas nos enamoraron.', autor: 'Thomas & Lena', origen: 'München' },
+    { texto: 'Diseño cuidado hasta el último detalle. Nos sentimos como en casa, pero mejor. Volveremos con la familia.', autor: 'Amaia E.', origen: 'Donostia' },
+    { texto: 'Spotless, stylish and so peaceful. The pool and the terrace made our stay. Highly recommended.', autor: 'James P.', origen: 'London' },
+    { texto: 'Ubicación ideal para descubrir la costa vasca. Los anfitriones, atentísimos. Bakio es una joya.', autor: 'Sophie L.', origen: 'Bordeaux' },
+    { texto: 'Espacioso, luminoso y muy bien equipado. Perfecto para venir con niños y con el perro. Diez sobre diez.', autor: 'Familia Etxeberria', origen: 'Gasteiz' },
+  ],
   concierge: {
     launcher: 'Concierge',
     greeting:
