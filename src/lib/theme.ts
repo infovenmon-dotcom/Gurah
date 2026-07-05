@@ -60,9 +60,15 @@ export interface HotelTheme {
   };
   /** Galería editorial (mosaico tipo revista). */
   gallery: { kicker: string; title: string; images: string[] };
-  /** Puntuaciones agregadas por plataforma (referencia social). [PENDIENTE CLIENTE] */
-  ratings: { plataforma: string; score: string; escala: string; etiqueta?: string }[];
-  /** Testimonios destacados (todos 5★). */
+  /** Puntuación real de Booking.com (nota global + categorías + otros listados). */
+  booking: {
+    score: string;
+    etiqueta: string;
+    opiniones: number;
+    categorias: { nombre: string; valor: number }[];
+    otros: { nombre: string; score: string; opiniones: number }[];
+  };
+  /** Testimonios reales de huéspedes. */
   reviews: { texto: string; autor: string; origen?: string }[];
   concierge: {
     launcher: string; // texto del botón flotante
@@ -141,20 +147,29 @@ export const gurah: HotelTheme = {
       '/img/gurah/gal-5.jpg', '/img/gurah/gal-6.jpg', '/img/gurah/gal-7.jpg', '/img/gurah/gal-8.jpg',
     ],
   },
-  // Puntuaciones agregadas — VALORES DE EJEMPLO [PENDIENTE CLIENTE]: sustituir por
-  // las notas reales de cada plataforma cuando el cliente las facilite.
-  ratings: [
-    { plataforma: 'Booking.com', score: '9,4', escala: '/10', etiqueta: 'Fantástico' },
-    { plataforma: 'Airbnb', score: '4,9', escala: '/5', etiqueta: 'Favorito de huéspedes' },
-    { plataforma: 'Google', score: '4,8', escala: '/5', etiqueta: 'Reseñas verificadas' },
-  ],
+  // Puntuación REAL de Booking.com (capturas del cliente).
+  booking: {
+    score: '9,7',
+    etiqueta: 'Excepcional',
+    opiniones: 124,
+    categorias: [
+      { nombre: 'Limpieza', valor: 9.7 },
+      { nombre: 'Confort', valor: 9.9 },
+      { nombre: 'Instalaciones y servicios', valor: 9.8 },
+      { nombre: 'Ubicación', valor: 9.2 },
+      { nombre: 'Personal', valor: 9.6 },
+      { nombre: 'Relación calidad-precio', valor: 9.4 },
+    ],
+    otros: [{ nombre: 'BAKEA (apartamento playa)', score: '9,5', opiniones: 76 }],
+  },
+  // Testimonios REALES de huéspedes (Booking.com).
   reviews: [
-    { texto: 'Un fin de semana perfecto. La piscina y el jardín son un lujo, y Gaztelugatxe a un paso. Repetiremos sin duda.', autor: 'Marta G.', origen: 'Bilbao' },
-    { texto: 'Casa preciosa, impecable y con muchísimo encanto. El silencio del valle y las vistas nos enamoraron.', autor: 'Thomas & Lena', origen: 'München' },
-    { texto: 'Diseño cuidado hasta el último detalle. Nos sentimos como en casa, pero mejor. Volveremos con la familia.', autor: 'Amaia E.', origen: 'Donostia' },
-    { texto: 'Spotless, stylish and so peaceful. The pool and the terrace made our stay. Highly recommended.', autor: 'James P.', origen: 'London' },
-    { texto: 'Ubicación ideal para descubrir la costa vasca. Los anfitriones, atentísimos. Bakio es una joya.', autor: 'Sophie L.', origen: 'Bordeaux' },
-    { texto: 'Espacioso, luminoso y muy bien equipado. Perfecto para venir con niños y con el perro. Diez sobre diez.', autor: 'Familia Etxeberria', origen: 'Gasteiz' },
+    { texto: 'Me encantó todo. El apartamento, la zona de piscina, la ubicación. Un sitio ideal para desconectar y relajarse. La anfitriona un diez.', autor: 'Kepa', origen: 'España' },
+    { texto: 'El lugar súper tranquilo, limpio y con unas vistas espectaculares. Los detalles fueron increíbles, desde las galletitas y el café hasta el cepillo de dientes. Piscina increíble y hasta su rincón para hacer deporte. Lo recomiendo al 100%.', autor: 'Raquel', origen: 'España' },
+    { texto: 'Gran ubicación, en pleno campo pero a 5 minutos en coche del centro y la playa de Bakio. Nos quedamos 6 personas y la estancia fue muy cómoda. Lo recomiendo.', autor: 'Lucia', origen: 'España' },
+    { texto: 'Un paraje increíble. El apartamento precioso; hemos pasado unos días de desconexión y descanso de lujo. Maialen, muy atenta en todo momento. Repetiremos seguro.', autor: 'Leire', origen: 'España' },
+    { texto: 'La ubicación por la tranquilidad, la limpieza, la atención de los propietarios… todo de 10.', autor: 'Fernando', origen: 'España' },
+    { texto: 'Está cerquita de todo y a la vez se respira la tranquilidad de la montaña. Apartamento cómodo, amplio, con buenas calidades y muy bien decorado. La información para visitar la zona, idónea.', autor: 'Francisco', origen: 'España' },
   ],
   concierge: {
     launcher: 'Concierge',
