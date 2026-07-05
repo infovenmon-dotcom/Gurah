@@ -143,8 +143,8 @@ export const gurah: HotelTheme = {
     kicker: 'Galería',
     title: 'Un vistazo a GURAH',
     images: [
-      '/img/gurah/piscina-valle.jpg', '/img/gurah/lurra-salon.jpg', '/img/gurah/zerua-salon.jpg', '/img/gurah/casa-exterior.jpg',
-      '/img/gurah/casa-piscina.jpg', '/img/gurah/casa-solarium.jpg', '/img/gurah/zerua-cocina.jpg', '/img/gurah/lurra-comedor.jpg',
+      '/img/gurah/piscina-valle.jpg', '/img/gurah/lurra-salon.jpg', '/img/gurah/zerua-salon.jpg', '/img/gurah/entorno-bakio-pano.jpg',
+      '/img/gurah/casa-piscina.jpg', '/img/gurah/casa-solarium.jpg', '/img/gurah/bakea-terraza.jpg', '/img/gurah/casa-piscina2.jpg',
     ],
   },
   // Puntuación REAL de Booking.com (capturas del cliente).
