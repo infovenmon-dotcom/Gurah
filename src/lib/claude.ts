@@ -97,6 +97,23 @@ export async function translateToSpanish(texto: string): Promise<ClaudeResult> {
   });
 }
 
+/**
+ * Traduce un texto a un idioma destino (para campañas de email marketing).
+ * `idiomaNombre` es el nombre del idioma en español (p.ej. "francés", "alemán").
+ * Devuelve SOLO la traducción, conservando el tono y sin añadir comentarios.
+ */
+export async function translateTo(texto: string, idiomaNombre: string): Promise<ClaudeResult> {
+  if (!texto.trim()) return { demo: !isClaudeConfigured(), text: '' };
+  return askClaude({
+    system:
+      `Traduce al ${idiomaNombre} el texto de marketing que te den, de forma natural y ` +
+      `comercialmente atractiva, conservando el tono cálido de la marca y el significado. ` +
+      `Mantén los saltos de línea. Devuelve SOLO la traducción, sin comillas ni comentarios.`,
+    messages: [{ role: 'user', content: texto }],
+    maxTokens: 700,
+  });
+}
+
 export async function draftReviewReply(review: {
   autor?: string;
   texto: string;

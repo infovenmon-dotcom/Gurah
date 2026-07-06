@@ -76,3 +76,45 @@ export function bookingEmailHtml(opts: {
     <p style="color:#666;font-size:13px">GURAH Boutique Apartments · Bakio, Bizkaia · a 10 min de San Juan de Gaztelugatxe.</p>
   </div></body></html>`;
 }
+
+/**
+ * Plantilla de campaña de email marketing (newsletter/oferta), con la marca GURAH.
+ * `cuerpo` es texto plano (ya traducido al idioma del huésped); se respetan los
+ * saltos de línea como párrafos. `despedida` va traducida por el llamante.
+ */
+export function marketingEmailHtml(opts: {
+  titulo: string;
+  cuerpo: string;
+  ctaTexto?: string;
+  ctaUrl?: string;
+  despedida?: string;
+}): string {
+  const parrafos = opts.cuerpo
+    .split(/\n{2,}|\n/)
+    .map((p) => p.trim())
+    .filter(Boolean)
+    .map((p) => `<p style="margin:0 0 14px;line-height:1.6">${escapeHtml(p)}</p>`)
+    .join('');
+  const cta =
+    opts.ctaTexto && opts.ctaUrl
+      ? `<p style="margin:22px 0"><a href="${opts.ctaUrl}" style="background:#46554a;color:#fff;text-decoration:none;padding:12px 22px;border-radius:8px;display:inline-block">${escapeHtml(opts.ctaTexto)}</a></p>`
+      : '';
+  return `<!doctype html><html><body style="font-family:Georgia,'Times New Roman',serif;color:#23221e;background:#f6f1e8;margin:0">
+  <div style="max-width:560px;margin:0 auto;padding:32px 26px">
+    <div style="text-align:center;letter-spacing:.24em;font-size:22px;color:#46554a;margin-bottom:6px">GURAH</div>
+    <div style="text-align:center;font-family:system-ui,sans-serif;font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:#8a8375;margin-bottom:26px">Boutique Apartments · Bakio</div>
+    <div style="background:#fffdf8;border:1px solid #e4dccd;border-radius:14px;padding:26px">
+      <h1 style="font-size:22px;color:#46554a;margin:0 0 16px">${escapeHtml(opts.titulo)}</h1>
+      <div style="font-family:system-ui,sans-serif;font-size:15px;color:#3a382f">${parrafos}${cta}</div>
+    </div>
+    <p style="font-family:system-ui,sans-serif;color:#8a8375;font-size:12px;text-align:center;margin-top:22px">
+      ${escapeHtml(opts.despedida || 'GURAH Boutique Apartments · Bakio, Bizkaia')}
+    </p>
+  </div></body></html>`;
+}
+
+function escapeHtml(s: string): string {
+  return s.replace(/[&<>"']/g, (c) =>
+    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c] as string),
+  );
+}
