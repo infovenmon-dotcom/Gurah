@@ -8,7 +8,7 @@ import { getBookings } from '../../../lib/bookings';
 import { getInvoices } from '../../../lib/invoices';
 import { readJson } from '../../../lib/persist';
 import { isDemoAuth } from '../../../lib/auth';
-import { demoBookings, demoInvoices, demoExpenses } from '../../../data/panel-demo';
+import { demoBookings, demoInvoices, demoExpenses, demoReviews } from '../../../data/panel-demo';
 
 export const prerender = false;
 
@@ -29,6 +29,9 @@ export const GET: APIRoute = async () => {
     if (!bookings.length) bookings = demoBookings as any;
     if (!invoices.length) invoices = demoInvoices as any;
     if (!expenses.length) expenses = demoExpenses as any;
+    // Reseñas: en modo demo se muestran siempre las de ejemplo (varios idiomas),
+    // para enseñar el flujo de traducción/respuesta aunque el store traiga el seed viejo.
+    reviews = demoReviews as any;
   }
 
   // Clientes derivados de reservas si no hay lista explícita.

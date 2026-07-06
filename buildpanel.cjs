@@ -41,6 +41,10 @@ body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;col
 .tabs{display:flex;flex-wrap:wrap;gap:4px;padding:0 16px;background:#fff;border-bottom:1px solid var(--linea);position:sticky;top:0;z-index:5}
 .tabs button{border:0;background:none;padding:14px 16px;font-size:14px;color:var(--gris);cursor:pointer;border-bottom:3px solid transparent}
 .tabs button.active{color:var(--verde);border-bottom-color:var(--verde);font-weight:600}
+.tab-badge{display:inline-block;min-width:18px;height:18px;line-height:18px;padding:0 5px;margin-left:6px;background:var(--rojo);color:#fff;border-radius:10px;font-size:11px;font-weight:700;text-align:center;vertical-align:middle}
+.rev.nueva{background:#fbf5e3;border-radius:10px;padding:16px;margin:8px 0}
+.rev-nueva-tag{display:inline-block;background:#ffd257;color:#5b4a00;font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;margin-left:8px}
+.aviso{display:flex;align-items:center;gap:10px;background:#fff6d9;border:1px solid #e8d48a;color:#6b5600;border-radius:12px;padding:12px 14px;margin-bottom:16px;font-size:14px}
 .tabpage{display:none;padding:22px;max-width:1100px;margin:0 auto}
 .tabpage.active{display:block}
 .card{background:#fff;border:1px solid var(--linea);border-radius:14px;padding:18px;margin-bottom:16px}
@@ -69,6 +73,10 @@ th{color:var(--gris);font-weight:600;font-size:12px;text-transform:uppercase;let
 .kpi span{font-size:12px;color:var(--gris)}
 .kpi span.up{color:#2e7d54}.kpi span.down{color:var(--rojo)}
 .subttl{margin:0 0 2px}.lead{color:var(--gris);font-size:13px;margin:0 0 16px}
+.rev{border-top:1px solid var(--linea);padding:16px 0}.rev:first-child{border-top:0}
+.rev-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.rev-orig{margin:8px 0 0}
+.rev-trad{margin:8px 0 0;background:var(--arena);border-radius:8px;padding:9px 11px;font-size:14px}
 .demoline{display:inline-block;border:1px solid #d8c48a;color:#8a6d00;background:#fbf5e3;border-radius:20px;padding:6px 12px;font-size:11px;letter-spacing:.05em;text-transform:uppercase;margin-bottom:16px}
 /* Píldoras de canal y estado */
 .pill{display:inline-block;font-size:12px;padding:3px 10px;border-radius:20px;background:var(--arena);color:var(--gris);white-space:nowrap}
@@ -128,7 +136,7 @@ th{color:var(--gris);font-weight:600;font-size:12px;text-transform:uppercase;let
 
 // --- Markup ------------------------------------------------------------------
 const tabButtons = TABS.map(
-  (t, i) => `<button data-tab="${t.id}" class="${i === 0 ? 'active' : ''}">${t.label}</button>`,
+  (t, i) => `<button data-tab="${t.id}" class="${i === 0 ? 'active' : ''}">${t.label}${t.id === 'resenas' ? '<span class="tab-badge" data-badge-resenas hidden></span>' : ''}</button>`,
 ).join('');
 const tabPages = TABS.map(
   (t, i) => `<section class="tabpage ${i === 0 ? 'active' : ''}" id="tab-${t.id}"><div class="muted">Cargando…</div></section>`,
@@ -504,32 +512,57 @@ const appjs = `
       };
     });
   }
+  var IDIOMAS={es:'Español',en:'Inglés',fr:'Francés',de:'Alemán',nl:'Neerlandés',it:'Italiano',eu:'Euskera',pt:'Portugués',no:'Noruego',da:'Danés'};
+  function idiomaNom(c){ return IDIOMAS[(c||'es').slice(0,2)]||(c||'—'); }
   function renderResenas(){
     var el=document.getElementById('tab-resenas');
-    el.innerHTML='<div class="card"><h3>Reseñas <span class="muted">(respuestas con IA · Claude)</span></h3>'+
+    var pend=pendientesResenas();
+    var aviso = pend ? '<div class="aviso">🔔 <div><strong>'+pend+' reseña'+(pend>1?'s':'')+' nueva'+(pend>1?'s':'')+' sin responder.</strong> En producción, el panel detecta las reseñas de cualquier plataforma (Booking, Airbnb, Google…) y avisa aquí. Pulsa «Traducir y redactar respuesta» y revísala antes de publicar.</div></div>' : '';
+    el.innerHTML=
+      '<h2 class="subttl">Reseñas</h2><p class="lead">Respuestas asistidas por IA. Si la reseña está en otro idioma, se traduce al español y la respuesta se redacta en el idioma del huésped.</p>'+
+      (isDemo()?'<div class="demoline">Demo · reseñas de ejemplo en varios idiomas</div>':'')+
+      aviso+
+      '<div class="card">'+
       (state.reviews.length?state.reviews.map(function(r){
         var apt=(state.apartments.find(function(a){return a.id===r.apartmentId;})||{}).nombre||'';
-        return '<div style="border-top:1px solid var(--linea);padding:12px 0" data-rev="'+r.id+'">'+
-          '<div><strong>'+(r.autor||'Huésped')+'</strong> '+(r.puntuacion?('· '+r.puntuacion+'/5'):'')+' <span class="muted">'+apt+' · '+(r.fecha||'')+'</span></div>'+
-          '<p style="margin:6px 0">'+r.texto+'</p>'+
-          '<textarea data-reply rows="2" style="width:100%;padding:8px;border:1px solid var(--linea);border-radius:8px" placeholder="Respuesta pública…">'+(r.respuesta||'')+'</textarea>'+
-          '<div style="display:flex;gap:8px;margin-top:6px"><button class="btn sec" data-act="ai">✨ Generar con IA</button><button class="btn" data-act="save">Guardar respuesta</button><span class="muted" data-status style="align-self:center"></span></div></div>';
+        var es=(r.idioma||'es').slice(0,2)==='es';
+        var nueva=!r.respuesta;
+        var trad = r.traduccion ? ('<div class="rev-trad" data-trad><span class="muted">Traducción (ES):</span> '+r.traduccion+'</div>') : (es?'<div data-trad></div>':'<div class="rev-trad" data-trad style="display:none"></div>');
+        return '<div class="rev'+(nueva?' nueva':'')+'" data-rev="'+r.id+'">'+
+          '<div class="rev-head"><div><strong>'+(r.autor||'Huésped')+'</strong> '+(r.puntuacion?('· '+r.puntuacion+'/10'):'')+' <span class="muted">'+apt+' · '+(r.fecha||'')+'</span>'+(nueva?'<span class="rev-nueva-tag">● Nueva · sin responder</span>':'')+'</div>'+
+          '<span class="pill '+(es?'':'booking')+'">'+idiomaNom(r.idioma)+'</span></div>'+
+          '<p class="rev-orig">'+r.texto+'</p>'+
+          trad+
+          '<label class="muted" style="font-size:12px;display:block;margin-top:8px">Respuesta pública <span data-replylang>'+(es?'':'· en '+idiomaNom(r.idioma))+'</span></label>'+
+          '<textarea data-reply rows="3" style="width:100%;padding:8px;border:1px solid var(--linea);border-radius:8px" placeholder="Respuesta pública…">'+(r.respuesta||'')+'</textarea>'+
+          '<div style="display:flex;gap:8px;margin-top:6px;flex-wrap:wrap"><button class="btn sec" data-act="ai">✨ Traducir y redactar respuesta</button><button class="btn" data-act="save">Guardar respuesta</button><span class="muted" data-status style="align-self:center"></span></div></div>';
       }).join(''):'<p class="muted">Sin reseñas.</p>')+'</div>';
     el.querySelectorAll('[data-rev]').forEach(function(row){
-      var id=row.getAttribute('data-rev'); var ta=row.querySelector('[data-reply]'); var status=row.querySelector('[data-status]');
+      var id=row.getAttribute('data-rev'); var ta=row.querySelector('[data-reply]'); var status=row.querySelector('[data-status]'); var tradBox=row.querySelector('[data-trad]'); var rl=row.querySelector('[data-replylang]');
       row.querySelector('[data-act="ai"]').onclick=async function(){
-        status.textContent='Generando…';
+        status.textContent='Traduciendo y redactando…';
         var r=await api('/api/panel/review-reply',{reviewId:id});
-        if(r.ok){ ta.value=r.draft; status.textContent=r.demo?'(borrador demo)':'borrador IA listo'; } else { status.textContent=r.error||'error'; }
+        if(r.ok){
+          if(r.traduccion && tradBox){ tradBox.innerHTML='<span class="muted">Traducción (ES):</span> '+r.traduccion; tradBox.className='rev-trad'; tradBox.style.display='block'; }
+          if(rl && r.idioma!=='es') rl.textContent='· en '+idiomaNom(r.idioma);
+          ta.value=r.draft; status.textContent=r.demo?'(demo)':'listo';
+        } else { status.textContent=r.error||'error'; }
       };
       row.querySelector('[data-act="save"]').onclick=async function(){
         var r=await api('/api/panel/review-reply',{reviewId:id,respuesta:ta.value});
-        if(r.ok){ status.textContent='Guardada'; toast('Respuesta guardada'); }
+        if(r.ok){
+          status.textContent='Guardada'; toast('Respuesta guardada');
+          var rev=(state.reviews||[]).find(function(x){return x.id===id;}); if(rev) rev.respuesta=ta.value;
+          row.classList.remove('nueva'); var tag=row.querySelector('.rev-nueva-tag'); if(tag) tag.remove();
+          updateResenasBadge();
+        }
       };
     });
   }
 
-  function renderAll(){ renderApartamentos(); renderReservas(); renderFacturas(); renderGastos(); renderContabilidad(); renderClientes(); renderCanales(); renderResenas(); }
+  function pendientesResenas(){ return (state.reviews||[]).filter(function(r){ return !r.respuesta; }).length; }
+  function updateResenasBadge(){ var b=document.querySelector('[data-badge-resenas]'); if(!b)return; var n=pendientesResenas(); if(n){ b.textContent=n; b.hidden=false; } else { b.hidden=true; } }
+  function renderAll(){ renderApartamentos(); renderReservas(); renderFacturas(); renderGastos(); renderContabilidad(); renderClientes(); renderCanales(); renderResenas(); updateResenasBadge(); }
 
   // --- Pestañas -------------------------------------------------------------
   document.querySelectorAll('.tabs button').forEach(function(btn){

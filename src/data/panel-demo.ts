@@ -124,3 +124,39 @@ export const demoExpenses: DemoExpense[] = [
 function e(id: string, fecha: string, concepto: string, categoria: string, iva: number, importe: number): DemoExpense {
   return { id, fecha, concepto, categoria, iva, importe, demo: true };
 }
+
+// Reseñas de ejemplo en varios idiomas — muestran el flujo de Kirana:
+// la reseña se traduce al español y la respuesta se redacta en el idioma del huésped.
+export interface DemoReview {
+  id: string;
+  autor: string;
+  apartmentId: string;
+  texto: string;
+  idioma: string; // código: es/en/fr/de/nl/it…
+  traduccion?: string; // traducción al español (si el idioma no es es)
+  puntuacion: number;
+  fecha: string;
+  respuesta?: string;
+  demo: true;
+}
+export const demoReviews: DemoReview[] = [
+  { id: 'rv1', autor: 'James P.', apartmentId: 'lurra', idioma: 'en', puntuacion: 10, fecha: '2026-06-18',
+    texto: 'Spotless, stylish and so peaceful. The pool and the terrace made our stay. Maialen was a wonderful host. Highly recommended.',
+    traduccion: 'Impecable, con estilo y muy tranquilo. La piscina y la terraza fueron lo mejor de la estancia. Maialen, una anfitriona maravillosa. Muy recomendable.',
+    demo: true },
+  { id: 'rv2', autor: 'Sophie L.', apartmentId: 'zerua', idioma: 'fr', puntuacion: 10, fecha: '2026-06-05',
+    texto: 'Emplacement idéal pour découvrir la côte basque, maison magnifique et très propre. Maialen très accueillante. Nous reviendrons !',
+    traduccion: 'Ubicación ideal para descubrir la costa vasca, casa magnífica y muy limpia. Maialen, muy acogedora. ¡Volveremos!',
+    demo: true },
+  { id: 'rv3', autor: 'Thomas & Lena', apartmentId: 'lurra', idioma: 'de', puntuacion: 10, fecha: '2026-05-22',
+    texto: 'Wunderschöne Lage, tolle Ausstattung und absolute Ruhe. Der Pool war fantastisch. Wir kommen bestimmt wieder!',
+    traduccion: 'Ubicación preciosa, gran equipamiento y tranquilidad absoluta. La piscina fue fantástica. ¡Volveremos sin duda!',
+    demo: true },
+  { id: 'rv4', autor: 'Anke V.', apartmentId: 'bakea', idioma: 'nl', puntuacion: 9, fecha: '2026-04-08',
+    texto: 'Prachtig appartement, super schoon en op loopafstand van het strand. Alleen de check-in kon iets sneller. Zeker een aanrader!',
+    traduccion: 'Apartamento precioso, muy limpio y a un paseo de la playa. Solo el check-in podría ser algo más rápido. ¡Totalmente recomendable!',
+    demo: true },
+  { id: 'rv5', autor: 'Marta G.', apartmentId: 'lurra', idioma: 'es', puntuacion: 10, fecha: '2026-03-15',
+    texto: 'Un fin de semana perfecto. La piscina y el jardín son un lujo, y Gaztelugatxe a un paso. Repetiremos sin duda.',
+    demo: true },
+];
