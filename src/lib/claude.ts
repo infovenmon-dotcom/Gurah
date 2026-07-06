@@ -88,6 +88,15 @@ const BRAND_CONTEXT =
   'Trato cercano, cálido y profesional. Un proyecto de Venmon.';
 
 /** Genera una respuesta profesional a una reseña de un huésped. */
+/** Traduce un texto al español (para que el anfitrión entienda la reseña). */
+export async function translateToSpanish(texto: string): Promise<ClaudeResult> {
+  return askClaude({
+    system: 'Traduce al español, de forma natural y fiel, el texto que te den. Devuelve SOLO la traducción, sin comillas ni comentarios.',
+    messages: [{ role: 'user', content: texto }],
+    maxTokens: 400,
+  });
+}
+
 export async function draftReviewReply(review: {
   autor?: string;
   texto: string;
