@@ -208,7 +208,9 @@ const appjs = `
     var tb=f.tbai||{};
     var body=document.getElementById('facBody');
     body.innerHTML=
-      '<div class="facbar"><div><strong style="font-size:18px">Factura '+f.id+'</strong> '+est+'<div class="muted">'+fmt(f.fecha)+' · '+(bk?aptNombre(bk.apartmentId):'')+'</div></div><button class="btn sec" id="facClose">Cerrar</button></div>'+
+      '<div class="facbar"><div><strong style="font-size:18px">Factura '+f.id+'</strong> '+est+'<div class="muted">'+fmt(f.fecha)+' · '+(bk?aptNombre(bk.apartmentId):'')+'</div></div>'+
+        '<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn sec" id="facPrint">🖨 Imprimir / PDF</button><button class="btn" id="facSend">✉ Enviar al cliente</button><button class="btn sec" id="facClose">Cerrar</button></div></div>'+
+      '<div class="muted" id="facSendStatus" style="text-align:right;margin:-8px 0 8px;min-height:16px"></div>'+
       '<div class="facgrid"><div>'+
         '<div class="muted">Cliente</div><div><strong>'+f.cliente.nombre+'</strong><br><span class="muted">'+(f.cliente.email||'')+'</span></div>'+
         '<div class="muted" style="margin-top:12px">Concepto</div><div>'+f.concepto+(bk?' ('+fmt(bk.entrada)+' → '+fmt(bk.salida)+')':'')+'</div>'+
@@ -223,6 +225,16 @@ const appjs = `
       '</div></div>';
     var m=document.getElementById('facModal'); m.style.display='flex';
     document.getElementById('facClose').onclick=closeFac;
+    document.getElementById('facPrint').onclick=function(){ window.open('/api/panel/invoice-send?id='+encodeURIComponent(f.id),'_blank'); };
+    document.getElementById('facSend').onclick=async function(){
+      var st=document.getElementById('facSendStatus');
+      if(!f.cliente || !f.cliente.email){ st.textContent='La factura no tiene email del cliente.'; return; }
+      if(!confirm('¿Enviar la factura '+f.id+' por email a '+f.cliente.email+'?')) return;
+      st.textContent='Enviando…';
+      var r=await api('/api/panel/invoice-send',{invoiceId:f.id});
+      if(r.ok){ st.textContent=r.demo?('Demo · en producción se enviaría a '+r.to+' (falta BREVO_API_KEY)'):('Enviada a '+r.to); toast(r.demo?'Envío simulado':'Factura enviada'); }
+      else { st.textContent=r.error||'error'; }
+    };
     m.onclick=function(e){ if(e.target===m)closeFac(); };
   }
   function closeFac(){ document.getElementById('facModal').style.display='none'; }
@@ -499,10 +511,22 @@ const appjs = `
   // --- Clientes -------------------------------------------------------------
   function renderClientes(){
     const el=document.getElementById('tab-clientes');
-    const rows=(state.customers||[]).map(function(c){ return '<tr><td>'+(c.nombre||'')+'</td><td>'+(c.email||'')+'</td><td>'+(c.reservas||'')+'</td></tr>'; }).join('');
-    el.innerHTML='<div class="card"><div class="apt-head"><h3>Clientes</h3><button class="btn sec" id="csvBtn">Exportar CSV</button></div><table><thead><tr><th>Nombre</th><th>Email</th><th>Reservas</th></tr></thead><tbody>'+(rows||'<tr><td colspan=3 class=muted>Sin clientes.</td></tr>')+'</tbody></table></div>';
+    var cs=state.customers||[];
+    var repes=cs.filter(function(c){return (c.reservas||0)>1;}).length;
+    const rows=cs.map(function(c){
+      return '<tr><td>'+(c.nombre||'')+'</td><td>'+(c.email||'')+'</td><td>'+(c.telefono||'<span class="muted">—</span>')+'</td>'+
+        '<td>'+(c.idioma?'<span class="pill">'+idiomaNom(c.idioma)+'</span>':'<span class="muted">—</span>')+'</td>'+
+        '<td style="text-align:center">'+(c.reservas||'')+(c.reservas>1?' <span class="pill directa" style="font-size:10px">fiel</span>':'')+'</td>'+
+        '<td class="muted">'+(c.ultima?fmt(c.ultima):'')+'</td></tr>';
+    }).join('');
+    el.innerHTML='<h2 class="subttl">Clientes (CRM)</h2><p class="lead">Base de clientes generada desde las reservas de la web. Alimenta el email marketing.</p>'+
+      (isDemo()?'<div class="demoline">Demo · datos de ejemplo</div>':'')+
+      '<div class="kpis"><div class="kpi"><label>Clientes</label><b>'+cs.length+'</b></div>'+
+      '<div class="kpi"><label>Repiten</label><b>'+repes+'</b><span>más de 1 reserva</span></div></div>'+
+      '<div class="card"><div class="apt-head"><h3>Clientes</h3><button class="btn sec" id="csvBtn">Exportar CSV</button></div>'+
+      '<div class="card" style="border:0;padding:0;overflow-x:auto"><table><thead><tr><th>Nombre</th><th>Email</th><th>Teléfono</th><th>Idioma</th><th style="text-align:center">Reservas</th><th>Última</th></tr></thead><tbody>'+(rows||'<tr><td colspan=6 class=muted>Sin clientes.</td></tr>')+'</tbody></table></div></div>';
     const btn=document.getElementById('csvBtn'); if(btn) btn.onclick=function(){
-      const csv='nombre,email,reservas\\n'+(state.customers||[]).map(c=>[c.nombre,c.email,c.reservas].join(',')).join('\\n');
+      const csv='nombre,email,telefono,idioma,reservas,ultima\\n'+cs.map(function(c){return ['"'+(c.nombre||'')+'"',c.email||'',c.telefono||'',idiomaNom(c.idioma),c.reservas||0,c.ultima||''].join(',');}).join('\\n');
       const a=document.createElement('a'); a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv); a.download='clientes-gurah.csv'; a.click();
     };
   }

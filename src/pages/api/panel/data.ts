@@ -34,12 +34,19 @@ export const GET: APIRoute = async () => {
     reviews = demoReviews as any;
   }
 
-  // Clientes derivados de reservas si no hay lista explícita.
-  const derived = new Map<string, { nombre: string; email: string; reservas: number }>();
+  // Clientes derivados de reservas si no hay lista explícita. Incluye teléfono e
+  // idioma (recogidos en la reserva desde la web) para el CRM y el email marketing.
+  const derived = new Map<
+    string,
+    { nombre: string; email: string; telefono?: string; idioma?: string; reservas: number; ultima?: string }
+  >();
   for (const b of bookings) {
     const key = b.huesped.email;
     const cur = derived.get(key) ?? { nombre: b.huesped.nombre, email: key, reservas: 0 };
     cur.reservas += 1;
+    if (b.huesped.telefono) cur.telefono = b.huesped.telefono;
+    if ((b.huesped as any).idioma) cur.idioma = (b.huesped as any).idioma;
+    if (!cur.ultima || (b.entrada && b.entrada > cur.ultima)) cur.ultima = b.entrada;
     derived.set(key, cur);
   }
 

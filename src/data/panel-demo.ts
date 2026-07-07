@@ -10,7 +10,7 @@
 export interface DemoBooking {
   id: string;
   apartmentId: string;
-  huesped: { nombre: string; email: string; telefono?: string };
+  huesped: { nombre: string; email: string; telefono?: string; idioma?: string };
   entrada: string; // YYYY-MM-DD
   salida: string; // YYYY-MM-DD (exclusiva)
   noches: number;
@@ -48,6 +48,16 @@ export interface DemoExpense {
 
 const APT = { lurra: 'GURAH · Lurra', zerua: 'GURAH · Zerua', bakea: 'BAKEA' };
 
+// Idioma inferido por el dominio del email (demo). En producción viene de la reserva.
+const TLD_LANG: Record<string, string> = {
+  fr: 'fr', be: 'be', nl: 'nl', de: 'de', it: 'it', no: 'no', dk: 'da',
+  es: 'es', eus: 'eu', uk: 'en', com: 'en',
+};
+function langDe(email: string): string {
+  const tld = email.split('.').pop()?.toLowerCase() || '';
+  return TLD_LANG[tld] || 'en';
+}
+
 // Reservas de ejemplo (2026). "canal" imita el channel manager de Kirana.
 export const demoBookings: DemoBooking[] = [
   b('0001', 'lurra', 'Marie & Paul L.', 'marie.paul@example.fr', '2026-01-12', '2026-01-15', 3, 630, 'Directa'),
@@ -72,10 +82,12 @@ function b(
   n: string, apartmentId: string, nombre: string, email: string,
   entrada: string, salida: string, noches: number, total: number, canal: string,
 ): DemoBooking {
+  // Teléfono demo determinista (para el CRM) a partir del número de reserva.
+  const tel = '+34 6' + String(10000000 + Number(n) * 137).slice(0, 8);
   return {
     id: 'GRH-2026-' + n,
     apartmentId,
-    huesped: { nombre, email },
+    huesped: { nombre, email, telefono: tel, idioma: langDe(email) },
     entrada, salida, noches, total, canal,
     estado: 'confirmada',
     creada: entrada,
