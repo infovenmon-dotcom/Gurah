@@ -8,7 +8,7 @@
 
 import { readJson, updateJson } from './persist';
 import { getApartment } from './apartmentsStore';
-import { totalEstancia, validarEstancia, noches } from './pricing';
+import { totalEstancia, validarEstancia, noches, politicaCancelacion } from './pricing';
 
 const BOOKINGS_KEY = 'bookings';
 const BLOCKS_KEY = 'blocks';
@@ -23,12 +23,20 @@ export interface Booking {
   huesped: { nombre: string; email: string; telefono?: string; idioma?: string };
   personas: number;
   noches: number;
-  total: number; // precio web pagado
+  total: number; // precio web de la estancia
   estado: BookingStatus;
   creada: string; // ISO
   origen: 'web' | 'ical' | 'panel';
+  // --- Cobro (modelo garantía: reserva sin cobrar, cargo el día de llegada) ---
+  pagoEstado?: PagoEstado; // 'garantizada' | 'cobrada' | 'no_show'
+  cancelableHasta?: string; // YYYY-MM-DD: último día para cancelar sin cargo
+  garantia?: { setupIntentId?: string; last4?: string }; // tarjeta guardada (Stripe)
+  cargo?: { fecha: string; importe: number; tipo: 'cobro' | 'no_show'; invoiceId?: string };
   demo?: boolean;
 }
+
+/** Estado del cobro. 'garantizada' = confirmada con tarjeta, aún sin cobrar. */
+export type PagoEstado = 'garantizada' | 'cobrada' | 'no_show';
 
 /** Bloqueos manuales de disponibilidad por apartamento: { [apartmentId]: ISO[] }. */
 type Blocks = Record<string, string[]>;
@@ -126,6 +134,8 @@ export interface NuevaReserva {
   origen?: Booking['origen'];
   demo?: boolean;
   estado?: BookingStatus;
+  pagoEstado?: PagoEstado;
+  garantia?: Booking['garantia'];
 }
 
 export interface AddBookingResult {
@@ -164,6 +174,7 @@ export async function addBooking(nueva: NuevaReserva): Promise<AddBookingResult>
   }
 
   const precios = totalEstancia(apto, nueva.entrada, nueva.salida);
+  const politica = politicaCancelacion(apto, nueva.entrada);
   const booking: Booking = {
     id: nuevoId(),
     apartmentId: nueva.apartmentId,
@@ -176,6 +187,11 @@ export async function addBooking(nueva: NuevaReserva): Promise<AddBookingResult>
     estado: nueva.estado ?? 'confirmada',
     creada: new Date().toISOString(),
     origen: nueva.origen ?? 'web',
+    // Modelo garantía: la reserva se guarda confirmada pero SIN cobrar; el cargo
+    // se hace el día de llegada. cancelableHasta depende de la temporada.
+    pagoEstado: nueva.pagoEstado ?? 'garantizada',
+    cancelableHasta: politica.limite,
+    garantia: nueva.garantia,
     demo: nueva.demo,
   };
 
@@ -211,6 +227,28 @@ export async function cancelBooking(id: string): Promise<boolean> {
         if (b.id === id) {
           found = true;
           return { ...b, estado: 'cancelada' as BookingStatus };
+        }
+        return b;
+      }),
+    [],
+  );
+  return found;
+}
+
+/** Registra el cobro (o no-show) de una reserva: actualiza estado de pago y cargo. */
+export async function registrarCargo(
+  id: string,
+  pagoEstado: PagoEstado,
+  cargo: Booking['cargo'],
+): Promise<boolean> {
+  let found = false;
+  await updateJson<Booking[]>(
+    BOOKINGS_KEY,
+    (all) =>
+      all.map((b) => {
+        if (b.id === id) {
+          found = true;
+          return { ...b, pagoEstado, cargo };
         }
         return b;
       }),

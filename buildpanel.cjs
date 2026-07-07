@@ -311,6 +311,37 @@ const appjs = `
     });
   }
 
+  // Estado de pago efectivo. Reservas antiguas de ejemplo sin campo: pasadas =
+  // cobradas, futuras = con garantía.
+  function pagoEfectivo(b){ if(b.pagoEstado)return b.pagoEstado; return b.salida<=todayISO()?'cobrada':'garantizada'; }
+  function pagoDe(b){
+    var p=pagoEfectivo(b);
+    if(p==='cobrada')return '<span class="pill cobrada">Cobrada</span>';
+    if(p==='no_show')return '<span class="pill" style="background:#f3d9d2;color:#b4462f">No-show · 1 noche</span>';
+    var lim=b.cancelableHasta?('<div class="muted" style="font-size:11px">cancela sin cargo hasta '+fmt(b.cancelableHasta)+'</div>'):'';
+    return '<span class="pill" style="background:#f6eeda;color:#8a6d00">Garantía</span>'+lim;
+  }
+  function accionesPago(b,t){
+    if(pagoEfectivo(b)!=='garantizada')return '<span class="muted">—</span>';
+    var llegada = b.entrada<=t; // el cobro se hace el día de llegada en adelante
+    var cobrar='<button class="btn" data-cobrar="'+b.id+'" data-tipo="cobro" style="padding:5px 10px;font-size:12px"'+(llegada?'':' title="Disponible el día de llegada"')+'>Cobrar</button>';
+    var noshow='<button class="btn sec" data-cobrar="'+b.id+'" data-tipo="noshow" style="padding:5px 10px;font-size:12px">No-show</button>';
+    return '<div style="display:flex;gap:6px;flex-wrap:wrap">'+cobrar+noshow+'</div>';
+  }
+  async function cobrarReserva(id,tipo){
+    var esNo=tipo==='noshow';
+    var b=(state.bookings||[]).find(function(x){return x.id===id;});
+    var msg=esNo?'Registrar NO-SHOW y cobrar la primera noche de '+(b?b.huesped.nombre:'la reserva')+'?':'Cobrar la estancia completa de '+(b?b.huesped.nombre:'la reserva')+' (día de llegada)?';
+    if(!confirm(msg))return;
+    var r=await api('/api/panel/charge',{bookingId:id,tipo:esNo?'noshow':'cobro'});
+    if(r.ok){
+      if(b){ b.pagoEstado=r.pagoEstado; b.cargo=r.cargo; }
+      if(r.invoice){ state.invoices=state.invoices||[]; state.invoices.push(r.invoice); }
+      toast(r.demo?(esNo?'No-show registrado (demo)':'Cobro simulado'):(esNo?'No-show cobrado':'Cobrado')+' · '+eur(r.importe));
+      renderReservas(); renderFacturas(); renderContabilidad();
+    } else { toast(r.error||'Error en el cobro'); }
+  }
+
   // --- Reservas -------------------------------------------------------------
   function renderReservas(){
     const el=document.getElementById('tab-reservas');
@@ -339,22 +370,27 @@ const appjs = `
       var canal=b.canal||'Directa';
       var fac=facturaDe(b.id);
       var facCell=fac?('<button class="btn sec fac-ver" data-fac="'+fac.id+'">🧾 '+fac.id+'</button>'):'<span class="muted">—</span>';
+      var pg=pagoDe(b);
+      var accion=accionesPago(b,t);
       return '<tr><td><strong>'+b.huesped.nombre+'</strong><div class="muted">'+b.id+'</div></td>'+
         '<td>'+aptNombre(b.apartmentId)+'</td>'+
         '<td>'+fmt(b.entrada)+' → '+fmt(b.salida)+'</td>'+
         '<td>'+b.noches+'</td>'+
         '<td><span class="pill '+canalClass(canal)+'">'+canal+'</span></td>'+
         '<td><span class="pill '+es.k+'">'+es.t+'</span></td>'+
+        '<td>'+pg+'</td>'+
+        '<td>'+accion+'</td>'+
         '<td>'+facCell+'</td>'+
         '<td style="text-align:right"><strong>'+eur(b.total)+'</strong></td></tr>';
     }).join('');
     el.innerHTML=
-      '<h2 class="subttl">Reservas</h2><p class="lead">Calendario de ocupación por apartamento.</p>'+
-      (isDemo()?'<div class="demoline">Demo · reservas de ejemplo · cada reserva genera factura con TicketBAI</div>':'')+
+      '<h2 class="subttl">Reservas</h2><p class="lead">Reservas con tarjeta de garantía: se cobran el día de llegada. Cancelación gratis según temporada (48 h en baja, 7 días en alta).</p>'+
+      (isDemo()?'<div class="demoline">Demo · reservas de ejemplo · el cobro genera la factura con TicketBAI</div>':'')+
       kpis+
       '<div class="card"><div class="rowbtn"><h3 style="margin:0">Calendario · '+MESES[m]+' '+y+'</h3></div><div class="cal-wrap">'+cal+'</div>'+leyendaApts()+'</div>'+
-      '<div class="card"><h3>Próximas reservas</h3><table><thead><tr><th>Huésped</th><th>Apartamento</th><th>Fechas</th><th>Noches</th><th>Canal</th><th>Estado</th><th>Factura</th><th style="text-align:right">Total</th></tr></thead><tbody>'+(rows||'<tr><td colspan=8 class=muted>Sin reservas todavía.</td></tr>')+'</tbody></table></div>';
+      '<div class="card"><h3>Próximas reservas</h3><table><thead><tr><th>Huésped</th><th>Apartamento</th><th>Fechas</th><th>Noches</th><th>Canal</th><th>Estado</th><th>Pago</th><th>Acciones</th><th>Factura</th><th style="text-align:right">Total</th></tr></thead><tbody>'+(rows||'<tr><td colspan=10 class=muted>Sin reservas todavía.</td></tr>')+'</tbody></table></div>';
     el.querySelectorAll('.fac-ver').forEach(function(btn){ btn.onclick=function(){ verFactura(btn.getAttribute('data-fac')); }; });
+    el.querySelectorAll('[data-cobrar]').forEach(function(btn){ btn.onclick=function(){ cobrarReserva(btn.getAttribute('data-cobrar'), btn.getAttribute('data-tipo')); }; });
   }
   function kpi(label,val,sub,cls){ return '<div class="kpi"><label>'+label+'</label><b>'+val+'</b><span class="'+(cls||'')+'">'+(sub||'')+'</span></div>'; }
   function fmt(iso){ if(!iso)return''; var p=iso.split('-'); return p[2]+'/'+p[1]; }
