@@ -31,9 +31,9 @@ const TABS = [
 
 // --- CSS ---------------------------------------------------------------------
 const css = `
-:root{--verde:#46554a;--verde2:#37433b;--arena:#f4efe6;--tinta:#1a2420;--gris:#6b7a74;--linea:#e3ddd0;--rojo:#b4462f}
+:root{--verde:#46554a;--verde2:#37433b;--salvia:#8a9a8c;--arena:#efe8db;--crema:#f6f1e8;--tinta:#23221e;--gris:#8a8478;--linea:#e4dccd;--dorado:#b7a488;--rojo:#b4462f}
 *{box-sizing:border-box}
-body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--tinta);background:var(--arena);overflow-x:hidden}
+body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--tinta);background:var(--crema);overflow-x:hidden}
 .card{overflow-x:auto}
 .panel-top{display:flex;align-items:center;justify-content:space-between;padding:14px 22px;background:var(--verde);color:#fff}
 .panel-top strong{font-size:18px;letter-spacing:.04em}
@@ -54,7 +54,7 @@ textarea.mkt-in{resize:vertical;line-height:1.5}
 .mkt-row{display:flex;gap:10px;flex-wrap:wrap}
 .mkt-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:14px}
 .mkt-sel{padding:8px 10px;border:1px solid var(--linea);border-radius:8px;font:inherit}
-.mkt-aside{background:#faf7f0}
+.mkt-aside{background:var(--arena)}
 .mkt-total{font-size:22px;color:var(--verde)}
 .mkt-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
 .mkt-chip{background:#fff;border:1px solid var(--linea);border-radius:20px;padding:4px 11px;font-size:13px}
@@ -113,17 +113,17 @@ th{color:var(--gris);font-weight:600;font-size:12px;text-transform:uppercase;let
 .cal th,.cal td{border:1px solid var(--linea);padding:0;text-align:center;height:26px}
 .cal th.room,.cal td.room{width:120px;text-align:left;padding:0 8px;font-size:12px;white-space:nowrap;position:sticky;left:0;background:#fff;z-index:1}
 .cal th{color:var(--gris);font-weight:600;height:22px}
-.cal th.wknd,.cal td.wknd{background:#faf7f0}
+.cal th.wknd,.cal td.wknd{background:var(--crema)}
 .cal td.today{box-shadow:inset 0 0 0 2px var(--verde)}
 .cal .bar{background:var(--verde);color:#fff;border-radius:6px;font-size:10px;line-height:20px;height:20px;margin:3px 1px;overflow:hidden;white-space:nowrap;padding:0 6px}
-.cal .bar.c2{background:#7a8f84}.cal .bar.c3{background:#b98a4b}
+.cal .bar.c2{background:var(--salvia)}.cal .bar.c3{background:var(--dorado)}
 .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:middle}
 .legend{display:flex;flex-wrap:wrap;gap:14px;margin-top:12px;font-size:12px;color:var(--gris)}
 /* Gráfico de barras (ingresos por mes) */
 .bars{display:flex;align-items:flex-end;gap:8px;height:180px;padding-top:24px}
 .bars .b{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end}
 .bars .b i{display:block;width:100%;max-width:34px;background:var(--verde);border-radius:6px 6px 0 0;position:relative}
-.bars .b i.alt{background:#b98a4b}
+.bars .b i.alt{background:var(--dorado)}
 .bars .b em{font-size:10px;color:var(--gris);font-style:normal}
 .bars .b small{font-size:9px;color:var(--tinta);font-weight:600}
 .pos{color:#2e7d54;font-weight:600}.neg{color:var(--rojo);font-weight:600}
@@ -193,7 +193,7 @@ const appjs = `
   // QR visual TicketBAI (representativo): patrón determinista a partir del id.
   function hashStr(s){ var h=2166136261; for(var i=0;i<(s||'').length;i++){ h^=s.charCodeAt(i); h=Math.imul(h,16777619);} return h>>>0; }
   function qrSVG(text,size){
-    size=size||124; var n=25, cell=size/n, sc='#1a2420', seed=hashStr(text)||1;
+    size=size||124; var n=25, cell=size/n, sc='#23221e', seed=hashStr(text)||1;
     function rnd(){ seed^=seed<<13;seed^=seed>>>17;seed^=seed<<5;seed>>>=0; return seed/4294967296; }
     var r='';
     for(var y=0;y<n;y++){for(var x=0;x<n;x++){ if((x<8&&y<8)||(x>n-9&&y<8)||(x<8&&y>n-9))continue; if(rnd()>0.52)r+='<rect x="'+(x*cell)+'" y="'+(y*cell)+'" width="'+cell+'" height="'+cell+'" fill="'+sc+'"/>'; }}
@@ -346,7 +346,7 @@ const appjs = `
   }
   function kpi(label,val,sub,cls){ return '<div class="kpi"><label>'+label+'</label><b>'+val+'</b><span class="'+(cls||'')+'">'+(sub||'')+'</span></div>'; }
   function fmt(iso){ if(!iso)return''; var p=iso.split('-'); return p[2]+'/'+p[1]; }
-  function leyendaApts(){ return '<div class="legend">'+state.apartments.map(function(a,i){ return '<span><span class="dot" style="background:'+['#46554a','#7a8f84','#b98a4b','#9a6b4b'][i%4]+'"></span>'+a.nombre+'</span>'; }).join('')+'</div>'; }
+  function leyendaApts(){ return '<div class="legend">'+state.apartments.map(function(a,i){ return '<span><span class="dot" style="background:'+['#46554a','#8a9a8c','#b7a488','#37433b'][i%4]+'"></span>'+a.nombre+'</span>'; }).join('')+'</div>'; }
   function calendarioOcupacion(bks,y,m,ndias,t){
     var head='<tr><th class="room">Apartamento</th>';
     for(var d=1;d<=ndias;d++){ var wd=new Date(y,m,d).getDay(); var wknd=(wd===0||wd===6)?' wknd':''; head+='<th class="'+wknd.trim()+'">'+d+'</th>'; }
@@ -607,7 +607,7 @@ const appjs = `
       };
     });
   }
-  var IDIOMAS={es:'Español',en:'Inglés',fr:'Francés',de:'Alemán',nl:'Neerlandés',it:'Italiano',eu:'Euskera',pt:'Portugués',no:'Noruego',da:'Danés'};
+  var IDIOMAS={es:'Español',en:'Inglés',fr:'Francés',de:'Alemán',nl:'Neerlandés',be:'Belga',it:'Italiano',eu:'Euskera',pt:'Portugués',no:'Noruego',da:'Danés'};
   function idiomaNom(c){ return IDIOMAS[(c||'es').slice(0,2)]||(c||'—'); }
   function renderResenas(){
     var el=document.getElementById('tab-resenas');
