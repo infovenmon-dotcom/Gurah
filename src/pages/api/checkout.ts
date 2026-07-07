@@ -15,6 +15,7 @@ import { addBooking, comprobarDisponibilidad } from '../../lib/bookings';
 import { totalEstancia, validarEstancia } from '../../lib/pricing';
 import { createInvoiceForBooking } from '../../lib/invoices';
 import { sendMail, bookingEmailHtml, ADMIN_EMAIL } from '../../lib/email';
+import { getLang } from '../../lib/i18n';
 
 export const prerender = false;
 
@@ -31,15 +32,22 @@ interface CheckoutBody {
   nombre: string;
   email: string;
   telefono?: string;
+  idioma?: string;
 }
 
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async ({ request, url, cookies }) => {
   let body: CheckoutBody;
   try {
     body = (await request.json()) as CheckoutBody;
   } catch {
     return json({ ok: false, error: 'JSON inválido' }, 400);
   }
+
+  // Idioma del huésped: el que envía la web, o el que resuelve el sitio
+  // (query ?lang → cookie → Accept-Language). Se guarda en la reserva para
+  // poder enviarle emails y campañas en su idioma.
+  const idioma =
+    body.idioma || getLang(url, cookies, request.headers.get('accept-language'));
 
   const { apartmentId, entrada, salida, personas, nombre, email } = body;
   if (!apartmentId || !entrada || !salida || !personas || !nombre || !email) {
@@ -77,6 +85,7 @@ export const POST: APIRoute = async ({ request }) => {
       params.set('metadata[personas]', String(personas));
       params.set('metadata[nombre]', nombre);
       params.set('metadata[email]', email);
+      params.set('metadata[idioma]', idioma);
 
       const res = await fetch('https://api.stripe.com/v1/checkout/sessions', {
         method: 'POST',
@@ -100,7 +109,7 @@ export const POST: APIRoute = async ({ request }) => {
     entrada,
     salida,
     personas,
-    huesped: { nombre, email, telefono: body.telefono },
+    huesped: { nombre, email, telefono: body.telefono, idioma },
     origen: 'web',
     demo: true,
     estado: 'confirmada',

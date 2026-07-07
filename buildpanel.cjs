@@ -24,15 +24,16 @@ const TABS = [
   { id: 'gastos', label: 'Ingresos / Gastos' },
   { id: 'contabilidad', label: 'Contabilidad' },
   { id: 'clientes', label: 'Clientes' },
+  { id: 'marketing', label: 'Email marketing' },
   { id: 'canales', label: 'Canales (iCal)' },
   { id: 'resenas', label: 'Reseñas (IA)' },
 ];
 
 // --- CSS ---------------------------------------------------------------------
 const css = `
-:root{--verde:#46554a;--verde2:#37433b;--arena:#f4efe6;--tinta:#1a2420;--gris:#6b7a74;--linea:#e3ddd0;--rojo:#b4462f}
+:root{--verde:#46554a;--verde2:#37433b;--salvia:#8a9a8c;--arena:#efe8db;--crema:#f6f1e8;--tinta:#23221e;--gris:#8a8478;--linea:#e4dccd;--dorado:#b7a488;--rojo:#b4462f}
 *{box-sizing:border-box}
-body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--tinta);background:var(--arena);overflow-x:hidden}
+body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--tinta);background:var(--crema);overflow-x:hidden}
 .card{overflow-x:auto}
 .panel-top{display:flex;align-items:center;justify-content:space-between;padding:14px 22px;background:var(--verde);color:#fff}
 .panel-top strong{font-size:18px;letter-spacing:.04em}
@@ -45,6 +46,23 @@ body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;col
 .rev.nueva{background:#fbf5e3;border-radius:10px;padding:16px;margin:8px 0}
 .rev-nueva-tag{display:inline-block;background:#ffd257;color:#5b4a00;font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;margin-left:8px}
 .aviso{display:flex;align-items:center;gap:10px;background:#fff6d9;border:1px solid #e8d48a;color:#6b5600;border-radius:12px;padding:12px 14px;margin-bottom:16px;font-size:14px}
+.mkt-grid{display:grid;grid-template-columns:1.6fr 1fr;gap:16px}
+@media(max-width:820px){.mkt-grid{grid-template-columns:1fr}}
+.mkt-lb{display:block;font-size:12px;color:var(--gris);margin:10px 0 4px;font-weight:600}
+.mkt-in{width:100%;padding:9px 11px;border:1px solid var(--linea);border-radius:8px;font:inherit;font-size:14px}
+textarea.mkt-in{resize:vertical;line-height:1.5}
+.mkt-row{display:flex;gap:10px;flex-wrap:wrap}
+.mkt-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:14px}
+.mkt-sel{padding:8px 10px;border:1px solid var(--linea);border-radius:8px;font:inherit}
+.mkt-aside{background:var(--arena)}
+.mkt-total{font-size:22px;color:var(--verde)}
+.mkt-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.mkt-chip{background:#fff;border:1px solid var(--linea);border-radius:20px;padding:4px 11px;font-size:13px}
+.mkt-chip b{color:var(--verde);margin-left:3px}
+.mkt-mail{border:1px solid var(--linea);border-radius:12px;overflow:hidden;margin-top:6px;max-width:520px}
+.mkt-mail-h{background:var(--verde);color:#fff;text-align:center;letter-spacing:.22em;padding:14px;font-size:18px}
+.mkt-mail-sub{padding:14px 16px 0;font-weight:700;font-size:16px}
+.mkt-mail-body{padding:10px 16px 18px;color:#3a382f;font-size:14px;line-height:1.6}
 .tabpage{display:none;padding:22px;max-width:1100px;margin:0 auto}
 .tabpage.active{display:block}
 .card{background:#fff;border:1px solid var(--linea);border-radius:14px;padding:18px;margin-bottom:16px}
@@ -95,17 +113,17 @@ th{color:var(--gris);font-weight:600;font-size:12px;text-transform:uppercase;let
 .cal th,.cal td{border:1px solid var(--linea);padding:0;text-align:center;height:26px}
 .cal th.room,.cal td.room{width:120px;text-align:left;padding:0 8px;font-size:12px;white-space:nowrap;position:sticky;left:0;background:#fff;z-index:1}
 .cal th{color:var(--gris);font-weight:600;height:22px}
-.cal th.wknd,.cal td.wknd{background:#faf7f0}
+.cal th.wknd,.cal td.wknd{background:var(--crema)}
 .cal td.today{box-shadow:inset 0 0 0 2px var(--verde)}
 .cal .bar{background:var(--verde);color:#fff;border-radius:6px;font-size:10px;line-height:20px;height:20px;margin:3px 1px;overflow:hidden;white-space:nowrap;padding:0 6px}
-.cal .bar.c2{background:#7a8f84}.cal .bar.c3{background:#b98a4b}
+.cal .bar.c2{background:var(--salvia)}.cal .bar.c3{background:var(--dorado)}
 .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:middle}
 .legend{display:flex;flex-wrap:wrap;gap:14px;margin-top:12px;font-size:12px;color:var(--gris)}
 /* Gráfico de barras (ingresos por mes) */
 .bars{display:flex;align-items:flex-end;gap:8px;height:180px;padding-top:24px}
 .bars .b{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end}
 .bars .b i{display:block;width:100%;max-width:34px;background:var(--verde);border-radius:6px 6px 0 0;position:relative}
-.bars .b i.alt{background:#b98a4b}
+.bars .b i.alt{background:var(--dorado)}
 .bars .b em{font-size:10px;color:var(--gris);font-style:normal}
 .bars .b small{font-size:9px;color:var(--tinta);font-weight:600}
 .pos{color:#2e7d54;font-weight:600}.neg{color:var(--rojo);font-weight:600}
@@ -175,7 +193,7 @@ const appjs = `
   // QR visual TicketBAI (representativo): patrón determinista a partir del id.
   function hashStr(s){ var h=2166136261; for(var i=0;i<(s||'').length;i++){ h^=s.charCodeAt(i); h=Math.imul(h,16777619);} return h>>>0; }
   function qrSVG(text,size){
-    size=size||124; var n=25, cell=size/n, sc='#1a2420', seed=hashStr(text)||1;
+    size=size||124; var n=25, cell=size/n, sc='#23221e', seed=hashStr(text)||1;
     function rnd(){ seed^=seed<<13;seed^=seed>>>17;seed^=seed<<5;seed>>>=0; return seed/4294967296; }
     var r='';
     for(var y=0;y<n;y++){for(var x=0;x<n;x++){ if((x<8&&y<8)||(x>n-9&&y<8)||(x<8&&y>n-9))continue; if(rnd()>0.52)r+='<rect x="'+(x*cell)+'" y="'+(y*cell)+'" width="'+cell+'" height="'+cell+'" fill="'+sc+'"/>'; }}
@@ -328,7 +346,7 @@ const appjs = `
   }
   function kpi(label,val,sub,cls){ return '<div class="kpi"><label>'+label+'</label><b>'+val+'</b><span class="'+(cls||'')+'">'+(sub||'')+'</span></div>'; }
   function fmt(iso){ if(!iso)return''; var p=iso.split('-'); return p[2]+'/'+p[1]; }
-  function leyendaApts(){ return '<div class="legend">'+state.apartments.map(function(a,i){ return '<span><span class="dot" style="background:'+['#46554a','#7a8f84','#b98a4b','#9a6b4b'][i%4]+'"></span>'+a.nombre+'</span>'; }).join('')+'</div>'; }
+  function leyendaApts(){ return '<div class="legend">'+state.apartments.map(function(a,i){ return '<span><span class="dot" style="background:'+['#46554a','#8a9a8c','#b7a488','#37433b'][i%4]+'"></span>'+a.nombre+'</span>'; }).join('')+'</div>'; }
   function calendarioOcupacion(bks,y,m,ndias,t){
     var head='<tr><th class="room">Apartamento</th>';
     for(var d=1;d<=ndias;d++){ var wd=new Date(y,m,d).getDay(); var wknd=(wd===0||wd===6)?' wknd':''; head+='<th class="'+wknd.trim()+'">'+d+'</th>'; }
@@ -489,6 +507,83 @@ const appjs = `
     };
   }
 
+  function renderMarketing(){
+    var el=document.getElementById('tab-marketing');
+    var siteBtn='https://cozy-buttercream-79f061.netlify.app/';
+    el.innerHTML=
+      '<h2 class="subttl">Email marketing</h2>'+
+      '<p class="lead">Escribe la campaña en español. Se envía a cada huésped <strong>en el idioma de su reserva</strong> (traducción automática). Ideal para ofertas de temporada, huecos de última hora o reactivar clientes.</p>'+
+      (isDemo()?'<div class="demoline">Demo · con la clave de IA (ANTHROPIC_API_KEY) y de email (BREVO_API_KEY) el envío y la traducción son reales</div>':'')+
+      '<div class="mkt-grid">'+
+        '<div class="card">'+
+          '<label class="mkt-lb">Asunto</label>'+
+          '<input id="mkAsunto" class="mkt-in" value="Vuelve a GURAH esta temporada — 10% de descuento reservando directo">'+
+          '<label class="mkt-lb">Mensaje</label>'+
+          '<textarea id="mkCuerpo" class="mkt-in" rows="7">Hola,\\n\\nGracias por haberte alojado con nosotros en Bakio. Nos encantaría volver a recibirte.\\n\\nReservando directamente en nuestra web tienes un 10% de descuento frente a las plataformas, mejores condiciones y trato directo con Maialen.\\n\\nTe esperamos junto al mar.</textarea>'+
+          '<div class="mkt-row">'+
+            '<div style="flex:1"><label class="mkt-lb">Texto del botón</label><input id="mkCta" class="mkt-in" value="Reservar con 10% directo"></div>'+
+            '<div style="flex:2"><label class="mkt-lb">Enlace del botón</label><input id="mkUrl" class="mkt-in" value="'+siteBtn+'"></div>'+
+          '</div>'+
+          '<div class="mkt-actions">'+
+            '<select id="mkPrevLang" class="mkt-sel"></select>'+
+            '<button class="btn sec" id="mkPrevBtn">👁 Previsualizar</button>'+
+            '<button class="btn" id="mkSendBtn">✉ Enviar campaña</button>'+
+            '<span class="muted" id="mkStatus" style="align-self:center"></span>'+
+          '</div>'+
+        '</div>'+
+        '<div class="card mkt-aside">'+
+          '<h3 style="margin:0 0 4px">Destinatarios</h3>'+
+          '<div id="mkAudience" class="muted">Cargando lista…</div>'+
+        '</div>'+
+      '</div>'+
+      '<div id="mkPreview"></div>'+
+      '<div id="mkResult"></div>';
+
+    // Cargar audiencia agrupada por idioma + poblar selector de previsualización.
+    (async function(){
+      var r=await api('/api/panel/campaign',{asunto:'x',cuerpo:'x'});
+      var aud=document.getElementById('mkAudience'); var sel=document.getElementById('mkPrevLang');
+      if(r.ok){
+        aud.innerHTML='<div class="mkt-total"><strong>'+r.total+'</strong> contactos</div>'+
+          '<div class="mkt-chips">'+r.porIdioma.map(function(g){return '<span class="mkt-chip">'+idiomaNom(g.idioma)+' <b>'+g.total+'</b></span>';}).join('')+'</div>'+
+          '<p class="muted" style="font-size:12px;margin-top:10px">Cada grupo recibe el email en su idioma. La lista se nutre sola de las reservas.</p>';
+        sel.innerHTML=r.porIdioma.map(function(g){return '<option value="'+g.idioma+'">Ver en '+idiomaNom(g.idioma)+'</option>';}).join('');
+      } else { aud.textContent='No se pudo cargar la lista.'; }
+    })();
+
+    document.getElementById('mkPrevBtn').onclick=async function(){
+      var st=document.getElementById('mkStatus'); st.textContent='Preparando previsualización…';
+      var lang=document.getElementById('mkPrevLang').value||'es';
+      var r=await api('/api/panel/campaign',{asunto:mkVal('mkAsunto'),cuerpo:mkVal('mkCuerpo'),preview:lang});
+      if(r.ok){
+        document.getElementById('mkPreview').innerHTML=
+          '<div class="card"><div class="apt-head"><h3>Previsualización · '+idiomaNom(r.idioma)+'</h3></div>'+
+          (r.demo?'<div class="demoline">Demo · en producción este texto se traduce automáticamente al '+idiomaNom(r.idioma)+'</div>':'')+
+          '<div class="mkt-mail"><div class="mkt-mail-h">GURAH</div><div class="mkt-mail-sub">'+escapeHtmlP(r.asunto)+'</div>'+
+          '<div class="mkt-mail-body">'+escapeHtmlP(r.cuerpo).replace(/\\n/g,'<br>')+'</div></div></div>';
+        st.textContent='';
+      } else { st.textContent=r.error||'error'; }
+    };
+
+    document.getElementById('mkSendBtn').onclick=async function(){
+      var st=document.getElementById('mkStatus');
+      if(!confirm('¿Enviar la campaña a toda la lista, cada huésped en su idioma?')) return;
+      st.textContent='Enviando por idiomas…';
+      var r=await api('/api/panel/campaign',{asunto:mkVal('mkAsunto'),cuerpo:mkVal('mkCuerpo'),ctaTexto:mkVal('mkCta'),ctaUrl:mkVal('mkUrl'),enviar:true});
+      if(r.ok){
+        document.getElementById('mkResult').innerHTML=
+          '<div class="card"><h3>'+(r.demo?'Simulación de envío':'Campaña enviada')+'</h3>'+
+          '<p class="muted">'+r.totalContactos+' contactos · '+r.idiomas+' idiomas'+(r.demo?' · demo (sin BREVO_API_KEY no sale ningún correo real)':'')+'</p>'+
+          '<table><thead><tr><th>Idioma</th><th>Contactos</th><th>Enviados</th><th>Asunto</th></tr></thead><tbody>'+
+          r.resumen.map(function(x){return '<tr><td>'+idiomaNom(x.idioma)+'</td><td>'+x.total+'</td><td>'+x.enviados+'</td><td class="muted">'+escapeHtmlP(x.muestraAsunto)+'</td></tr>';}).join('')+
+          '</tbody></table></div>';
+        st.textContent=''; toast(r.demo?'Envío simulado':'Campaña enviada');
+      } else { st.textContent=r.error||'error'; }
+    };
+  }
+  function mkVal(id){ var e=document.getElementById(id); return e?e.value:''; }
+  function escapeHtmlP(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
+
   function renderCanales(){
     var el=document.getElementById('tab-canales');
     el.innerHTML='<div class="card"><h3>Canales (iCal)</h3><p class="muted">Channel manager: pega las URLs iCal de Booking/Airbnb (una por línea) por apartamento e importa los bloqueos. Export por unidad: <code>/api/ical/&lt;id&gt;.ics</code>.</p>'+
@@ -512,7 +607,7 @@ const appjs = `
       };
     });
   }
-  var IDIOMAS={es:'Español',en:'Inglés',fr:'Francés',de:'Alemán',nl:'Neerlandés',it:'Italiano',eu:'Euskera',pt:'Portugués',no:'Noruego',da:'Danés'};
+  var IDIOMAS={es:'Español',en:'Inglés',fr:'Francés',de:'Alemán',nl:'Neerlandés',be:'Belga',it:'Italiano',eu:'Euskera',pt:'Portugués',no:'Noruego',da:'Danés'};
   function idiomaNom(c){ return IDIOMAS[(c||'es').slice(0,2)]||(c||'—'); }
   function renderResenas(){
     var el=document.getElementById('tab-resenas');
@@ -562,7 +657,7 @@ const appjs = `
 
   function pendientesResenas(){ return (state.reviews||[]).filter(function(r){ return !r.respuesta; }).length; }
   function updateResenasBadge(){ var b=document.querySelector('[data-badge-resenas]'); if(!b)return; var n=pendientesResenas(); if(n){ b.textContent=n; b.hidden=false; } else { b.hidden=true; } }
-  function renderAll(){ renderApartamentos(); renderReservas(); renderFacturas(); renderGastos(); renderContabilidad(); renderClientes(); renderCanales(); renderResenas(); updateResenasBadge(); }
+  function renderAll(){ renderApartamentos(); renderReservas(); renderFacturas(); renderGastos(); renderContabilidad(); renderClientes(); renderMarketing(); renderCanales(); renderResenas(); updateResenasBadge(); }
 
   // --- Pestañas -------------------------------------------------------------
   document.querySelectorAll('.tabs button').forEach(function(btn){

@@ -20,7 +20,7 @@ export interface Booking {
   apartmentId: string;
   entrada: string; // YYYY-MM-DD
   salida: string; // YYYY-MM-DD (exclusiva)
-  huesped: { nombre: string; email: string; telefono?: string };
+  huesped: { nombre: string; email: string; telefono?: string; idioma?: string };
   personas: number;
   noches: number;
   total: number; // precio web pagado
@@ -121,7 +121,7 @@ export interface NuevaReserva {
   apartmentId: string;
   entrada: string;
   salida: string;
-  huesped: { nombre: string; email: string; telefono?: string };
+  huesped: { nombre: string; email: string; telefono?: string; idioma?: string };
   personas: number;
   origen?: Booking['origen'];
   demo?: boolean;
