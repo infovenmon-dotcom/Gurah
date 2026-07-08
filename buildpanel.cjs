@@ -511,9 +511,10 @@ const appjs = `
       '<label>IVA<select id="gf-iva"><option value="21">21%</option><option value="10">10%</option><option value="4">4%</option><option value="0">0%</option></select></label>'+
       '<label>IVA deducible<select id="gf-ded"><option value="100">100%</option><option value="50">50%</option><option value="0">0% (no deducible)</option></select></label>'+
       '<label>Factura (PDF/foto)<input type="file" id="gf-file" accept="image/*,application/pdf"></label>'+
+      '<button class="btn sec" id="gf-scan">📄 Leer factura</button>'+
       '<button class="btn" id="gf-add">Añadir gasto</button>'+
       '<span class="muted" id="gf-msg" style="align-self:center"></span>'+
-      '</div></div>';
+      '</div><p class="muted" style="font-size:12px;margin:10px 0 0">Sube el PDF o la foto y pulsa <b>Leer factura</b>: la IA rellena proveedor, base e IVA. O escríbelo a mano.</p></div>';
     el.innerHTML=
       '<h2 class="subttl">Ingresos / Gastos</h2><p class="lead">Evolución, y registro de facturas de gasto con su IVA.</p>'+
       (isDemo()?'<div class="demoline">Demo · datos de ejemplo</div>':'')+
@@ -538,6 +539,24 @@ const appjs = `
       if(r.ok){ toast('Gasto añadido'); load(); } else { msg.textContent=r.error||'Error'; }
     };
     el.querySelectorAll('[data-delgasto]').forEach(function(b){ b.onclick=async function(){ if(!confirm('¿Eliminar este gasto?'))return; var r=await api('/api/panel/expenses',{action:'delete',id:b.getAttribute('data-delgasto')}); if(r.ok){ toast('Gasto eliminado'); load(); } }; });
+    // Leer factura (PDF/foto) con IA y rellenar el formulario
+    document.getElementById('gf-scan').onclick=async function(){
+      var fi=document.getElementById('gf-file'), msg=document.getElementById('gf-msg');
+      if(!fi.files||!fi.files[0]){ msg.textContent='Elige primero el PDF o la foto de la factura.'; return; }
+      if(fi.files[0].size>6*1024*1024){ msg.textContent='El archivo supera 6 MB.'; return; }
+      msg.textContent='Leyendo la factura…';
+      var dataUrl=await new Promise(function(res){ var r=new FileReader(); r.onload=function(){res(r.result);}; r.readAsDataURL(fi.files[0]); });
+      var r=await api('/api/panel/expense-scan',{dataUrl:dataUrl,nombre:fi.files[0].name});
+      if(r.ok){
+        var d=r.datos||{};
+        if(d.fecha) document.getElementById('gf-fecha').value=d.fecha;
+        if(d.proveedor) document.getElementById('gf-prov').value=d.proveedor;
+        if(d.concepto) document.getElementById('gf-con').value=d.concepto;
+        if(d.base!=null) document.getElementById('gf-base').value=d.base;
+        if(d.ivaPct!=null&&['21','10','4','0'].indexOf(String(d.ivaPct))>=0) document.getElementById('gf-iva').value=String(d.ivaPct);
+        msg.textContent=r.demo?'Leído (ejemplo demo) · revísalo y añade':'Factura leída · revisa y añade';
+      } else { msg.textContent=r.error||'No se pudo leer la factura'; }
+    };
   }
   function round2(n){ return Math.round(n*100)/100; }
   // --- Contabilidad ---------------------------------------------------------
@@ -653,9 +672,28 @@ const appjs = `
       '<div class="card">'+toolbar+kpis.replace('<div class="kpis">','<div class="kpis" style="margin-bottom:0">')+'</div>'+
       '<div class="card"><h3>Borradores para presentar</h3><div class="mod-grid">'+m303+m130+'</div>'+
       '<div class="aviso-fiscal">⚠️ <strong>Borrador orientativo.</strong> Te ahorra el trabajo de la gestoría, pero antes de presentar conviene una revisión: en <strong>Bizkaia (Batuz)</strong> los modelos forales pueden variar y hay gastos con IVA no deducible. Es una ayuda, no asesoramiento fiscal.</div>'+
-      '</div>';
+      '</div>'+
+      '<div class="card"><h3>Exportar para la gestoría</h3><p class="muted" style="margin-top:0">Descarga los libros de facturas del periodo (por mes o trimestre) en CSV para enviárselos a tu gestor.</p>'+
+      '<div class="toolbar"><span class="muted">Periodo:</span><select id="exP">'+
+        ['all','T1','T2','T3','T4','01','02','03','04','05','06','07','08','09','10','11','12'].map(function(p){return '<option value="'+p+'"'+(p===P?' selected':'')+'>'+periodoLabel(p)+'</option>';}).join('')+
+      '</select>'+
+      '<button class="btn sec" id="exIng">⬇ Facturas emitidas (ingresos)</button>'+
+      '<button class="btn sec" id="exGas">⬇ Facturas recibidas (gastos)</button></div></div>';
     document.getElementById('imY').onchange=function(){ imp.y=this.value; renderImpuestos(); };
     document.getElementById('imP').onchange=function(){ imp.p=this.value; renderImpuestos(); };
+    function bajaCSV(nombre,cab,filas){ var csv=cab+'\\n'+filas.join('\\n'); var a=document.createElement('a'); a.href='data:text/csv;charset=utf-8,'+encodeURIComponent('\\ufeff'+csv); a.download=nombre; a.click(); }
+    document.getElementById('exIng').onclick=function(){
+      var xp=document.getElementById('exP').value;
+      var f=state.invoices.filter(function(i){return (i.fecha||'').slice(0,4)===Y && enPeriodo(i.fecha,xp);}).sort(function(a,b){return a.fecha<b.fecha?-1:1;});
+      var filas=f.map(function(i){return [i.fecha,'"'+(i.id||'')+'"','"'+((i.cliente&&i.cliente.nombre)||'').replace(/"/g,'')+'"',(i.base||0),(i.ivaPct||''),(i.iva||0),(i.total||0)].join(',');});
+      bajaCSV('gurah-ingresos-'+Y+'-'+xp+'.csv','fecha,factura,cliente,base,iva_pct,iva,total',filas);
+    };
+    document.getElementById('exGas').onclick=function(){
+      var xp=document.getElementById('exP').value;
+      var g=(state.expenses||[]).filter(function(e){return (e.fecha||'').slice(0,4)===Y && enPeriodo(e.fecha,xp);}).sort(function(a,b){return a.fecha<b.fecha?-1:1;});
+      var filas=g.map(function(e){var base=e.base!=null?e.base:round2((e.importe||0)-(e.iva||0));return [e.fecha,'"'+((e.proveedor||'')).replace(/"/g,'')+'"','"'+((e.concepto||'')).replace(/"/g,'')+'"','"'+((e.categoria||'')).replace(/"/g,'')+'"',base,(e.ivaPct!=null?e.ivaPct:''),(e.iva||0),(e.deducible!=null?e.deducible:100),(e.ivaDeducible!=null?e.ivaDeducible:(e.iva||0)),(e.importe||0)].join(',');});
+      bajaCSV('gurah-gastos-'+Y+'-'+xp+'.csv','fecha,proveedor,concepto,categoria,base,iva_pct,iva,iva_deducible_pct,iva_deducible,total',filas);
+    };
     document.getElementById('imPrint').onclick=function(){ window.print(); };
   }
 
