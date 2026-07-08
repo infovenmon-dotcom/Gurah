@@ -145,4 +145,30 @@
       })
       .catch(function () { typing.remove(); bubble(T('connError', 'Error de conexión.'), 'bot'); });
   };
+
+  // --- Formulario "deja tu experiencia" (reseña del huésped → panel) ---------
+  (function () {
+    var form = $('revform'); if (!form) return;
+    var starsEl = $('rf-stars');
+    function paint(v) { Array.prototype.forEach.call(starsEl.children, function (s) { s.classList.toggle('on', +s.getAttribute('data-s') <= v); }); }
+    paint(+starsEl.getAttribute('data-val'));
+    Array.prototype.forEach.call(starsEl.children, function (s) {
+      s.onclick = function () { var v = +s.getAttribute('data-s'); starsEl.setAttribute('data-val', v); paint(v); };
+    });
+    form.onsubmit = function (e) {
+      e.preventDefault();
+      var msg = $('rf-msg');
+      var nombre = $('rf-name').value.trim(), texto = $('rf-text').value.trim();
+      if (!nombre || !texto) { msg.style.color = '#b4462f'; msg.textContent = T('completeReview', 'Pon tu nombre y tu experiencia.'); return; }
+      var btn = $('rf-send'); btn.disabled = true;
+      fetch('/api/review', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ nombre: nombre, texto: texto, puntuacion: +starsEl.getAttribute('data-val') }) })
+        .then(function (r) { return r.json(); })
+        .then(function (d) {
+          btn.disabled = false;
+          if (d.ok) { form.reset(); starsEl.setAttribute('data-val', 5); paint(5); msg.style.color = 'var(--verde)'; msg.textContent = msg.getAttribute('data-thanks'); }
+          else { msg.style.color = '#b4462f'; msg.textContent = d.error || 'Error'; }
+        })
+        .catch(function () { btn.disabled = false; msg.style.color = '#b4462f'; msg.textContent = T('netError', 'Error de red.'); });
+    };
+  })();
 })();
