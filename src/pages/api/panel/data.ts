@@ -26,9 +26,13 @@ export const GET: APIRoute = async () => {
   // ejemplos para enseñar el panel al cliente (como el panel de Kirana). En cuanto
   // entran reservas/facturas reales, los ejemplos desaparecen.
   if (isDemoAuth()) {
-    if (!bookings.length) bookings = demoBookings as any;
-    if (!invoices.length) invoices = demoInvoices as any;
-    if (!expenses.length) expenses = demoExpenses as any;
+    // En demo se muestran siempre las series de ejemplo como base (para que el panel
+    // luzca completo y coherente en Impuestos/Contabilidad), anteponiendo lo que el
+    // usuario da de alta de verdad (reservas/facturas/gastos reales, no demo).
+    bookings = [...(bookings as any[]).filter((b) => b && !b.demo), ...(demoBookings as any)];
+    invoices = [...(invoices as any[]).filter((i) => i && !i.demo), ...(demoInvoices as any)];
+    const gastosReales = (expenses as any[]).filter((e) => e && !e.demo);
+    expenses = [...gastosReales, ...(demoExpenses as any)];
     // Reseñas: en demo se muestran las de ejemplo (varios idiomas) para enseñar el
     // flujo de traducción/respuesta. Se anteponen las reseñas reales dejadas desde
     // la web (origen:'web') para que el flujo huésped→panel funcione en la demo.
