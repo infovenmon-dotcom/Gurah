@@ -23,6 +23,7 @@ const TABS = [
   { id: 'facturas', label: 'Facturas' },
   { id: 'gastos', label: 'Ingresos / Gastos' },
   { id: 'contabilidad', label: 'Contabilidad' },
+  { id: 'impuestos', label: 'Impuestos' },
   { id: 'clientes', label: 'Clientes' },
   { id: 'marketing', label: 'Email marketing' },
   { id: 'canales', label: 'Canales (iCal)' },
@@ -63,6 +64,20 @@ textarea.mkt-in{resize:vertical;line-height:1.5}
 .mkt-mail-h{background:var(--verde);color:#fff;text-align:center;letter-spacing:.22em;padding:14px;font-size:18px}
 .mkt-mail-sub{padding:14px 16px 0;font-weight:700;font-size:16px}
 .mkt-mail-body{padding:10px 16px 18px;color:#3a382f;font-size:14px;line-height:1.6}
+.gasto-form{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end}
+.gasto-form label{display:flex;flex-direction:column;font-size:12px;color:var(--gris);gap:3px;flex:1;min-width:120px}
+.gasto-form input,.gasto-form select{padding:8px 10px;border:1px solid var(--linea);border-radius:8px;font:inherit;font-size:14px}
+.gasto-form .btn{min-width:120px}
+.mod-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:760px){.mod-grid{grid-template-columns:1fr}}
+.mod{border:1px solid var(--linea);border-radius:12px;padding:16px 18px;background:#fff}
+.mod h4{margin:0 0 4px;font-size:15px}
+.mod .cas{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--linea);font-size:14px}
+.mod .cas:last-child{border-bottom:0}
+.mod .cas b{font-variant-numeric:tabular-nums}
+.mod .res{display:flex;justify-content:space-between;margin-top:10px;padding-top:10px;border-top:2px solid var(--verde);font-size:16px;font-weight:700}
+.mod .cnum{color:var(--gris);font-size:11px}
+.aviso-fiscal{background:#fff6d9;border:1px solid #e8d48a;color:#6b5600;border-radius:12px;padding:12px 14px;margin-top:16px;font-size:13px}
 .tabpage{display:none;padding:22px;max-width:1100px;margin:0 auto}
 .tabpage.active{display:block}
 .card{background:#fff;border:1px solid var(--linea);border-radius:14px;padding:18px;margin-bottom:16px}
@@ -178,6 +193,7 @@ const appjs = `
   const SERVICIOS = ${JSON.stringify(require('./src/lib/servicios.cjs'))};
   let state = { apartments: [], blocks: {}, bookings: [], invoices: [], expenses: [], customers: [], reviews: [], feeds: {} };
   var contab = { y: String(new Date().getFullYear()), p: 'all' }; // filtro de Contabilidad
+  var imp = { y: String(new Date().getFullYear()), p: 'T' + (Math.floor(new Date().getMonth() / 3) + 1) }; // filtro de Impuestos
 
   function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2200); }
   function eur(n){ return (Number(n)||0).toLocaleString('es-ES',{maximumFractionDigits:0})+' €'; }
@@ -473,17 +489,56 @@ const appjs = `
     var max=Math.max.apply(null,porMes.concat([1]));
     var bars=porMes.map(function(v,i){ var h=Math.round(v/max*100); return '<div class="b"><small>'+(v?eur(v):'')+'</small><i class="'+(i===m?'alt':'')+'" style="height:'+h+'%"></i><em>'+MESES[i]+'</em></div>'; }).join('');
     // Gastos
-    var gTotal=(state.expenses||[]).reduce(function(s,e){return s+(e.importe||0);},0);
-    var grows=(state.expenses||[]).slice().sort(function(a,b){return a.fecha<b.fecha?1:-1;}).map(function(e){
-      return '<tr><td>'+fmt(e.fecha)+'</td><td>'+e.concepto+'</td><td><span class="pill">'+(e.categoria||'—')+'</span></td><td style="text-align:right" class="neg">−'+eur2(e.importe)+'</td></tr>';
+    var exps=(state.expenses||[]).slice().sort(function(a,b){return a.fecha<b.fecha?1:-1;});
+    var gTotal=exps.reduce(function(s,e){return s+(e.importe||0);},0);
+    var gIva=exps.reduce(function(s,e){return s+(e.iva||0);},0);
+    function baseDe(e){ return e.base!=null?e.base:round2((e.importe||0)-(e.iva||0)); }
+    var grows=exps.map(function(e){
+      var adj=e.adjunto?'<a class="btn sec" style="padding:3px 8px;font-size:12px" href="/api/panel/expenses?file='+e.id+'" target="_blank">📎 ver</a>':'<span class="muted">—</span>';
+      var del=(''+e.id).charAt(0)==='g'?'<button class="btn sec" data-delgasto="'+e.id+'" style="padding:3px 9px;font-size:12px">✕</button>':'';
+      return '<tr><td>'+fmt(e.fecha)+'</td><td>'+(e.proveedor?'<strong>'+e.proveedor+'</strong><br>':'')+'<span class="muted">'+e.concepto+'</span></td><td><span class="pill">'+(e.categoria||'—')+'</span></td>'+
+        '<td style="text-align:right">'+eur2(baseDe(e))+'</td><td style="text-align:right" class="muted">'+eur2(e.iva||0)+(e.ivaPct!=null?' <span style="font-size:11px">('+e.ivaPct+'%)</span>':'')+'</td>'+
+        '<td style="text-align:right" class="neg">−'+eur2(e.importe)+'</td><td style="text-align:center">'+adj+'</td><td style="text-align:center">'+del+'</td></tr>';
     }).join('');
+    var cats=['Suministros','Limpieza','Mantenimiento','Comisiones','Marketing','Seguros','Amueblado','Amortización','Gestoría','Otros'];
+    var form='<div class="card"><h3>Subir factura de gasto</h3><p class="muted" style="margin-top:0">Registra la factura y su IVA. Alimenta el cálculo del IVA a pagar (Impuestos).</p>'+
+      '<div class="gasto-form">'+
+      '<label>Fecha<input type="date" id="gf-fecha" value="'+todayISO()+'"></label>'+
+      '<label>Proveedor<input id="gf-prov" placeholder="Ej. Iberdrola"></label>'+
+      '<label style="flex:2">Concepto<input id="gf-con" placeholder="Ej. Luz junio"></label>'+
+      '<label>Categoría<select id="gf-cat">'+cats.map(function(c){return '<option>'+c+'</option>';}).join('')+'</select></label>'+
+      '<label>Base (€)<input type="number" step="0.01" id="gf-base" placeholder="0,00"></label>'+
+      '<label>IVA<select id="gf-iva"><option value="21">21%</option><option value="10">10%</option><option value="4">4%</option><option value="0">0%</option></select></label>'+
+      '<label>Factura (PDF/foto)<input type="file" id="gf-file" accept="image/*,application/pdf"></label>'+
+      '<button class="btn" id="gf-add">Añadir gasto</button>'+
+      '<span class="muted" id="gf-msg" style="align-self:center"></span>'+
+      '</div></div>';
     el.innerHTML=
-      '<h2 class="subttl">Ingresos / Gastos</h2><p class="lead">Evolución y desglose.</p>'+
+      '<h2 class="subttl">Ingresos / Gastos</h2><p class="lead">Evolución, y registro de facturas de gasto con su IVA.</p>'+
       (isDemo()?'<div class="demoline">Demo · datos de ejemplo</div>':'')+
       kpis+
       '<div class="card"><h3>Ingresos por mes · '+y+'</h3><div class="bars">'+bars+'</div></div>'+
-      '<div class="card"><div class="rowbtn"><h3 style="margin:0">Gastos</h3><span class="muted">Total '+y+': <strong class="neg">'+eur(gTotal)+'</strong></span></div><table><thead><tr><th>Fecha</th><th>Concepto</th><th>Categoría</th><th style="text-align:right">Importe</th></tr></thead><tbody>'+(grows||'<tr><td colspan=4 class=muted>Sin gastos. Alta manual + importación CSV.</td></tr>')+'</tbody></table></div>';
+      form+
+      '<div class="card"><div class="rowbtn"><h3 style="margin:0">Gastos</h3><span class="muted">Total '+y+': <strong class="neg">'+eur(gTotal)+'</strong> · IVA soportado '+eur(gIva)+'</span></div><table><thead><tr><th>Fecha</th><th>Proveedor / concepto</th><th>Categoría</th><th style="text-align:right">Base</th><th style="text-align:right">IVA</th><th style="text-align:right">Total</th><th style="text-align:center">Factura</th><th></th></tr></thead><tbody>'+(grows||'<tr><td colspan=8 class=muted>Sin gastos todavía.</td></tr>')+'</tbody></table></div>';
+    // Alta de gasto
+    document.getElementById('gf-add').onclick=async function(){
+      var msg=document.getElementById('gf-msg');
+      var base=parseFloat(document.getElementById('gf-base').value);
+      var con=document.getElementById('gf-con').value.trim();
+      if(!con||!base){ msg.textContent='Pon concepto y base.'; return; }
+      var gasto={ fecha:document.getElementById('gf-fecha').value, proveedor:document.getElementById('gf-prov').value.trim(), concepto:con, categoria:document.getElementById('gf-cat').value, base:base, ivaPct:parseFloat(document.getElementById('gf-iva').value) };
+      var fi=document.getElementById('gf-file');
+      msg.textContent='Guardando…';
+      if(fi.files&&fi.files[0]){
+        if(fi.files[0].size>4*1024*1024){ msg.textContent='El archivo supera 4 MB.'; return; }
+        gasto.adjunto=await new Promise(function(res){ var r=new FileReader(); r.onload=function(){ res({nombre:fi.files[0].name,dataUrl:r.result}); }; r.readAsDataURL(fi.files[0]); });
+      }
+      var r=await api('/api/panel/expenses',{action:'add',gasto:gasto});
+      if(r.ok){ toast('Gasto añadido'); load(); } else { msg.textContent=r.error||'Error'; }
+    };
+    el.querySelectorAll('[data-delgasto]').forEach(function(b){ b.onclick=async function(){ if(!confirm('¿Eliminar este gasto?'))return; var r=await api('/api/panel/expenses',{action:'delete',id:b.getAttribute('data-delgasto')}); if(r.ok){ toast('Gasto eliminado'); load(); } }; });
   }
+  function round2(n){ return Math.round(n*100)/100; }
   // --- Contabilidad ---------------------------------------------------------
   function enPeriodo(fecha,p){
     if(p==='all')return true;
@@ -542,6 +597,64 @@ const appjs = `
       var csv='fecha,concepto,categoria,iva,importe\\n'+movs.map(function(mv){return [mv.fecha,'"'+mv.concepto+'"',mv.cat,mv.iva,mv.imp].join(',');}).join('\\n');
       var a=document.createElement('a'); a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv); a.download='contabilidad-gurah-'+Y+'-'+P+'.csv'; a.click();
     };
+  }
+
+  // --- Impuestos (Modelo 303 IVA + Modelo 130 IRPF) -------------------------
+  function baseGasto(e){ return e.base!=null?e.base:round2((e.importe||0)-(e.iva||0)); }
+  function trimestreDe(fecha){ var mm=parseInt((fecha||'').slice(5,7),10); return Math.floor((mm-1)/3)+1; }
+  function renderImpuestos(){
+    var el=document.getElementById('tab-impuestos');
+    var years={};
+    state.invoices.forEach(function(f){ var y=(f.fecha||'').slice(0,4); if(y)years[y]=1; });
+    (state.expenses||[]).forEach(function(e){ var y=(e.fecha||'').slice(0,4); if(y)years[y]=1; });
+    var yl=Object.keys(years).sort().reverse(); if(!yl.length)yl=[imp.y]; if(yl.indexOf(imp.y)<0)imp.y=yl[0];
+    var Y=imp.y, P=imp.p;
+    var esTrim=P.charAt(0)==='T';
+    // Periodo seleccionado
+    var inv=state.invoices.filter(function(f){return (f.fecha||'').slice(0,4)===Y && enPeriodo(f.fecha,P);});
+    var gas=(state.expenses||[]).filter(function(e){return (e.fecha||'').slice(0,4)===Y && enPeriodo(e.fecha,P);});
+    var ivaRep=round2(inv.reduce(function(s,f){return s+(f.iva||0);},0));
+    var ivaSop=round2(gas.reduce(function(s,e){return s+(e.iva||0);},0));
+    var res303=round2(ivaRep-ivaSop);
+    var baseIng=round2(inv.reduce(function(s,f){return s+(f.base||0);},0));
+    var baseGas=round2(gas.reduce(function(s,e){return s+baseGasto(e);},0));
+    // Modelo 130 (IRPF): acumulado del año hasta el trimestre
+    function accBase(list,campo,q){ return list.filter(function(x){return (x.fecha||'').slice(0,4)===Y && trimestreDe(x.fecha)<=q;}).reduce(function(s,x){return s+(campo==='ing'?(x.base||0):baseGasto(x));},0); }
+    var q=esTrim?parseInt(P.slice(1),10):4;
+    var rendAcum=round2(accBase(state.invoices,'ing',q)-accBase(state.expenses||[],'gas',q));
+    var rendPrev=round2(accBase(state.invoices,'ing',q-1)-accBase(state.expenses||[],'gas',q-1));
+    var pago130=Math.max(0,round2(rendAcum*0.20));
+    var pagoPrev=Math.max(0,round2(rendPrev*0.20));
+    var pagar130=Math.max(0,round2(pago130-pagoPrev));
+    // Selectores
+    var yOpts=yl.map(function(y){return '<option value="'+y+'"'+(y===Y?' selected':'')+'>'+y+'</option>';}).join('');
+    var pOpts=['T1','T2','T3','T4','all'].map(function(p){return '<option value="'+p+'"'+(p===P?' selected':'')+'>'+(p==='all'?'Año completo':'Trimestre '+p.slice(1))+'</option>';}).join('');
+    var toolbar='<div class="toolbar"><span class="muted">Periodo:</span><select id="imY">'+yOpts+'</select><select id="imP">'+pOpts+'</select><span class="muted">'+(esTrim?('Trimestre '+P.slice(1)):'Año')+' '+Y+'</span><button class="btn sec" id="imPrint" style="margin-left:auto">🖨 Imprimir</button></div>';
+    var kpis='<div class="kpis">'+
+      kpi('IVA repercutido',eur(ivaRep),'cobrado a huéspedes')+
+      kpi('IVA soportado',eur(ivaSop),'de tus gastos')+
+      kpi('IVA a pagar (303)',eur(res303),res303>=0?'a ingresar':'a compensar')+
+      kpi('IRPF estimado (130)',eur(pagar130),esTrim?'este trimestre':'selecc. trimestre')+'</div>';
+    var m303='<div class="mod"><h4>Modelo 303 · IVA <span class="muted" style="font-weight:400;font-size:12px">('+(esTrim?'Trim. '+P.slice(1):'año')+' '+Y+')</span></h4>'+
+      '<div class="cas"><span>IVA devengado (repercutido) <span class="cnum">casilla 27</span></span><b>'+eur2(ivaRep)+'</b></div>'+
+      '<div class="cas"><span>IVA deducible (soportado) <span class="cnum">casilla 45</span></span><b>'+eur2(ivaSop)+'</b></div>'+
+      '<div class="res"><span>Resultado '+(res303>=0?'a ingresar':'a compensar')+' <span class="cnum">casilla 71</span></span><b>'+eur2(Math.abs(res303))+'</b></div></div>';
+    var m130=esTrim?('<div class="mod"><h4>Modelo 130 · IRPF <span class="muted" style="font-weight:400;font-size:12px">(acumulado a Trim. '+P.slice(1)+')</span></h4>'+
+      '<div class="cas"><span>Ingresos − gastos (rendimiento) <span class="cnum">casilla 03</span></span><b>'+eur2(rendAcum)+'</b></div>'+
+      '<div class="cas"><span>Pago a cuenta 20% <span class="cnum">casilla 04</span></span><b>'+eur2(pago130)+'</b></div>'+
+      '<div class="cas"><span>Pagos de trimestres anteriores <span class="cnum">casilla 05</span></span><b>−'+eur2(pagoPrev)+'</b></div>'+
+      '<div class="res"><span>A ingresar este trimestre <span class="cnum">casilla 19</span></span><b>'+eur2(pagar130)+'</b></div></div>'):
+      '<div class="mod"><h4>Modelo 130 · IRPF</h4><p class="muted">Selecciona un trimestre para ver el pago fraccionado.</p></div>';
+    el.innerHTML=
+      '<h2 class="subttl">Impuestos</h2><p class="lead">Tu gestoría dentro del panel: el IVA a pagar y el IRPF, calculados y listos para presentar.</p>'+
+      (isDemo()?'<div class="demoline">Demo · datos de ejemplo</div>':'')+
+      '<div class="card">'+toolbar+kpis.replace('<div class="kpis">','<div class="kpis" style="margin-bottom:0">')+'</div>'+
+      '<div class="card"><h3>Borradores para presentar</h3><div class="mod-grid">'+m303+m130+'</div>'+
+      '<div class="aviso-fiscal">⚠️ <strong>Borrador orientativo.</strong> Te ahorra el trabajo de la gestoría, pero antes de presentar conviene una revisión: en <strong>Bizkaia (Batuz)</strong> los modelos forales pueden variar y hay gastos con IVA no deducible. Es una ayuda, no asesoramiento fiscal.</div>'+
+      '</div>';
+    document.getElementById('imY').onchange=function(){ imp.y=this.value; renderImpuestos(); };
+    document.getElementById('imP').onchange=function(){ imp.p=this.value; renderImpuestos(); };
+    document.getElementById('imPrint').onclick=function(){ window.print(); };
   }
 
   // --- Clientes -------------------------------------------------------------
@@ -717,7 +830,7 @@ const appjs = `
 
   function pendientesResenas(){ return (state.reviews||[]).filter(function(r){ return !r.respuesta; }).length; }
   function updateResenasBadge(){ var b=document.querySelector('[data-badge-resenas]'); if(!b)return; var n=pendientesResenas(); if(n){ b.textContent=n; b.hidden=false; } else { b.hidden=true; } }
-  function renderAll(){ renderApartamentos(); renderReservas(); renderFacturas(); renderGastos(); renderContabilidad(); renderClientes(); renderMarketing(); renderCanales(); renderResenas(); updateResenasBadge(); }
+  function renderAll(){ renderApartamentos(); renderReservas(); renderFacturas(); renderGastos(); renderContabilidad(); renderImpuestos(); renderClientes(); renderMarketing(); renderCanales(); renderResenas(); updateResenasBadge(); }
 
   // --- Pestañas -------------------------------------------------------------
   document.querySelectorAll('.tabs button').forEach(function(btn){
