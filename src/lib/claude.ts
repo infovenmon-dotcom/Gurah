@@ -79,6 +79,84 @@ export async function askClaude(opts: AskOptions): Promise<ClaudeResult> {
   }
 }
 
+// --- Lectura de facturas de gasto (OCR + desglose) ---------------------------
+
+export interface InvoiceExtract {
+  fecha?: string;
+  proveedor?: string;
+  concepto?: string;
+  base?: number;
+  ivaPct?: number;
+  iva?: number;
+  total?: number;
+  demo: boolean;
+  error?: string;
+}
+
+/**
+ * Lee una factura de gasto (PDF o imagen, como data URL) y devuelve sus datos
+ * desglosados usando la visión de Claude. En demo (sin clave) devuelve un ejemplo.
+ */
+export async function extractInvoice(dataUrl: string, _nombre?: string): Promise<InvoiceExtract> {
+  if (!ANTHROPIC_API_KEY) {
+    return {
+      demo: true,
+      proveedor: 'Iberdrola Clientes, S.A.U.',
+      concepto: 'Suministro eléctrico',
+      fecha: '2026-07-31',
+      base: 82.64,
+      ivaPct: 21,
+      iva: 17.36,
+      total: 100,
+    };
+  }
+  const m = /^data:([^;]+);base64,(.*)$/s.exec(dataUrl || '');
+  if (!m) return { demo: false, error: 'Archivo no válido.' };
+  const mediaType = m[1];
+  const b64 = m[2];
+  const isPdf = mediaType === 'application/pdf';
+  const media = isPdf
+    ? { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: b64 } }
+    : { type: 'image', source: { type: 'base64', media_type: mediaType, data: b64 } };
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'x-api-key': ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01',
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: MODEL,
+        max_tokens: 700,
+        system:
+          'Eres un extractor de datos de facturas de gasto españolas. Devuelve SOLO un objeto JSON ' +
+          '(sin texto alrededor, sin ```): {"fecha":"YYYY-MM-DD","proveedor":"...","concepto":"...",' +
+          '"base":number,"ivaPct":number,"iva":number,"total":number}. base = base imponible sin IVA; ' +
+          'iva = cuota de IVA; ivaPct = 21, 10, 4 o 0. Si un dato no aparece, usa null. Usa punto decimal.',
+        messages: [
+          {
+            role: 'user',
+            content: [media, { type: 'text', text: 'Extrae los datos de esta factura y devuelve solo el JSON.' }],
+          },
+        ],
+      }),
+    });
+    if (!res.ok) {
+      const err = await res.text();
+      return { demo: false, error: `Anthropic ${res.status}: ${err.slice(0, 160)}` };
+    }
+    const data = (await res.json()) as { content?: Array<{ type: string; text?: string }> };
+    let text = (data.content ?? []).filter((b) => b.type === 'text').map((b) => b.text ?? '').join('').trim();
+    const jm = /\{[\s\S]*\}/.exec(text);
+    if (jm) text = jm[0];
+    const parsed = JSON.parse(text);
+    return { demo: false, ...parsed };
+  } catch (err) {
+    return { demo: false, error: `No se pudo leer la factura: ${(err as Error).message}` };
+  }
+}
+
 // --- Casos de uso GURAH ------------------------------------------------------
 
 const BRAND_CONTEXT =
