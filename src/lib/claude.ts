@@ -123,16 +123,21 @@ export async function draftReviewReply(review: {
   const idioma = review.idioma || 'el mismo idioma de la reseña';
   return askClaude({
     system:
-      `Eres el anfitrión de ${BRAND_CONTEXT} Redacta respuestas a reseñas: agradecidas, ` +
-      `personalizadas, breves (2-4 frases), sin sonar robóticas. Responde en ${idioma}. ` +
-      `Si la reseña es negativa, discúlpate con tacto y ofrece mejorar.`,
+      `Eres el anfitrión de ${BRAND_CONTEXT} Redactas la respuesta pública a la reseña de un huésped. ` +
+      `Clave: la respuesta debe basarse en LA EXPERIENCIA CONCRETA que cuenta el huésped. ` +
+      `Identifica los aspectos positivos que menciona (p. ej. la piscina, las vistas al valle, el trato ` +
+      `de Maialen, la tranquilidad, la ubicación cerca de Gaztelugatxe o la playa) y REFUÉRZALOS con ` +
+      `naturalidad, para que quien lea la reseña perciba esos puntos fuertes. Agradece de forma cálida y ` +
+      `personal, e invita a volver. Breve (2-4 frases), cercana, nada robótica ni genérica. ` +
+      `Escribe en ${idioma}. Si la reseña es negativa o tiene alguna pega, agradece el comentario, ` +
+      `discúlpate con tacto y ofrece mejorar, sin ponerte a la defensiva.`,
     messages: [
       {
         role: 'user',
         content:
           `Reseña de ${review.autor || 'un huésped'}` +
           (review.puntuacion ? ` (${review.puntuacion}/5)` : '') +
-          `:\n"${review.texto}"\n\nEscribe una respuesta pública como anfitrión.`,
+          `:\n"${review.texto}"\n\nEscribe la respuesta pública, reforzando los aspectos positivos que menciona.`,
       },
     ],
     maxTokens: 512,
