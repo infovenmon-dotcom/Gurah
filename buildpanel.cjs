@@ -194,6 +194,16 @@ const appjs = `
   let state = { apartments: [], blocks: {}, bookings: [], invoices: [], expenses: [], customers: [], reviews: [], feeds: {} };
   var contab = { y: String(new Date().getFullYear()), p: 'all' }; // filtro de Contabilidad
   var imp = { y: String(new Date().getFullYear()), p: 'T' + (Math.floor(new Date().getMonth() / 3) + 1) }; // filtro de Impuestos
+  var gfil = { y: 'all', mes: 'all', cat: 'all', q: '' }; // filtros de búsqueda de gastos
+  // Años seleccionables: los que hay en datos + un rango (2 atrás, 1 adelante), desc.
+  function aniosDisponibles(){
+    var s={}, cy=new Date().getFullYear();
+    (state.invoices||[]).forEach(function(f){ var y=(f.fecha||'').slice(0,4); if(y)s[y]=1; });
+    (state.expenses||[]).forEach(function(e){ var y=(e.fecha||'').slice(0,4); if(y)s[y]=1; });
+    (state.bookings||[]).forEach(function(b){ var y=(b.entrada||'').slice(0,4); if(y)s[y]=1; });
+    for(var y=cy-2;y<=cy+1;y++) s[String(y)]=1;
+    return Object.keys(s).sort().reverse();
+  }
 
   function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2200); }
   function eur(n){ return (Number(n)||0).toLocaleString('es-ES',{maximumFractionDigits:0})+' €'; }
@@ -488,14 +498,30 @@ const appjs = `
     añoInv.forEach(function(f){ var mm=parseInt((f.fecha||'').slice(5,7),10)-1; if(mm>=0&&mm<12)porMes[mm]+=f.total; });
     var max=Math.max.apply(null,porMes.concat([1]));
     var bars=porMes.map(function(v,i){ var h=Math.round(v/max*100); return '<div class="b"><small>'+(v?eur(v):'')+'</small><i class="'+(i===m?'alt':'')+'" style="height:'+h+'%"></i><em>'+MESES[i]+'</em></div>'; }).join('');
-    // Gastos
+    // Gastos (con filtros de búsqueda)
     var exps=(state.expenses||[]).slice().sort(function(a,b){return a.fecha<b.fecha?1:-1;});
-    var gTotal=exps.reduce(function(s,e){return s+(e.importe||0);},0);
-    var gIva=exps.reduce(function(s,e){return s+(e.iva||0);},0);
     function baseDe(e){ return e.base!=null?e.base:round2((e.importe||0)-(e.iva||0)); }
-    var grows=exps.map(function(e){
+    var catSet={}; exps.forEach(function(e){ if(e.categoria)catSet[e.categoria]=1; });
+    var catList=Object.keys(catSet).sort();
+    var fil=exps.filter(function(e){
+      if(gfil.y!=='all' && (e.fecha||'').slice(0,4)!==gfil.y) return false;
+      if(gfil.mes!=='all' && (e.fecha||'').slice(5,7)!==gfil.mes) return false;
+      if(gfil.cat!=='all' && (e.categoria||'')!==gfil.cat) return false;
+      if(gfil.q){ var qq=gfil.q.toLowerCase(); if(((e.proveedor||'')+' '+(e.concepto||'')).toLowerCase().indexOf(qq)<0) return false; }
+      return true;
+    });
+    var gTotal=fil.reduce(function(s,e){return s+(e.importe||0);},0);
+    var gIva=fil.reduce(function(s,e){return s+(e.iva||0);},0);
+    var mOpts='<option value="all">Todos los meses</option>'+['01','02','03','04','05','06','07','08','09','10','11','12'].map(function(mm,i){return '<option value="'+mm+'"'+(gfil.mes===mm?' selected':'')+'>'+MESES[i]+'</option>';}).join('');
+    var yOptsG='<option value="all"'+(gfil.y==='all'?' selected':'')+'>Todos los años</option>'+aniosDisponibles().map(function(yy){return '<option value="'+yy+'"'+(gfil.y===yy?' selected':'')+'>'+yy+'</option>';}).join('');
+    var cOpts='<option value="all">Todas las categorías</option>'+catList.map(function(c){return '<option value="'+c+'"'+(gfil.cat===c?' selected':'')+'>'+c+'</option>';}).join('');
+    var filtros='<div class="toolbar"><span class="muted">Buscar:</span>'+
+      '<select id="gflY">'+yOptsG+'</select><select id="gflM">'+mOpts+'</select><select id="gflC">'+cOpts+'</select>'+
+      '<input id="gflQ" placeholder="Proveedor o concepto" value="'+(gfil.q||'').replace(/"/g,'&quot;')+'" style="padding:8px 10px;border:1px solid var(--linea);border-radius:8px;font-size:14px">'+
+      (gfil.y!=='all'||gfil.mes!=='all'||gfil.cat!=='all'||gfil.q?'<button class="btn sec" id="gflClr">Limpiar</button>':'')+'</div>';
+    var grows=fil.map(function(e){
       var adj=e.adjunto?'<a class="btn sec" style="padding:3px 8px;font-size:12px" href="/api/panel/expenses?file='+e.id+'" target="_blank">📎 ver</a>':'<span class="muted">—</span>';
-      var del=(''+e.id).charAt(0)==='g'?'<button class="btn sec" data-delgasto="'+e.id+'" style="padding:3px 9px;font-size:12px">✕</button>':'';
+      var del=!e.demo?'<button class="btn sec" data-delgasto="'+e.id+'" style="padding:3px 9px;font-size:12px">✕</button>':'';
       return '<tr><td>'+fmt(e.fecha)+'</td><td>'+(e.proveedor?'<strong>'+e.proveedor+'</strong><br>':'')+'<span class="muted">'+e.concepto+'</span></td><td><span class="pill">'+(e.categoria||'—')+'</span></td>'+
         '<td style="text-align:right">'+eur2(baseDe(e))+'</td><td style="text-align:right" class="muted">'+eur2(e.iva||0)+(e.ivaPct!=null?' <span style="font-size:11px">('+e.ivaPct+'%)</span>':'')+(e.deducible!=null&&e.deducible!==100?'<br><span style="font-size:10px;color:var(--rojo)">deducible '+e.deducible+'%</span>':'')+'</td>'+
         '<td style="text-align:right" class="neg">−'+eur2(e.importe)+'</td><td style="text-align:center">'+adj+'</td><td style="text-align:center">'+del+'</td></tr>';
@@ -521,7 +547,14 @@ const appjs = `
       kpis+
       '<div class="card"><h3>Ingresos por mes · '+y+'</h3><div class="bars">'+bars+'</div></div>'+
       form+
-      '<div class="card"><div class="rowbtn"><h3 style="margin:0">Gastos</h3><span class="muted">Total '+y+': <strong class="neg">'+eur(gTotal)+'</strong> · IVA soportado '+eur(gIva)+'</span></div><table><thead><tr><th>Fecha</th><th>Proveedor / concepto</th><th>Categoría</th><th style="text-align:right">Base</th><th style="text-align:right">IVA</th><th style="text-align:right">Total</th><th style="text-align:center">Factura</th><th></th></tr></thead><tbody>'+(grows||'<tr><td colspan=8 class=muted>Sin gastos todavía.</td></tr>')+'</tbody></table></div>';
+      '<div class="card"><div class="rowbtn"><h3 style="margin:0">Gastos</h3><span class="muted">'+fil.length+' facturas · <strong class="neg">'+eur(gTotal)+'</strong> · IVA soportado '+eur(gIva)+'</span></div>'+filtros+'<table><thead><tr><th>Fecha</th><th>Proveedor / concepto</th><th>Categoría</th><th style="text-align:right">Base</th><th style="text-align:right">IVA</th><th style="text-align:right">Total</th><th style="text-align:center">Factura</th><th></th></tr></thead><tbody>'+(grows||'<tr><td colspan=8 class=muted>Sin gastos que coincidan con el filtro.</td></tr>')+'</tbody></table></div>';
+    // Filtros de búsqueda de gastos
+    document.getElementById('gflY').onchange=function(){ gfil.y=this.value; renderGastos(); };
+    document.getElementById('gflM').onchange=function(){ gfil.mes=this.value; renderGastos(); };
+    document.getElementById('gflC').onchange=function(){ gfil.cat=this.value; renderGastos(); };
+    var gq=document.getElementById('gflQ'); gq.oninput=function(){ gfil.q=this.value; gfil._focus=true; renderGastos(); };
+    var clr=document.getElementById('gflClr'); if(clr) clr.onclick=function(){ gfil={y:'all',mes:'all',cat:'all',q:''}; renderGastos(); };
+    if(gfil._focus){ gfil._focus=false; var f=document.getElementById('gflQ'); if(f){ f.focus(); f.setSelectionRange(f.value.length,f.value.length); } }
     // Alta de gasto
     document.getElementById('gf-add').onclick=async function(){
       var msg=document.getElementById('gf-msg');
@@ -573,11 +606,7 @@ const appjs = `
   }
   function renderContabilidad(){
     const el=document.getElementById('tab-contabilidad');
-    // Años disponibles en los datos
-    var years={};
-    state.invoices.forEach(function(f){ var y=(f.fecha||'').slice(0,4); if(y)years[y]=1; });
-    (state.expenses||[]).forEach(function(e){ var y=(e.fecha||'').slice(0,4); if(y)years[y]=1; });
-    var yl=Object.keys(years).sort().reverse(); if(!yl.length)yl=[contab.y]; if(yl.indexOf(contab.y)<0)contab.y=yl[0];
+    var yl=aniosDisponibles(); if(yl.indexOf(contab.y)<0)contab.y=yl[0];
     var Y=contab.y, P=contab.p;
     var inv=state.invoices.filter(function(f){return (f.fecha||'').slice(0,4)===Y && enPeriodo(f.fecha,P);});
     var gas=(state.expenses||[]).filter(function(e){return (e.fecha||'').slice(0,4)===Y && enPeriodo(e.fecha,P);});
@@ -624,10 +653,7 @@ const appjs = `
   function trimestreDe(fecha){ var mm=parseInt((fecha||'').slice(5,7),10); return Math.floor((mm-1)/3)+1; }
   function renderImpuestos(){
     var el=document.getElementById('tab-impuestos');
-    var years={};
-    state.invoices.forEach(function(f){ var y=(f.fecha||'').slice(0,4); if(y)years[y]=1; });
-    (state.expenses||[]).forEach(function(e){ var y=(e.fecha||'').slice(0,4); if(y)years[y]=1; });
-    var yl=Object.keys(years).sort().reverse(); if(!yl.length)yl=[imp.y]; if(yl.indexOf(imp.y)<0)imp.y=yl[0];
+    var yl=aniosDisponibles(); if(yl.indexOf(imp.y)<0)imp.y=yl[0];
     var Y=imp.y, P=imp.p;
     var esTrim=P.charAt(0)==='T';
     // Periodo seleccionado
