@@ -5,11 +5,15 @@ Astro SSR sobre Netlify Blobs. Proyecto de **Venmon**.
 
 ## Desplegar
 
-[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/infovenmon-dotcom/gurah)
+> **Importante:** este proyecto tiene **un único repositorio y un único sitio de Netlify**.
+> Conecta el sitio de Netlify directamente a este repo (`infovenmon-dotcom/Gurah`),
+> rama `main`, desde *Site configuration → Build & deploy → Continuous deployment*.
+> **No uses el botón "Deploy to Netlify"**: clona el repo con otro nombre y crea un
+> sitio nuevo cada vez, fragmentando el trabajo.
 
-Un clic → publica en Netlify. **Sin variables de entorno arranca en MODO DEMO**
-(reservas y pagos simulados, panel con clave `demo`). Guía completa y tabla de
-variables en [`docs/DEPLOY-NETLIFY.md`](docs/DEPLOY-NETLIFY.md).
+**Sin variables de entorno arranca en MODO DEMO** (reservas y pagos simulados,
+panel con clave `demo`). Guía completa y tabla de variables en
+[`docs/DEPLOY-NETLIFY.md`](docs/DEPLOY-NETLIFY.md).
 
 ## Inicio rápido
 

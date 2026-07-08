@@ -1,0 +1,48 @@
+name: Deploy a Netlify
+
+# Despliega el repo bueno (infovenmon-dotcom/Gurah) a Netlify en cada push a main.
+# Publica en el MISMO sitio de Netlify (por su Site ID), así la URL no cambia y
+# no dependemos de la conexión del dashboard. Requiere dos secretos del repo:
+#   NETLIFY_AUTH_TOKEN  — Netlify → User settings → Applications → New access token
+#   NETLIFY_SITE_ID     — Site configuration → General → Site information → Site ID
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+concurrency:
+  group: netlify-deploy
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Comprobar secretos de Netlify
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+        run: |
+          if [ -z "$NETLIFY_AUTH_TOKEN" ] || [ -z "$NETLIFY_SITE_ID" ]; then
+            echo "::error::Faltan los secretos NETLIFY_AUTH_TOKEN y/o NETLIFY_SITE_ID en el repositorio (Settings → Secrets and variables → Actions)."
+            exit 1
+          fi
+
+      - name: Build + deploy a Netlify (producción)
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+        run: |
+          npx --yes netlify-cli@17 deploy --build --prod \
+            --site "$NETLIFY_SITE_ID" \
+            --message "Deploy ${GITHUB_SHA::7} desde GitHub Actions"
