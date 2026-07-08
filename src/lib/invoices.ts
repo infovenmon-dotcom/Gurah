@@ -25,6 +25,7 @@ export interface Invoice {
   ivaPct: number;
   total: number;
   serie: string;
+  estado?: 'cobrada' | 'pendiente';
   tbai?: TbaiData; // datos garante TicketBAI/Batuz
   demo?: boolean;
 }
@@ -43,10 +44,13 @@ export async function getInvoices(): Promise<Invoice[]> {
 export async function createInvoiceForBooking(
   booking: Booking,
   apartamentoNombre: string,
+  opts?: { importe?: number; concepto?: string; estado?: 'cobrada' | 'pendiente' },
 ): Promise<Invoice> {
   const year = new Date(booking.creada).getUTCFullYear();
   const serie = `GRH-${year}`;
-  const { base, iva } = desglosaIva(booking.total, IVA_PCT);
+  const importe = opts?.importe ?? booking.total;
+  const { base, iva } = desglosaIva(importe, IVA_PCT);
+  const concepto = opts?.concepto ?? `Estancia en ${apartamentoNombre} (${booking.noches} noches)`;
 
   let created!: Invoice;
   let numero = '';
@@ -58,16 +62,17 @@ export async function createInvoiceForBooking(
       created = {
         id: `${serie}-${numero}`,
         bookingId: booking.id,
-        fecha: booking.creada,
+        fecha: new Date().toISOString(),
         cliente: { nombre: booking.huesped.nombre, email: booking.huesped.email },
-        concepto: `Estancia en ${apartamentoNombre} (${booking.noches} noches)`,
+        concepto,
         base,
         iva,
         ivaPct: IVA_PCT,
-        total: booking.total,
+        total: importe,
         serie,
+        estado: opts?.estado ?? 'cobrada',
         demo: booking.demo,
-      };
+      } as Invoice;
       return [...all, created];
     },
     [],
@@ -77,8 +82,8 @@ export async function createInvoiceForBooking(
   const tbai = await registrarTbai({
     serie,
     numero,
-    fecha: booking.creada.slice(0, 10),
-    total: booking.total,
+    fecha: created.fecha.slice(0, 10),
+    total: importe,
   });
   await updateJson<Invoice[]>(
     INVOICES_KEY,

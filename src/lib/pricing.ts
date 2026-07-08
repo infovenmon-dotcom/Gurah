@@ -74,6 +74,47 @@ export function estanciaMinima(apto: Apartment, entrada: string | Date): number 
   return t?.estancia_minima ?? apto.estancia_minima ?? 1;
 }
 
+/** ¿La fecha de entrada cae en temporada alta? (por el nombre de la temporada). */
+export function esTemporadaAlta(apto: Apartment, entrada: string | Date): boolean {
+  const t = tarifaParaFecha(apto, entrada);
+  return /\balta\b/i.test(t?.nombre ?? '');
+}
+
+export interface PoliticaCancelacion {
+  temporadaAlta: boolean;
+  diasAntelacion: number; // 7 en alta, 2 (48 h) en el resto
+  limite: string; // YYYY-MM-DD: último día para cancelar sin cargo
+  texto: string; // texto legible para la web/email
+}
+
+/**
+ * Política de cancelación GURAH según temporada de la fecha de entrada:
+ *  - Temporada alta: cancelación gratuita hasta 7 días antes.
+ *  - Resto (baja/media): hasta 48 h antes.
+ * Fuera de plazo o no-show: se cobra la primera noche (garantía).
+ */
+export function politicaCancelacion(apto: Apartment, entrada: string | Date): PoliticaCancelacion {
+  const alta = esTemporadaAlta(apto, entrada);
+  const dias = alta ? 7 : 2;
+  const d = toDate(entrada);
+  d.setUTCDate(d.getUTCDate() - dias);
+  const limite = d.toISOString().slice(0, 10);
+  const cuando = alta ? '7 días antes' : '48 horas antes';
+  return {
+    temporadaAlta: alta,
+    diasAntelacion: dias,
+    limite,
+    texto:
+      `Cancelación gratuita hasta ${cuando} de la llegada (hasta el ${limite}). ` +
+      `Después, o si no te presentas, se cobra la primera noche.`,
+  };
+}
+
+/** Precio (web, −10%) de la primera noche — penalización por no-show / cancelación tardía. */
+export function primeraNocheWeb(apto: Apartment, entrada: string | Date): number {
+  return webPrice(precioNoche(apto, entrada));
+}
+
 // --- Total de estancia -------------------------------------------------------
 
 export interface NocheDesglose {

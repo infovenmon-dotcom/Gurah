@@ -78,8 +78,9 @@
       .then(function (d) {
         if (!d.disponible) { msg.textContent = d.motivo || T('notAvailable', 'No disponible en esas fechas.'); return; }
         var p = d.precios; q.style.display = 'block';
+        var pol = d.politica ? ('<div style="margin-top:8px;padding:8px 10px;background:var(--arena);border-radius:8px;font-size:12px;color:var(--gris)">✓ ' + T('noChargeNow', 'No se cobra ahora: tu tarjeta queda como garantía y el pago se hace el día de llegada.') + (d.politica.texto ? ' ' + d.politica.texto : '') + '</div>') : '';
         q.innerHTML = '<div style="display:flex;justify-content:space-between"><span>' + p.noches + ' ' + T('nights', 'noches') + '</span><span><s style="color:#999">' + money(p.total) + ' €</s> <b style="color:var(--verde)">' + money(p.totalWeb) + ' €</b></span></div>' +
-          '<div style="color:var(--gris);font-size:12px;margin-top:4px">' + T('saveBefore', 'Ahorras') + ' ' + money(p.ahorro) + ' ' + T('saveAfter', '€ con la reserva directa.') + '</div>';
+          '<div style="color:var(--gris);font-size:12px;margin-top:4px">' + T('saveBefore', 'Ahorras') + ' ' + money(p.ahorro) + ' ' + T('saveAfter', '€ con la reserva directa.') + '</div>' + pol;
       });
   }
   $('m-in').onchange = quote; $('m-out').onchange = quote;

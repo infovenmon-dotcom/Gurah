@@ -12,8 +12,7 @@
 import type { APIRoute } from 'astro';
 import { getApartment } from '../../lib/apartmentsStore';
 import { addBooking, comprobarDisponibilidad } from '../../lib/bookings';
-import { totalEstancia, validarEstancia } from '../../lib/pricing';
-import { createInvoiceForBooking } from '../../lib/invoices';
+import { totalEstancia, validarEstancia, politicaCancelacion } from '../../lib/pricing';
 import { sendMail, bookingEmailHtml, ADMIN_EMAIL } from '../../lib/email';
 import { getLang } from '../../lib/i18n';
 
@@ -66,19 +65,21 @@ export const POST: APIRoute = async ({ request, url, cookies }) => {
   if (!disp.disponible) return json({ ok: false, error: disp.motivo }, 409);
 
   const precios = totalEstancia(apto, entrada, salida);
+  const politica = politicaCancelacion(apto, entrada);
 
-  // --- Modo real: Stripe Checkout -------------------------------------------
+  // --- Modo real: Stripe Checkout en modo SETUP (guarda tarjeta como garantía, ---
+  // --- SIN cobrar). El cargo se hace el día de llegada desde el panel. ----------
   if (STRIPE_SECRET_KEY) {
     try {
       const params = new URLSearchParams();
-      params.set('mode', 'payment');
-      params.set('success_url', `${SITE_URL}/reserva-ok?id={CHECKOUT_SESSION_ID}`);
+      params.set('mode', 'setup'); // solo guarda el método de pago, no cobra
+      params.set('payment_method_types[0]', 'card');
+      params.set('success_url', `${SITE_URL}/reserva-ok?setup={CHECKOUT_SESSION_ID}`);
       params.set('cancel_url', `${SITE_URL}/?cancel=1`);
       params.set('customer_email', email);
-      params.set('line_items[0][price_data][currency]', 'eur');
-      params.set('line_items[0][price_data][product_data][name]', `${apto.nombre} · ${precios.noches} noches`);
-      params.set('line_items[0][price_data][unit_amount]', String(Math.round(precios.totalWeb * 100)));
-      params.set('line_items[0][quantity]', '1');
+      // La reserva y el importe viajan en metadata; el booking se finaliza en el
+      // webhook de Stripe (checkout.session.completed) — pendiente de conectar,
+      // como el certificado TicketBAI. En demo, el flujo funciona sin Stripe.
       params.set('metadata[apartmentId]', apartmentId);
       params.set('metadata[entrada]', entrada);
       params.set('metadata[salida]', salida);
@@ -86,6 +87,7 @@ export const POST: APIRoute = async ({ request, url, cookies }) => {
       params.set('metadata[nombre]', nombre);
       params.set('metadata[email]', email);
       params.set('metadata[idioma]', idioma);
+      params.set('metadata[total]', String(precios.totalWeb));
 
       const res = await fetch('https://api.stripe.com/v1/checkout/sessions', {
         method: 'POST',
@@ -97,13 +99,15 @@ export const POST: APIRoute = async ({ request, url, cookies }) => {
       });
       const session = await res.json();
       if (!res.ok) return json({ ok: false, error: session?.error?.message || 'Error Stripe' }, 502);
-      return json({ ok: true, mode: 'stripe', url: session.url });
+      return json({ ok: true, mode: 'stripe', url: session.url, politica });
     } catch (err) {
       return json({ ok: false, error: `Error de pago: ${(err as Error).message}` }, 502);
     }
   }
 
-  // --- Modo demo: simula pago + reserva + factura + email -------------------
+  // --- Modo demo: guarda la reserva CON GARANTÍA (sin cobrar) ----------------
+  // No se genera factura aquí: la factura se emite cuando se cobra el día de
+  // llegada (o al registrar el no-show) desde el panel.
   const result = await addBooking({
     apartmentId,
     entrada,
@@ -113,13 +117,13 @@ export const POST: APIRoute = async ({ request, url, cookies }) => {
     origen: 'web',
     demo: true,
     estado: 'confirmada',
+    pagoEstado: 'garantizada',
   });
 
   if (!result.ok || !result.booking) {
     return json({ ok: false, error: result.motivo || 'No se pudo crear la reserva.' }, 409);
   }
 
-  const invoice = await createInvoiceForBooking(result.booking, apto.nombre);
   const mail = await sendMail({
     to: email,
     subject: `Reserva confirmada · ${apto.nombre} · GURAH`,
@@ -131,20 +135,21 @@ export const POST: APIRoute = async ({ request, url, cookies }) => {
       noches: precios.noches,
       total: result.booking.total,
       bookingId: result.booking.id,
+      politica: politica.texto,
     }),
   });
   // Aviso al administrador (demo: registrado, no enviado sin clave).
   await sendMail({
     to: ADMIN_EMAIL,
-    subject: `Nueva reserva DEMO · ${apto.nombre} · ${result.booking.id}`,
-    html: `<p>Reserva ${result.booking.id} de ${nombre} (${email}).</p>`,
+    subject: `Nueva reserva · ${apto.nombre} · ${result.booking.id}`,
+    html: `<p>Reserva ${result.booking.id} de ${nombre} (${email}). Con garantía, se cobra el día de llegada.</p>`,
   });
 
   return json({
     ok: true,
     mode: 'demo',
     booking: result.booking,
-    invoice,
+    politica,
     email: mail,
     redirect: `/reserva-ok?id=${result.booking.id}`,
   });

@@ -9,7 +9,7 @@
 import type { APIRoute } from 'astro';
 import { getBlockedDates, comprobarDisponibilidad } from '../../lib/bookings';
 import { getApartment } from '../../lib/apartmentsStore';
-import { totalEstancia } from '../../lib/pricing';
+import { totalEstancia, politicaCancelacion } from '../../lib/pricing';
 
 export const prerender = false;
 
@@ -24,11 +24,15 @@ export const GET: APIRoute = async ({ url }) => {
   if (entrada && salida) {
     const disp = await comprobarDisponibilidad(apartmentId, entrada, salida);
     let precios = null;
+    let politica = null;
     if (disp.disponible) {
       const apto = await getApartment(apartmentId);
-      if (apto) precios = totalEstancia(apto, entrada, salida);
+      if (apto) {
+        precios = totalEstancia(apto, entrada, salida);
+        politica = politicaCancelacion(apto, entrada);
+      }
     }
-    return json({ ...disp, precios });
+    return json({ ...disp, precios, politica });
   }
 
   const blocked = await getBlockedDates(apartmentId);
