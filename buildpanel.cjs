@@ -618,7 +618,7 @@ const appjs = `
       if(r.ok){
         document.getElementById('mkPreview').innerHTML=
           '<div class="card"><div class="apt-head"><h3>Previsualización · '+idiomaNom(r.idioma)+'</h3></div>'+
-          (r.demo?'<div class="demoline">Vista de ejemplo · el texto se traduce automáticamente al '+idiomaNom(r.idioma)+'</div>':'')+
+          (r.idioma==='es'?'':'<div class="demoline">'+(r.traducido?('Traducción automática al '+idiomaNom(r.idioma)):('Escribe la campaña de ejemplo para ver la traducción · al activarlo se traduce cualquier texto al '+idiomaNom(r.idioma)))+'</div>')+
           '<div class="mkt-mail"><div class="mkt-mail-h">GURAH</div><div class="mkt-mail-sub">'+escapeHtmlP(r.asunto)+'</div>'+
           '<div class="mkt-mail-body">'+escapeHtmlP(r.cuerpo).replace(/\\n/g,'<br>')+'</div></div></div>';
         st.textContent='';
