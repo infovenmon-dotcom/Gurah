@@ -569,7 +569,7 @@ const appjs = `
 
   function renderMarketing(){
     var el=document.getElementById('tab-marketing');
-    var siteBtn='https://cozy-buttercream-79f061.netlify.app/';
+    var siteBtn='https://gurah.netlify.app/';
     el.innerHTML=
       '<h2 class="subttl">Email marketing</h2>'+
       '<p class="lead">Escribe la campaña en español. Se envía a cada huésped <strong>en el idioma de su reserva</strong> (traducción automática). Ideal para ofertas de temporada, huecos de última hora o reactivar clientes.</p>'+
