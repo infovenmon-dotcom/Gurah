@@ -221,7 +221,7 @@ const appjs = `
         '<div class="tbaihdr"><span class="tag2">TicketBAI · Batuz</span></div>'+
         qrSVG(tb.tbaiId||f.id,140)+
         '<div class="muted" style="font-size:10px;word-break:break-all;margin-top:8px">'+(tb.tbaiId||'—')+'</div>'+
-        '<div class="muted" style="font-size:11px;margin-top:6px">'+(tb.firmadoReal?'Firmada y enviada a Hacienda Foral de Bizkaia.':'Demo · en producción: firma XAdES + envío con certificado.')+'</div>'+
+        '<div class="muted" style="font-size:11px;margin-top:6px">'+(tb.firmadoReal?'Firmada y enviada a Hacienda Foral de Bizkaia.':'Demostración · al activarla, cada factura se firma y se declara a Hacienda automáticamente.')+'</div>'+
       '</div></div>';
     var m=document.getElementById('facModal'); m.style.display='flex';
     document.getElementById('facClose').onclick=closeFac;
@@ -232,7 +232,7 @@ const appjs = `
       if(!confirm('¿Enviar la factura '+f.id+' por email a '+f.cliente.email+'?')) return;
       st.textContent='Enviando…';
       var r=await api('/api/panel/invoice-send',{invoiceId:f.id});
-      if(r.ok){ st.textContent=r.demo?('Demo · en producción se enviaría a '+r.to+' (falta BREVO_API_KEY)'):('Enviada a '+r.to); toast(r.demo?'Envío simulado':'Factura enviada'); }
+      if(r.ok){ st.textContent=r.demo?('Demostración · se enviaría automáticamente a '+r.to):('Enviada a '+r.to); toast(r.demo?'Envío de ejemplo':'Factura enviada'); }
       else { st.textContent=r.error||'error'; }
     };
     m.onclick=function(e){ if(e.target===m)closeFac(); };
@@ -573,7 +573,7 @@ const appjs = `
     el.innerHTML=
       '<h2 class="subttl">Email marketing</h2>'+
       '<p class="lead">Escribe la campaña en español. Se envía a cada huésped <strong>en el idioma de su reserva</strong> (traducción automática). Ideal para ofertas de temporada, huecos de última hora o reactivar clientes.</p>'+
-      (isDemo()?'<div class="demoline">Demo · con la clave de IA (ANTHROPIC_API_KEY) y de email (BREVO_API_KEY) el envío y la traducción son reales</div>':'')+
+      (isDemo()?'<div class="demoline">Demostración · así funciona: cada cliente recibe el email en el idioma de su reserva. Al activarlo, los envíos se hacen de verdad.</div>':'')+
       '<div class="mkt-grid">'+
         '<div class="card">'+
           '<label class="mkt-lb">Asunto</label>'+
@@ -618,7 +618,7 @@ const appjs = `
       if(r.ok){
         document.getElementById('mkPreview').innerHTML=
           '<div class="card"><div class="apt-head"><h3>Previsualización · '+idiomaNom(r.idioma)+'</h3></div>'+
-          (r.demo?'<div class="demoline">Demo · en producción este texto se traduce automáticamente al '+idiomaNom(r.idioma)+'</div>':'')+
+          (r.demo?'<div class="demoline">Vista de ejemplo · el texto se traduce automáticamente al '+idiomaNom(r.idioma)+'</div>':'')+
           '<div class="mkt-mail"><div class="mkt-mail-h">GURAH</div><div class="mkt-mail-sub">'+escapeHtmlP(r.asunto)+'</div>'+
           '<div class="mkt-mail-body">'+escapeHtmlP(r.cuerpo).replace(/\\n/g,'<br>')+'</div></div></div>';
         st.textContent='';
@@ -633,7 +633,7 @@ const appjs = `
       if(r.ok){
         document.getElementById('mkResult').innerHTML=
           '<div class="card"><h3>'+(r.demo?'Simulación de envío':'Campaña enviada')+'</h3>'+
-          '<p class="muted">'+r.totalContactos+' contactos · '+r.idiomas+' idiomas'+(r.demo?' · demo (sin BREVO_API_KEY no sale ningún correo real)':'')+'</p>'+
+          '<p class="muted">'+r.totalContactos+' contactos · '+r.idiomas+' idiomas'+(r.demo?' · demostración (no se ha enviado ningún correo real)':'')+'</p>'+
           '<table><thead><tr><th>Idioma</th><th>Contactos</th><th>Enviados</th><th>Asunto</th></tr></thead><tbody>'+
           r.resumen.map(function(x){return '<tr><td>'+idiomaNom(x.idioma)+'</td><td>'+x.total+'</td><td>'+x.enviados+'</td><td class="muted">'+escapeHtmlP(x.muestraAsunto)+'</td></tr>';}).join('')+
           '</tbody></table></div>';
