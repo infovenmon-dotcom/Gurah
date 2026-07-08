@@ -23,6 +23,8 @@ interface Gasto {
   base: number;
   ivaPct: number;
   iva: number;
+  deducible: number; // % del IVA que es deducible (100 / 50 / 0)
+  ivaDeducible: number; // IVA que realmente se resta en el 303
   importe: number;
   adjunto?: string; // nombre del archivo
 }
@@ -75,6 +77,10 @@ export const POST: APIRoute = async ({ request }) => {
   const concepto = String(g.concepto || '').trim();
   if (!concepto || !base) return json({ ok: false, error: 'Falta concepto o base imponible.' }, 400);
   const iva = round2(base * (isNaN(ivaPct) ? 21 : ivaPct) / 100);
+  let deducible = Number(g.deducible);
+  if (isNaN(deducible)) deducible = 100;
+  deducible = Math.max(0, Math.min(100, deducible));
+  const ivaDeducible = round2(iva * deducible / 100);
   const id = 'g' + Date.now().toString(36);
 
   let adjuntoNombre: string | undefined;
@@ -98,6 +104,8 @@ export const POST: APIRoute = async ({ request }) => {
     base,
     ivaPct: isNaN(ivaPct) ? 21 : ivaPct,
     iva,
+    deducible,
+    ivaDeducible,
     importe: round2(base + iva),
     adjunto: adjuntoNombre,
   };

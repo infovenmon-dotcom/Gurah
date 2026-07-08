@@ -497,7 +497,7 @@ const appjs = `
       var adj=e.adjunto?'<a class="btn sec" style="padding:3px 8px;font-size:12px" href="/api/panel/expenses?file='+e.id+'" target="_blank">📎 ver</a>':'<span class="muted">—</span>';
       var del=(''+e.id).charAt(0)==='g'?'<button class="btn sec" data-delgasto="'+e.id+'" style="padding:3px 9px;font-size:12px">✕</button>':'';
       return '<tr><td>'+fmt(e.fecha)+'</td><td>'+(e.proveedor?'<strong>'+e.proveedor+'</strong><br>':'')+'<span class="muted">'+e.concepto+'</span></td><td><span class="pill">'+(e.categoria||'—')+'</span></td>'+
-        '<td style="text-align:right">'+eur2(baseDe(e))+'</td><td style="text-align:right" class="muted">'+eur2(e.iva||0)+(e.ivaPct!=null?' <span style="font-size:11px">('+e.ivaPct+'%)</span>':'')+'</td>'+
+        '<td style="text-align:right">'+eur2(baseDe(e))+'</td><td style="text-align:right" class="muted">'+eur2(e.iva||0)+(e.ivaPct!=null?' <span style="font-size:11px">('+e.ivaPct+'%)</span>':'')+(e.deducible!=null&&e.deducible!==100?'<br><span style="font-size:10px;color:var(--rojo)">deducible '+e.deducible+'%</span>':'')+'</td>'+
         '<td style="text-align:right" class="neg">−'+eur2(e.importe)+'</td><td style="text-align:center">'+adj+'</td><td style="text-align:center">'+del+'</td></tr>';
     }).join('');
     var cats=['Suministros','Limpieza','Mantenimiento','Comisiones','Marketing','Seguros','Amueblado','Amortización','Gestoría','Otros'];
@@ -509,6 +509,7 @@ const appjs = `
       '<label>Categoría<select id="gf-cat">'+cats.map(function(c){return '<option>'+c+'</option>';}).join('')+'</select></label>'+
       '<label>Base (€)<input type="number" step="0.01" id="gf-base" placeholder="0,00"></label>'+
       '<label>IVA<select id="gf-iva"><option value="21">21%</option><option value="10">10%</option><option value="4">4%</option><option value="0">0%</option></select></label>'+
+      '<label>IVA deducible<select id="gf-ded"><option value="100">100%</option><option value="50">50%</option><option value="0">0% (no deducible)</option></select></label>'+
       '<label>Factura (PDF/foto)<input type="file" id="gf-file" accept="image/*,application/pdf"></label>'+
       '<button class="btn" id="gf-add">Añadir gasto</button>'+
       '<span class="muted" id="gf-msg" style="align-self:center"></span>'+
@@ -526,7 +527,7 @@ const appjs = `
       var base=parseFloat(document.getElementById('gf-base').value);
       var con=document.getElementById('gf-con').value.trim();
       if(!con||!base){ msg.textContent='Pon concepto y base.'; return; }
-      var gasto={ fecha:document.getElementById('gf-fecha').value, proveedor:document.getElementById('gf-prov').value.trim(), concepto:con, categoria:document.getElementById('gf-cat').value, base:base, ivaPct:parseFloat(document.getElementById('gf-iva').value) };
+      var gasto={ fecha:document.getElementById('gf-fecha').value, proveedor:document.getElementById('gf-prov').value.trim(), concepto:con, categoria:document.getElementById('gf-cat').value, base:base, ivaPct:parseFloat(document.getElementById('gf-iva').value), deducible:parseFloat(document.getElementById('gf-ded').value) };
       var fi=document.getElementById('gf-file');
       msg.textContent='Guardando…';
       if(fi.files&&fi.files[0]){
@@ -613,8 +614,9 @@ const appjs = `
     // Periodo seleccionado
     var inv=state.invoices.filter(function(f){return (f.fecha||'').slice(0,4)===Y && enPeriodo(f.fecha,P);});
     var gas=(state.expenses||[]).filter(function(e){return (e.fecha||'').slice(0,4)===Y && enPeriodo(e.fecha,P);});
+    function ivaDedDe(e){ return e.ivaDeducible!=null?e.ivaDeducible:(e.iva||0); }
     var ivaRep=round2(inv.reduce(function(s,f){return s+(f.iva||0);},0));
-    var ivaSop=round2(gas.reduce(function(s,e){return s+(e.iva||0);},0));
+    var ivaSop=round2(gas.reduce(function(s,e){return s+ivaDedDe(e);},0));
     var res303=round2(ivaRep-ivaSop);
     var baseIng=round2(inv.reduce(function(s,f){return s+(f.base||0);},0));
     var baseGas=round2(gas.reduce(function(s,e){return s+baseGasto(e);},0));
