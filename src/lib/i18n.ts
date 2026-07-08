@@ -184,6 +184,44 @@ const DICT: Record<string, Entry> = {
     da: 'Vores gæster, på de førende platforme.',
     de: 'Unsere Gäste, auf den führenden Plattformen.',
   },
+  'reviewform.title': {
+    es: 'Deja tu experiencia', eu: 'Utzi zure esperientzia', fr: 'Partagez votre expérience',
+    en: 'Leave your experience', de: 'Teile deine Erfahrung',
+    it: 'Lascia la tua esperienza', nl: 'Deel je ervaring', no: 'Del din opplevelse', da: 'Del din oplevelse',
+  },
+  'reviewform.lead': {
+    es: '¿Te has alojado con nosotros? Nos encantaría leerte.',
+    eu: 'Gurekin ostatu hartu duzu? Zure iritzia jaso nahiko genuke.',
+    fr: 'Vous avez séjourné chez nous ? Nous aimerions vous lire.',
+    en: 'Stayed with us? We’d love to hear from you.',
+    de: 'Bei uns übernachtet? Wir freuen uns über deine Meinung.',
+    it: 'Hai soggiornato da noi? Ci farebbe piacere leggerti.',
+    nl: 'Bij ons verbleven? We horen graag van je.',
+    no: 'Bodde du hos oss? Vi vil gjerne høre fra deg.',
+    da: 'Boede du hos os? Vi vil gerne høre fra dig.',
+  },
+  'reviewform.name': {
+    es: 'Tu nombre', eu: 'Zure izena', fr: 'Votre nom', en: 'Your name', de: 'Dein Name',
+    it: 'Il tuo nome', nl: 'Je naam', no: 'Navnet ditt', da: 'Dit navn',
+  },
+  'reviewform.text': {
+    es: 'Cuéntanos tu experiencia', eu: 'Kontatu zure esperientzia', fr: 'Racontez-nous votre expérience',
+    en: 'Tell us about your stay', de: 'Erzähl uns von deinem Aufenthalt',
+    it: 'Raccontaci la tua esperienza', nl: 'Vertel ons over je verblijf', no: 'Fortell om oppholdet ditt', da: 'Fortæl om dit ophold',
+  },
+  'reviewform.rating': {
+    es: 'Puntuación', eu: 'Puntuazioa', fr: 'Note', en: 'Rating', de: 'Bewertung',
+    it: 'Valutazione', nl: 'Beoordeling', no: 'Vurdering', da: 'Bedømmelse',
+  },
+  'reviewform.send': {
+    es: 'Enviar reseña', eu: 'Bidali iritzia', fr: 'Envoyer l’avis', en: 'Send review', de: 'Bewertung senden',
+    it: 'Invia recensione', nl: 'Beoordeling versturen', no: 'Send anmeldelse', da: 'Send anmeldelse',
+  },
+  'reviewform.thanks': {
+    es: '¡Gracias por tu reseña!', eu: 'Eskerrik asko zure iritziagatik!', fr: 'Merci pour votre avis !',
+    en: 'Thank you for your review!', de: 'Danke für deine Bewertung!',
+    it: 'Grazie per la tua recensione!', nl: 'Bedankt voor je beoordeling!', no: 'Takk for anmeldelsen din!', da: 'Tak for din anmeldelse!',
+  },
 
   // CTA final
   'cta.title': {

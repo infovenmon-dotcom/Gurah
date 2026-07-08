@@ -29,9 +29,11 @@ export const GET: APIRoute = async () => {
     if (!bookings.length) bookings = demoBookings as any;
     if (!invoices.length) invoices = demoInvoices as any;
     if (!expenses.length) expenses = demoExpenses as any;
-    // Reseñas: en modo demo se muestran siempre las de ejemplo (varios idiomas),
-    // para enseñar el flujo de traducción/respuesta aunque el store traiga el seed viejo.
-    reviews = demoReviews as any;
+    // Reseñas: en demo se muestran las de ejemplo (varios idiomas) para enseñar el
+    // flujo de traducción/respuesta. Se anteponen las reseñas reales dejadas desde
+    // la web (origen:'web') para que el flujo huésped→panel funcione en la demo.
+    const webReviews = (reviews as any[]).filter((r) => r?.origen === 'web');
+    reviews = [...webReviews, ...(demoReviews as any)];
   }
 
   // Clientes derivados de reservas si no hay lista explícita. Incluye teléfono e

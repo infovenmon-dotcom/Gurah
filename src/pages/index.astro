@@ -208,6 +208,23 @@ const I18N = {
         </blockquote>
       ))}
     </div>
+
+    <!-- Formulario: el huésped deja su experiencia (entra en el panel como reseña nueva) -->
+    <div class="revform-wrap reveal">
+      <form id="revform" class="revform">
+        <h3 class="serif">{tr(lang, 'reviewform.title')}</h3>
+        <p class="sans muted">{tr(lang, 'reviewform.lead')}</p>
+        <div class="revform-row">
+          <input id="rf-name" class="sans" placeholder={tr(lang, 'reviewform.name')} maxlength="80" />
+          <div class="rf-stars sans" id="rf-stars" data-val="5" aria-label={tr(lang, 'reviewform.rating')}>
+            <span data-s="1">★</span><span data-s="2">★</span><span data-s="3">★</span><span data-s="4">★</span><span data-s="5">★</span>
+          </div>
+        </div>
+        <textarea id="rf-text" class="sans" rows="3" placeholder={tr(lang, 'reviewform.text')} maxlength="1500"></textarea>
+        <button type="submit" class="btn" id="rf-send">{tr(lang, 'reviewform.send')}</button>
+        <span class="sans rf-msg" id="rf-msg" data-thanks={tr(lang, 'reviewform.thanks')}></span>
+      </form>
+    </div>
   </section>
 
   <!-- ===================== RESERVA FINAL ===================== -->
@@ -389,6 +406,21 @@ const I18N = {
     .rev-stars { color:var(--dorado); letter-spacing:2px; font-size:13px; display:block; margin-bottom:10px; }
     .review p { font-size:19px; line-height:1.5; font-style:italic; color:var(--tinta); margin:0 0 14px; }
     .review cite { color:var(--gris); font-style:normal; font-size:13px; letter-spacing:.04em; }
+
+    /* Formulario "deja tu experiencia" */
+    .revform-wrap { max-width:640px; margin:56px auto 0; padding:0 24px; }
+    .revform { background:var(--crema, #f6f1e8); border:1px solid var(--linea); border-radius:18px; padding:26px 24px; }
+    .revform h3 { font-size:22px; margin:0 0 4px; }
+    .revform > p { margin:0 0 16px; font-size:14px; }
+    .revform-row { display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin-bottom:10px; }
+    .revform input, .revform textarea { width:100%; padding:11px 13px; border:1px solid var(--linea); border-radius:10px; font-size:15px; background:#fff; font-family:var(--sans); }
+    .revform-row input { flex:1; min-width:180px; margin:0; }
+    .rf-stars { font-size:24px; letter-spacing:3px; color:#d9cdb5; cursor:pointer; user-select:none; }
+    .rf-stars span { transition:color .12s; }
+    .rf-stars span.on { color:var(--dorado); }
+    .revform textarea { resize:vertical; margin-bottom:14px; }
+    .revform .btn { border:0; cursor:pointer; }
+    .rf-msg { display:inline-block; margin-left:14px; color:var(--verde); font-size:14px; font-weight:600; }
 
     /* CTA FINAL */
     .cta-final { text-align:center; padding:110px 24px; }
