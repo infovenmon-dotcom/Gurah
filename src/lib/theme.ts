@@ -104,8 +104,9 @@ export const gurah: HotelTheme = {
       'https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Poppins:wght@300;400;500;600&display=swap',
   },
   hero: {
-    // Fotos REALES de la casa en fundido cinematográfico (sustituible por metraje de dron).
-    videoUrl: null,
+    // Vídeo real del alojamiento servido y optimizado por Cloudinary (f_auto,q_auto).
+    // Si falla, se ve el póster (primera foto). Las fotos siguen de fallback/póster.
+    videoUrl: 'https://res.cloudinary.com/dvxfbfa7y/video/upload/f_auto,q_auto/video_gurah_zgoefa.mp4',
     images: ['/img/gurah/piscina-valle.jpg', '/img/gurah/casa-exterior.jpg', '/img/gurah/lurra-salon.jpg', '/img/gurah/casa-piscina.jpg'],
     eyebrow: 'Bakio · Bizkaia · Costa Vasca',
     titleLines: ['Donde el campo', 'encuentra el mar'],
