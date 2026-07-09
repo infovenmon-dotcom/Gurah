@@ -47,6 +47,9 @@ body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;col
 .rev.nueva{background:#fbf5e3;border-radius:10px;padding:16px;margin:8px 0}
 .rev-nueva-tag{display:inline-block;background:#ffd257;color:#5b4a00;font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;margin-left:8px}
 .aviso{display:flex;align-items:center;gap:10px;background:#fff6d9;border:1px solid #e8d48a;color:#6b5600;border-radius:12px;padding:12px 14px;margin-bottom:16px;font-size:14px}
+/* Texto de presentación (se puede quitar con SHOW_INTROS=false) */
+.pres-intro{background:#eef3ef;border:1px solid var(--linea);border-left:3px solid var(--verde);border-radius:10px;padding:12px 16px;margin:0 0 18px;font-size:14px;line-height:1.55;color:var(--tinta)}
+.pres-intro b{color:var(--verde)}
 .mkt-grid{display:grid;grid-template-columns:1.6fr 1fr;gap:16px}
 @media(max-width:820px){.mkt-grid{grid-template-columns:1fr}}
 .mkt-lb{display:block;font-size:12px;color:var(--gris);margin:10px 0 4px;font-weight:600}
@@ -205,6 +208,12 @@ const appjs = `
     return Object.keys(s).sort().reverse();
   }
 
+  // === TEXTOS DE PRESENTACIÓN (para enseñar el panel a Maialen) ===============
+  // Cada pestaña muestra arriba una explicación del beneficio. Para quitarlas
+  // TODAS de golpe cuando ya no hagan falta, pon SHOW_INTROS = false y regenera.
+  var SHOW_INTROS = true;
+  function intro(t){ return SHOW_INTROS ? '<div class="pres-intro">'+t+'</div>' : ''; }
+
   function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2200); }
   function eur(n){ return (Number(n)||0).toLocaleString('es-ES',{maximumFractionDigits:0})+' €'; }
   function eur2(n){ return (Number(n)||0).toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2})+' €'; }
@@ -279,7 +288,7 @@ const appjs = `
   // --- Apartamentos ---------------------------------------------------------
   function renderApartamentos(){
     const el = document.getElementById('tab-apartamentos');
-    el.innerHTML = state.apartments.map(function(a){
+    el.innerHTML = intro('En esta pestaña gestionas <b>tus apartamentos</b>: precios por temporada, estancia mínima y fechas ocupadas. Lo que cambies aquí se actualiza al instante en la web.') + state.apartments.map(function(a){
       const seasons = (a.tarifas_temporada||[]).map(function(t,i){
         return '<tr><td><input value="'+t.nombre+'" data-f="nombre" data-i="'+i+'"></td>'+
           '<td><input value="'+t.desde+'" data-f="desde" data-i="'+i+'" size="5"></td>'+
@@ -410,6 +419,7 @@ const appjs = `
         '<td style="text-align:right"><strong>'+eur(b.total)+'</strong></td></tr>';
     }).join('');
     el.innerHTML=
+      intro('Aquí ves <b>todas tus reservas y tu ocupación</b> de un vistazo, y cobras el día de llegada. Nunca se te cruzan dos reservas el mismo día.')+
       '<h2 class="subttl">Reservas</h2><p class="lead">Reservas con tarjeta de garantía: se cobran el día de llegada. Cancelación gratis según temporada (48 h en baja, 7 días en alta).</p>'+
       (isDemo()?'<div class="demoline">Demo · reservas de ejemplo · al cobrar se genera la factura oficial</div>':'')+
       kpis+
@@ -468,6 +478,7 @@ const appjs = `
       return '<tr><td><strong>'+f.id+'</strong>'+tbai+'</td><td>'+fmt(f.fecha)+'</td><td>'+f.cliente.nombre+'</td><td>'+f.concepto+'</td><td style="text-align:right">'+eur2(f.total)+'</td><td>'+est+'</td><td style="text-align:right"><button class="btn sec fac-ver" data-fac="'+f.id+'">Ver</button></td></tr>';
     }).join('');
     el.innerHTML=
+      intro('Cada reserva genera <b>su factura legal</b>. Desde aquí la imprimes o se la envías al cliente en un clic, sin papeleo.')+
       '<h2 class="subttl">Facturas</h2><p class="lead">Emisión y seguimiento de facturas.</p>'+
       (isDemo()?'<div class="demoline">Demo · facturas de ejemplo</div>':'')+
       kpis+info+
@@ -542,6 +553,7 @@ const appjs = `
       '<span class="muted" id="gf-msg" style="align-self:center"></span>'+
       '</div><p class="muted" style="font-size:12px;margin:10px 0 0">Sube el PDF o la foto y pulsa <b>Leer factura</b>: la IA rellena proveedor, base e IVA. O escríbelo a mano.</p></div>';
     el.innerHTML=
+      intro('Ves <b>cuánto ingresas y en qué gastas</b>, mes a mes. Subes tus facturas de gasto (la IA las lee solas) y todo queda ordenado.')+
       '<h2 class="subttl">Ingresos / Gastos</h2><p class="lead">Evolución, y registro de facturas de gasto con su IVA.</p>'+
       (isDemo()?'<div class="demoline">Demo · datos de ejemplo</div>':'')+
       kpis+
@@ -636,6 +648,7 @@ const appjs = `
       return '<tr><td>'+fmt(mv.fecha)+'</td><td>'+mv.concepto+'</td><td><span class="pill">'+mv.cat+'</span></td><td style="text-align:right">'+eur2(mv.iva)+'</td><td style="text-align:right" class="'+(mv.pos?'pos':'neg')+'">'+(mv.pos?'+':'−')+eur2(Math.abs(mv.imp))+'</td></tr>';
     }).join('');
     el.innerHTML=
+      intro('Tu <b>resultado real</b> —lo que ganas de verdad— por año, trimestre o mes, listo para tu gestor.')+
       '<h2 class="subttl">Contabilidad</h2><p class="lead">Ingresos, gastos y resultado.</p>'+
       (isDemo()?'<div class="demoline">Demo · datos de ejemplo</div>':'')+
       '<div class="card">'+toolbar+kpis.replace('<div class="kpis">','<div class="kpis" style="margin-bottom:0">')+'</div>'+
@@ -693,6 +706,7 @@ const appjs = `
       '<div class="res"><span>A pagar este trimestre</span><b>'+eur2(pagar130)+'</b></div></div>'):
       '<div class="mod"><h4>IRPF · adelanto del trimestre</h4><p class="muted">Elige un trimestre para ver el adelanto.</p></div>';
     el.innerHTML=
+      intro('Te dice <b>cuánto tienes que pagar de impuestos</b> y te lo prepara para presentar. Te ahorras buena parte de la gestoría.')+
       '<h2 class="subttl">Impuestos</h2><p class="lead">Tu gestoría dentro del panel: el IVA a pagar y el IRPF, calculados y listos para presentar.</p>'+
       (isDemo()?'<div class="demoline">Demo · datos de ejemplo</div>':'')+
       '<div class="card">'+toolbar+kpis.replace('<div class="kpis">','<div class="kpis" style="margin-bottom:0">')+'</div>'+
@@ -734,7 +748,7 @@ const appjs = `
         '<td style="text-align:center">'+(c.reservas||'')+(c.reservas>1?' <span class="pill directa" style="font-size:10px">fiel</span>':'')+'</td>'+
         '<td class="muted">'+(c.ultima?fmt(c.ultima):'')+'</td></tr>';
     }).join('');
-    el.innerHTML='<h2 class="subttl">Clientes (CRM)</h2><p class="lead">Base de clientes generada desde las reservas de la web. Alimenta el email marketing.</p>'+
+    el.innerHTML=intro('Tu <b>lista de clientes</b>, que se llena sola con cada reserva. Sabes quién repite para cuidarlos y que vuelvan.')+'<h2 class="subttl">Clientes (CRM)</h2><p class="lead">Base de clientes generada desde las reservas de la web. Alimenta el email marketing.</p>'+
       (isDemo()?'<div class="demoline">Demo · datos de ejemplo</div>':'')+
       '<div class="kpis"><div class="kpi"><label>Clientes</label><b>'+cs.length+'</b></div>'+
       '<div class="kpi"><label>Repiten</label><b>'+repes+'</b><span>más de 1 reserva</span></div></div>'+
@@ -750,6 +764,7 @@ const appjs = `
     var el=document.getElementById('tab-marketing');
     var siteBtn='https://gurah.netlify.app/';
     el.innerHTML=
+      intro('Envías <b>ofertas a tus clientes</b>, cada uno en el idioma de su reserva, para que vuelvan a reservar directo contigo.')+
       '<h2 class="subttl">Email marketing</h2>'+
       '<p class="lead">Escribe la campaña en español. Se envía a cada huésped <strong>en el idioma de su reserva</strong> (traducción automática). Ideal para ofertas de temporada, huecos de última hora o reactivar clientes.</p>'+
       (isDemo()?'<div class="demoline">Demostración · así funciona: cada cliente recibe el email en el idioma de su reserva. Al activarlo, los envíos se hacen de verdad.</div>':'')+
@@ -825,7 +840,7 @@ const appjs = `
 
   function renderCanales(){
     var el=document.getElementById('tab-canales');
-    el.innerHTML='<div class="card"><h3>Canales (iCal)</h3><p class="muted">Channel manager: pega las URLs iCal de Booking/Airbnb (una por línea) por apartamento e importa los bloqueos. Export por unidad: <code>/api/ical/&lt;id&gt;.ics</code>.</p>'+
+    el.innerHTML=intro('Conecta tu calendario con <b>Booking y Airbnb</b> para no tener nunca dos reservas el mismo día.')+'<div class="card"><h3>Canales (iCal)</h3><p class="muted">Channel manager: pega las URLs iCal de Booking/Airbnb (una por línea) por apartamento e importa los bloqueos. Export por unidad: <code>/api/ical/&lt;id&gt;.ics</code>.</p>'+
       state.apartments.map(function(a){
         var urls=(state.feeds[a.id]||[]).join('\\n');
         return '<div style="border-top:1px solid var(--linea);padding:12px 0" data-ical="'+a.id+'"><strong>'+a.nombre+'</strong>'+
@@ -853,6 +868,7 @@ const appjs = `
     var pend=pendientesResenas();
     var aviso = pend ? '<div class="aviso">🔔 <div><strong>'+pend+' reseña'+(pend>1?'s':'')+' nueva'+(pend>1?'s':'')+' sin responder.</strong> En producción, el panel detecta las reseñas de cualquier plataforma (Booking, Airbnb, Google…) y avisa aquí. Pulsa «Traducir y redactar respuesta» y revísala antes de publicar.</div></div>' : '';
     el.innerHTML=
+      intro('Cuando llega una reseña, el panel <b>te avisa, te la traduce y te redacta la respuesta</b> en el idioma del huésped. Tú solo la revisas.')+
       '<h2 class="subttl">Reseñas</h2><p class="lead">Respuestas asistidas por IA. Si la reseña está en otro idioma, se traduce al español y la respuesta se redacta en el idioma del huésped.</p>'+
       (isDemo()?'<div class="demoline">Demo · reseñas de ejemplo en varios idiomas</div>':'')+
       aviso+
