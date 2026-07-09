@@ -32,6 +32,7 @@ function isPublicApi(pathname: string): boolean {
 const CSP = [
   "default-src 'self'",
   "img-src 'self' data: https:",
+  "media-src 'self' data: blob: https://res.cloudinary.com",
   "script-src 'self' 'unsafe-inline' https://js.stripe.com",
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "frame-src https://js.stripe.com https://hooks.stripe.com https://www.openstreetmap.org",
