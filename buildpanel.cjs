@@ -244,9 +244,9 @@ const appjs = `
         '<tr><td class="muted">IVA ('+f.ivaPct+'% alojamiento)</td><td style="text-align:right">'+eur2(f.iva)+'</td></tr>'+
         '<tr><td><strong>Total</strong></td><td style="text-align:right"><strong>'+eur2(f.total)+'</strong></td></tr></table>'+
       '</div><div class="tbaibox">'+
-        '<div class="tbaihdr"><span class="tag2">TicketBAI · Batuz</span></div>'+
+        '<div class="tbaihdr"><span class="tag2">Factura oficial · Bizkaia</span></div>'+
         qrSVG(tb.tbaiId||f.id,140)+
-        '<div class="muted" style="font-size:10px;word-break:break-all;margin-top:8px">'+(tb.tbaiId||'—')+'</div>'+
+        '<div class="muted" style="font-size:11px;margin-top:8px">Factura válida ante Hacienda</div>'+
         '<div class="muted" style="font-size:11px;margin-top:6px">'+(tb.firmadoReal?'Firmada y enviada a Hacienda Foral de Bizkaia.':'Demostración · al activarla, cada factura se firma y se declara a Hacienda automáticamente.')+'</div>'+
       '</div></div>';
     var m=document.getElementById('facModal'); m.style.display='flex';
@@ -411,7 +411,7 @@ const appjs = `
     }).join('');
     el.innerHTML=
       '<h2 class="subttl">Reservas</h2><p class="lead">Reservas con tarjeta de garantía: se cobran el día de llegada. Cancelación gratis según temporada (48 h en baja, 7 días en alta).</p>'+
-      (isDemo()?'<div class="demoline">Demo · reservas de ejemplo · el cobro genera la factura con TicketBAI</div>':'')+
+      (isDemo()?'<div class="demoline">Demo · reservas de ejemplo · al cobrar se genera la factura oficial</div>':'')+
       kpis+
       '<div class="card"><div class="rowbtn"><h3 style="margin:0">Calendario · '+MESES[m]+' '+y+'</h3></div><div class="cal-wrap">'+cal+'</div>'+leyendaApts()+'</div>'+
       '<div class="card"><h3>Próximas reservas</h3><table><thead><tr><th>Huésped</th><th>Apartamento</th><th>Fechas</th><th>Noches</th><th>Canal</th><th>Estado</th><th>Pago</th><th>Acciones</th><th>Factura</th><th style="text-align:right">Total</th></tr></thead><tbody>'+(rows||'<tr><td colspan=10 class=muted>Sin reservas todavía.</td></tr>')+'</tbody></table></div>';
@@ -458,10 +458,10 @@ const appjs = `
       kpi('Facturado ('+y+')',eur(facturado),'base + IVA')+
       kpi('Emitidas',añoInv.length,String(y))+
       kpi('Pendientes de cobro',eur(pend),'por cobrar')+
-      kpi('IVA repercutido',eur(ivaRep),'10% alojamiento')+'</div>';
-    var info='<div class="card"><div class="infocard"><div class="tag">TicketBAI<br><strong>Batuz · Bizkaia</strong></div>'+
-      '<div class="muted" style="font-size:13px;line-height:1.5"><strong style="color:var(--tinta)">Facturación conectada a la Hacienda Foral de Bizkaia.</strong> Obligatorio desde el 1 de enero de 2026: cada factura se firma digitalmente, se encadena con la anterior, lleva <strong style="color:var(--tinta)">código TBAI + QR</strong> y se anota en el LROE. '+
-      (isDemo()?'<em>Demo:</em> la firma y el envío reales los realiza un software garante homologado + certificado digital; este panel organiza los datos.':'')+'</div></div></div>';
+      kpi('IVA cobrado',eur(ivaRep),'10% del alojamiento')+'</div>';
+    var info='<div class="card"><div class="infocard"><div class="tag">Factura legal<br><strong>Bizkaia</strong></div>'+
+      '<div class="muted" style="font-size:13px;line-height:1.5"><strong style="color:var(--tinta)">Cada reserva genera su factura oficial</strong>, válida ante Hacienda y con su código y QR, sin que tengas que hacer nada. La imprimes o se la envías al cliente en un clic. '+
+      (isDemo()?'<em>En cuanto se active,</em> las facturas quedan presentadas automáticamente ante la Hacienda de Bizkaia.':'')+'</div></div></div>';
     const rows=state.invoices.slice().sort(function(a,b){return a.fecha<b.fecha?1:-1;}).map(function(f){
       var est=f.estado==='cobrada'?'<span class="pill cobrada">Cobrada</span>':'<span class="pill pendiente">Pendiente</span>';
       var tbai=f.tbai?('<div class="muted tbaiid" style="font-size:10px" title="'+f.tbai.qrUrl+'"><span class="qrdot">▦</span> '+f.tbai.tbaiId+(f.tbai.firmadoReal?'':' · demo')+'</div>'):'';
@@ -471,7 +471,7 @@ const appjs = `
       '<h2 class="subttl">Facturas</h2><p class="lead">Emisión y seguimiento de facturas.</p>'+
       (isDemo()?'<div class="demoline">Demo · facturas de ejemplo</div>':'')+
       kpis+info+
-      '<div class="card"><h3>Facturas emitidas</h3><table><thead><tr><th>Nº / TBAI</th><th>Fecha</th><th>Cliente</th><th>Concepto</th><th style="text-align:right">Total</th><th>Estado</th><th></th></tr></thead><tbody>'+(rows||'<tr><td colspan=7 class=muted>Sin facturas.</td></tr>')+'</tbody></table></div>';
+      '<div class="card"><h3>Facturas emitidas</h3><table><thead><tr><th>Nº factura</th><th>Fecha</th><th>Cliente</th><th>Concepto</th><th style="text-align:right">Total</th><th>Estado</th><th></th></tr></thead><tbody>'+(rows||'<tr><td colspan=7 class=muted>Sin facturas.</td></tr>')+'</tbody></table></div>';
     el.querySelectorAll('.fac-ver').forEach(function(btn){ btn.onclick=function(){ verFactura(btn.getAttribute('data-fac')); }; });
   }
 
@@ -547,7 +547,7 @@ const appjs = `
       kpis+
       '<div class="card"><h3>Ingresos por mes · '+y+'</h3><div class="bars">'+bars+'</div></div>'+
       form+
-      '<div class="card"><div class="rowbtn"><h3 style="margin:0">Gastos</h3><span class="muted">'+fil.length+' facturas · <strong class="neg">'+eur(gTotal)+'</strong> · IVA soportado '+eur(gIva)+'</span></div>'+filtros+'<table><thead><tr><th>Fecha</th><th>Proveedor / concepto</th><th>Categoría</th><th style="text-align:right">Base</th><th style="text-align:right">IVA</th><th style="text-align:right">Total</th><th style="text-align:center">Factura</th><th></th></tr></thead><tbody>'+(grows||'<tr><td colspan=8 class=muted>Sin gastos que coincidan con el filtro.</td></tr>')+'</tbody></table></div>';
+      '<div class="card"><div class="rowbtn"><h3 style="margin:0">Gastos</h3><span class="muted">'+fil.length+' facturas · <strong class="neg">'+eur(gTotal)+'</strong> · IVA de tus gastos '+eur(gIva)+'</span></div>'+filtros+'<table><thead><tr><th>Fecha</th><th>Proveedor / concepto</th><th>Categoría</th><th style="text-align:right">Base</th><th style="text-align:right">IVA</th><th style="text-align:right">Total</th><th style="text-align:center">Factura</th><th></th></tr></thead><tbody>'+(grows||'<tr><td colspan=8 class=muted>Sin gastos que coincidan con el filtro.</td></tr>')+'</tbody></table></div>';
     // Filtros de búsqueda de gastos
     document.getElementById('gflY').onchange=function(){ gfil.y=this.value; renderGastos(); };
     document.getElementById('gflM').onchange=function(){ gfil.mes=this.value; renderGastos(); };
@@ -678,26 +678,26 @@ const appjs = `
     var pOpts=['T1','T2','T3','T4','all'].map(function(p){return '<option value="'+p+'"'+(p===P?' selected':'')+'>'+(p==='all'?'Año completo':'Trimestre '+p.slice(1))+'</option>';}).join('');
     var toolbar='<div class="toolbar"><span class="muted">Periodo:</span><select id="imY">'+yOpts+'</select><select id="imP">'+pOpts+'</select><span class="muted">'+(esTrim?('Trimestre '+P.slice(1)):'Año')+' '+Y+'</span><button class="btn sec" id="imPrint" style="margin-left:auto">🖨 Imprimir</button></div>';
     var kpis='<div class="kpis">'+
-      kpi('IVA repercutido',eur(ivaRep),'cobrado a huéspedes')+
-      kpi('IVA soportado',eur(ivaSop),'de tus gastos')+
-      kpi('IVA a pagar (303)',eur(res303),res303>=0?'a ingresar':'a compensar')+
-      kpi('IRPF estimado (130)',eur(pagar130),esTrim?'este trimestre':'selecc. trimestre')+'</div>';
-    var m303='<div class="mod"><h4>Modelo 303 · IVA <span class="muted" style="font-weight:400;font-size:12px">('+(esTrim?'Trim. '+P.slice(1):'año')+' '+Y+')</span></h4>'+
-      '<div class="cas"><span>IVA devengado (repercutido) <span class="cnum">casilla 27</span></span><b>'+eur2(ivaRep)+'</b></div>'+
-      '<div class="cas"><span>IVA deducible (soportado) <span class="cnum">casilla 45</span></span><b>'+eur2(ivaSop)+'</b></div>'+
-      '<div class="res"><span>Resultado '+(res303>=0?'a ingresar':'a compensar')+' <span class="cnum">casilla 71</span></span><b>'+eur2(Math.abs(res303))+'</b></div></div>';
-    var m130=esTrim?('<div class="mod"><h4>Modelo 130 · IRPF <span class="muted" style="font-weight:400;font-size:12px">(acumulado a Trim. '+P.slice(1)+')</span></h4>'+
-      '<div class="cas"><span>Ingresos − gastos (rendimiento) <span class="cnum">casilla 03</span></span><b>'+eur2(rendAcum)+'</b></div>'+
-      '<div class="cas"><span>Pago a cuenta 20% <span class="cnum">casilla 04</span></span><b>'+eur2(pago130)+'</b></div>'+
-      '<div class="cas"><span>Pagos de trimestres anteriores <span class="cnum">casilla 05</span></span><b>−'+eur2(pagoPrev)+'</b></div>'+
-      '<div class="res"><span>A ingresar este trimestre <span class="cnum">casilla 19</span></span><b>'+eur2(pagar130)+'</b></div></div>'):
-      '<div class="mod"><h4>Modelo 130 · IRPF</h4><p class="muted">Selecciona un trimestre para ver el pago fraccionado.</p></div>';
+      kpi('IVA cobrado',eur(ivaRep),'a tus huéspedes')+
+      kpi('IVA de tus gastos',eur(ivaSop),'te lo descuentas')+
+      kpi('IVA a pagar',eur(res303),res303>=0?'a Hacienda':'a tu favor')+
+      kpi('IRPF estimado',eur(pagar130),esTrim?'este trimestre':'elige trimestre')+'</div>';
+    var m303='<div class="mod"><h4>IVA · lo que tienes que pagar <span class="muted" style="font-weight:400;font-size:12px">('+(esTrim?'Trim. '+P.slice(1):'año')+' '+Y+')</span></h4>'+
+      '<div class="cas"><span>IVA que has cobrado a los huéspedes</span><b>'+eur2(ivaRep)+'</b></div>'+
+      '<div class="cas"><span>IVA de tus gastos (te lo descuentas)</span><b>−'+eur2(ivaSop)+'</b></div>'+
+      '<div class="res"><span>'+(res303>=0?'A pagar a Hacienda':'A tu favor')+'</span><b>'+eur2(Math.abs(res303))+'</b></div></div>';
+    var m130=esTrim?('<div class="mod"><h4>IRPF · adelanto del trimestre <span class="muted" style="font-weight:400;font-size:12px">(a Trim. '+P.slice(1)+')</span></h4>'+
+      '<div class="cas"><span>Beneficio (ingresos − gastos)</span><b>'+eur2(rendAcum)+'</b></div>'+
+      '<div class="cas"><span>Adelanto de IRPF (20%)</span><b>'+eur2(pago130)+'</b></div>'+
+      '<div class="cas"><span>Lo ya adelantado antes</span><b>−'+eur2(pagoPrev)+'</b></div>'+
+      '<div class="res"><span>A pagar este trimestre</span><b>'+eur2(pagar130)+'</b></div></div>'):
+      '<div class="mod"><h4>IRPF · adelanto del trimestre</h4><p class="muted">Elige un trimestre para ver el adelanto.</p></div>';
     el.innerHTML=
       '<h2 class="subttl">Impuestos</h2><p class="lead">Tu gestoría dentro del panel: el IVA a pagar y el IRPF, calculados y listos para presentar.</p>'+
       (isDemo()?'<div class="demoline">Demo · datos de ejemplo</div>':'')+
       '<div class="card">'+toolbar+kpis.replace('<div class="kpis">','<div class="kpis" style="margin-bottom:0">')+'</div>'+
-      '<div class="card"><h3>Borradores para presentar</h3><div class="mod-grid">'+m303+m130+'</div>'+
-      '<div class="aviso-fiscal">⚠️ <strong>Borrador orientativo.</strong> Te ahorra el trabajo de la gestoría, pero antes de presentar conviene una revisión: en <strong>Bizkaia (Batuz)</strong> los modelos forales pueden variar y hay gastos con IVA no deducible. Es una ayuda, no asesoramiento fiscal.</div>'+
+      '<div class="card"><h3>Listo para presentar</h3><div class="mod-grid">'+m303+m130+'</div>'+
+      '<div class="aviso-fiscal">⚠️ <strong>Cálculo orientativo.</strong> Te ahorra el trabajo de la gestoría, pero conviene una última revisión con tu asesor antes de presentar. Es una ayuda, no asesoramiento fiscal.</div>'+
       '</div>'+
       '<div class="card"><h3>Exportar para la gestoría</h3><p class="muted" style="margin-top:0">Descarga los libros de facturas del periodo (por mes o trimestre) en CSV para enviárselos a tu gestor.</p>'+
       '<div class="toolbar"><span class="muted">Periodo:</span><select id="exP">'+
